@@ -7,6 +7,7 @@ uitvoeringspad. Kernregel in fase 4 (§11.1 hard): de loop voert niets uit
 dat niet de mensbevestiging heeft gehad.
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -361,13 +362,19 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
     inbox = doel / "inbox"
     bestanden = [p.name for p in inbox.iterdir()
                  if p.name.startswith("VOORSTEL-") and p.is_file()] if inbox.exists() else []
-    wachtend = [n for n in bestanden if n not in verzonden]
+    # ontvangen VOORSTELLEN (VOORSTEL-<boom-id-van-een-andere-boom>-...) zijn van
+    # het brein en tellen niet als eigen wachtende voorstellen — machinetoetsbaar
+    ontvangen_patroon = re.compile(
+        r"^VOORSTEL-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-")
+    eigen = [n for n in bestanden if not ontvangen_patroon.match(n)]
+    wachtend = [n for n in eigen if n not in verzonden]
     print(f"  VOORSTEL:  {len(wachtend)} wachtend, {len(verzonden)} verzonden")
     if wachtend and brein_pad and not staat["fout"]:
         antwoord = invoer_fn("  Wachtende VOORSTELLEN naar het brein sturen? (ja / nee): ").strip().lower()
         if antwoord == "ja":
             aantal, _ = gw.stuur_voorstellen(doel, brein_pad)
             print(f"  {aantal} VOORSTELLEN verzonden — append-only, het origineel blijft in de boom.")
+            print(f"  VOORSTEL:  {len(wachtend) - aantal} wachtend, {len(verzonden) + aantal} verzonden")
         else:
             print("  Niets verzonden.")
 
