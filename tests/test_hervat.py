@@ -70,6 +70,14 @@ class TestBeslissingen(unittest.TestCase):
         result = self._log([_entry("stap-001", "herziening_nodig")], _profiel(2))
         self.assertEqual(result["stappen"]["stap-001"]["beslissing"], "heraanbieden")
 
+    def test_geratificeerde_stap_wordt_overgeslagen(self):
+        """Taak 5: de bulk-ratificatie maakt de stap mens-bevestigd definitief
+        voor de restdraai — nooit opnieuw aangeboden, nooit opnieuw gereviewd."""
+        result = self._log([_entry("stap-001", "geratificeerd")], _profiel(2))
+        beslissing = result["stappen"]["stap-001"]
+        self.assertEqual(beslissing["beslissing"], "overslaan")
+        self.assertIn("geratificeerd", beslissing["noot"].lower())
+
     def test_stap_zonder_logregel_wordt_uitgevoerd(self):
         result = self._log([_entry("stap-001", "geslaagd")], _profiel(3))
         self.assertEqual(result["stappen"]["stap-003"]["beslissing"], "uitvoeren")

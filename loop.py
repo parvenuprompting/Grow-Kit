@@ -131,6 +131,74 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
     return 0 if geslaagd else 2
 
 
+def _wacht_ratificatie_stappen(logboek: Path) -> list[str]:
+    """Stappen waarvan de laatst gelogde status review_ok_wacht_ratificatie is,
+    in volgorde van eerste verschijning."""
+    laatste: dict[str, str] = {}
+    volgorde: list[str] = []
+    for entry in json.loads(logboek.read_text(encoding="utf-8")):
+        sid = entry.get("stap")
+        if not sid:
+            continue
+        if sid not in laatste:
+            volgorde.append(sid)
+        laatste[sid] = entry.get("status")
+    return [sid for sid in volgorde if laatste[sid] == "review_ok_wacht_ratificatie"]
+
+
+def ratificeer(doel: Path, invoer_fn=input) -> int:
+    """Bulk-ratificatie (§9): één bevestiging; append-only vervolg-entries;
+    afkeuring → herziening_nodig + doorloop-vermelding; nooit auto-rollback."""
+    logboek = doel / "logboek.json"
+    if not logboek.exists():
+        print("  Geen ratificatie-moment — het logboek bestaat niet.")
+        return 0
+    wacht = _wacht_ratificatie_stappen(logboek)
+    if not wacht:
+        print("  Geen ratificatie-moment — geen stappen wachten op de mens.")
+        return 0
+    print("  Ratificatie — mens-moment in bulk (§9):")
+    for i, sid in enumerate(wacht, start=1):
+        print(f"    {i}. {sid} — review_ok_wacht_ratificatie")
+    antwoord = invoer_fn(
+        "  Alles ratificeren? (ja / nummers om af te keuren, bijv. 1 / nee): ").strip().lower()
+    if antwoord == "ja":
+        entries = json.loads(logboek.read_text(encoding="utf-8"))
+        for sid in wacht:
+            entries.append({"type": "ratificatie", "stap": sid, "status": "geratificeerd",
+                            "bewijs": "bulk-ratificatie door de mens (§9)",
+                            "tijdstip": _nu()})
+        logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"  {len(wacht)} stappen geratificeerd — append-only bijgeschreven.")
+        return 0
+    afkeuringen = [nummer.strip() for nummer in antwoord.split(",") if nummer.strip()]
+    if not all(n.isdigit() and 1 <= int(n) <= len(wacht) for n in afkeuringen):
+        print("  Geen ratificatie — onbegrepen antwoord is geen actie.")
+        return 1
+    afgekeurd = [wacht[int(n) - 1] for n in afkeuringen]
+    entries = json.loads(logboek.read_text(encoding="utf-8"))
+    for sid in afgekeurd:
+        laatste_index = max(i for i, e in enumerate(entries) if e.get("stap") == sid)
+        latere = []
+        for e in entries[laatste_index + 1:]:
+            sid2 = e.get("stap")
+            if sid2 and sid2 != sid and e.get("type") not in ("mijlpaal", "ratificatie") \
+                    and sid2 not in latere:
+                latere.append(sid2)
+        vermelding = (f"afgekeurd bij bulk-ratificatie; latere stappen in het logboek: "
+                      f"{', '.join(latere) if latere else 'geen'}")
+        entries.append({"type": "ratificatie", "stap": sid, "status": "herziening_nodig",
+                        "bewijs": vermelding, "tijdstip": _nu()})
+        print(f"  {sid}: herziening_nodig — {vermelding}")
+    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return 0
+
+
+def _nu() -> str:
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+
 def main(invoer_fn=input) -> int:
     print()
     print("  ────────────────────────────────────────")
@@ -148,6 +216,12 @@ def main(invoer_fn=input) -> int:
         return plant_profiel(invoer_fn)
     if keuze == "2":
         return hervat_boom(invoer_fn=invoer_fn)
+    if keuze == "4":
+        doel_invoer = invoer_fn("  Waar groeit de boom? (map): ").strip()
+        if not doel_invoer:
+            print("  Geen map — geen actie.")
+            return 1
+        return ratificeer(Path(doel_invoer).expanduser().resolve(), invoer_fn=invoer_fn)
     if keuze in MODI:
         print(f"  Modus '{MODI[keuze][0]}' volgt in een latere taak van fase 4.")
         return 0

@@ -55,6 +55,10 @@ def reconstructie(logboek: Path, profiel: dict) -> dict:
             stappen[sid] = {"beslissing": "overslaan",
                             "laatste_status": status,
                             "noot": "wacht op de bulk-ratificatie — geen herdraai, geen her-review"}
+        elif status == "geratificeerd":
+            stappen[sid] = {"beslissing": "overslaan",
+                            "laatste_status": status,
+                            "noot": "geratificeerd door de mens (§9) — mens-bevestigd definitief"}
         elif status in _HERAANBIEDEN:
             stappen[sid] = {"beslissing": "heraanbieden", "laatste_status": status, "noot": None}
         else:
