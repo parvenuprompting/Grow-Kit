@@ -114,7 +114,7 @@ De criteria worden vóór de tests zelf geschreven — zodat we niet achteraf de
 
 ## Task 6: Afsluiting — zelfreview en mijlpaal
 
-- [ ] **Step 1: Zelfreview-checklist** (onderaan dit document) doorlopen; open punt §12.3 (ssh-configuratie per profiel) en §12.5 (reviewer-configuratie) expliciet doorgestuurd naar fase 3-planning.
+- [ ] **Step 1: Zelfreview-checklist** (onderaan dit document) doorlopen; open punt §12.3 (ssh-configuratie per profiel) en §12.5 (reviewer-configuratie) expliciet doorgestuurd naar fase 3-planning. Ook §11.4 (mijlpaal-bevestiging) expliciet benoemen: niet gebouwd in fase 2 (geen taak raakt de mijlpaal-drempel), doorschuiven naar fase 3.
 - [ ] **Step 2: Mijlpaal-digest** naar de Agent-Brain inbox via brain_digest (VOORSTEL, mens curateert).
 - [ ] **Step 3: Commit** — `docs: fase 2 af — kieming bewezen (Test 1 + 2)`
 
