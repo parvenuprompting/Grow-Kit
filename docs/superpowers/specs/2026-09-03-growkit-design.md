@@ -128,6 +128,7 @@ De roadmap volgt de eigen metafoor. Elke fase bewijst iets voordat de volgende b
 | 2 | Kieming | seed.py met machine-bewijs + Test 1 (tweede-brein op schone plek) en Test 2 (vrije beschrijving) | Dat bewijs-afdwinging en leesroute werken |
 | 3 | Review-laag | `review`-rol voor mens_verificatie-stappen (§9) | Dat de mens minder vaak nodig is |
 | 4 | Eigen harnas | Dunne provider-agnostische orchestratieloop (paar honderd regels, geen framework) — alléén na fase 2 | Dat GrowKit een zelfstandig product is zonder agent-dependency |
+| 5 | Oerwoud | Meerdere bomen (instanties) registreren bij één gedeeld tweede-brein; identiteit, voorkeuren en VOORSTELLEN syncen via dat ene brein (§13) | Dat één brein het centrum van een heel ecosysteem kan zijn |
 
 Fase-namen zijn bewust géén metafoor-termen: "zaadje" is gereserveerd als metafoor voor het héle product, niet als fase-naam — dubbelzinnigheid voorkomen in plannen die code-agents lezen.
 
@@ -267,10 +268,21 @@ Afdwingbaarheid per fase:
 5. Hoe de `reviewer`-rol praktisch wordt geconfigureerd (config-bestand? omgevingsvariabelen?) zonder leveranciers-binding.
 6. Exacte verplichte velden en weigeringsteksten van de Scope-poort (§11), en of de vragenlijst per invoertype (kiemkeuze / vrije beschrijving / taak) verschilt.
 
-## 13. Buiten scope (voor nu)
+## 13. Het Oerwoud — meerdere bomen, één brein
+
+Beslissing (3 sept 2026): het oerwoud wordt niet alleen metafoor maar architectuur-doel. Wanneer een gebruiker één instantie (boom) heeft opgezet — bijvoorbeeld het tweede brein — moet die daarna een tweede, derde, vierde kunnen opzetten (autonome fabriek, dev-werkplaats, eigen bomen), waarbij **het geplante tweede-brein het hart is**: alles synct daarheen voor elke nieuwgeboren boom.
+
+Kernidee:
+
+- **Eén brein, vele bomen.** Het tweede-brein is de enige plek waar identiteit, voorkeuren en vastgelegde kennis van de gëruiker leven. Elke nieuwe boom leest daaruit (bijv. voor de Prompt-slijper en de formulier-opties, §11.2) en schrijft er alleen VOORSTELLEN naartoe.
+- **Boom-register.** Elke boom krijgt bij het planten een geboortebewijs (boom-id, profiel, machine, locatie, aanmaakdatum). Het brein houdt een register van alle bomen. Zo weet het oerwoud altijd wie er bestaat en waar.
+- **Sync = append-only + git**, nooit muterend — de gëruiker blijft overal curator. Eén inbox, één mens, hoeveel bomen er ook staan.
+
+Fase-volgorde (poort blijft staan): het oerwoud is fase 5 en wordt pas gebouwd na het harnas. MAAR: de geboortebewijs-structuur wordt nu al ontworpen en meegeplant in fase 1, zodat geen enkele boom ooit hoeft te worden "nageplaatst" in het register. Voorbereiden ≠ bouwen.
+
+## 14. Buiten scope (voor nu)
 
 - Eigen harnas vóór fase 2-bewijs (fase 4 is de roadmap).
 - Sandboxing, prompt-injectie-afweer van tool-output, harnas-resumability — reëel, maar pas relevant zodra het harnas gebouwd wordt.
 - Router-domeinen, zware governance, multi-team-permissions.
 - Cloud sync, mobiel, web-UI.
-- "Oerwoud"-modus (meerdere bomen samenwerkend).
