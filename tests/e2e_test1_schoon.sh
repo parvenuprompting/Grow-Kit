@@ -61,13 +61,25 @@ assert (plant / "INDEX.md").is_file(), "1.3 FAIL: INDEX.md ontbreekt"
 assert (plant / "geboortebewijs.json").is_file(), "1.3 FAIL: geboortebewijs.json ontbreekt"
 print("OK 1.3: vijf kernmappen + INDEX.md + geboortebewijs bestaan")
 
+# Criterium 1.4b (protocol-uitbreiding fase 5 taak 1): het geboortebewijs is
+# volwaardig — valide JSON, verplichte velden, geen placeholders.
+import uuid as _uuid
+_g = json.loads((plant / "geboortebewijs.json").read_text(encoding="utf-8"))
+assert "{{" not in json.dumps(_g), "1.4b FAIL: placeholders in het geboortebewijs"
+for v in ("boom_id", "profiel", "machine", "locatie", "geplant_op"):
+    assert _g.get(v), f"1.4b FAIL: verplicht veld {v} ontbreekt"
+_uuid.UUID(_g["boom_id"])
+print("OK 1.4b: geboortebewijs volwaardig (geen placeholders, uuid-formaat)")
+
 # Criterium 1.4: byte-voor-byte gelijk aan sjablonen
 sjablonen = kloon / "profielen" / "tweede-brein" / "sjablonen"
 for sjabloon, doel in (
     ("INDEX.md", "INDEX.md"),
     ("AGENT-ROL.md", "identiteit/AGENT-ROL.md"),
     ("REGELS.md", "inbox/REGELS.md"),
-    ("geboortebewijs.json.template", "geboortebewijs.json"),
+    # geboortebewijs.json NIET meer: protocol-uitbreiding fase 5 taak 1 — het
+    # bewijs is na het planten volgemaakt (feiten i.p.v. placeholders) en
+    # verschillend van het sjabloon; zijn geldigheid checkt criterium 1.4b.
 ):
     h1 = hashlib.sha256((sjablonen / sjabloon).read_bytes()).hexdigest()
     h2 = hashlib.sha256((plant / doel).read_bytes()).hexdigest()
