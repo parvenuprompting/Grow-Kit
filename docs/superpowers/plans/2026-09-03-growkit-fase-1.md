@@ -121,7 +121,7 @@ git commit -m "feat: geboortebrief SEED.md — regels en leesroute"
   - `kiemkeuze() -> dict | None` — retourneert `{"profiel": str, "doel": str}` of None bij afbreken.
   - Werkt op Python 3.11+, stdlib only.
 
-- [ ] **Step 1: Schrijf seed.py** — het volledige skelet met: argument-parsing, welkomsttekst (Nederlands), kiemkeuze-dialoog die de beschikbare profielen leest uit `profielen/*/profiel.json` (status "in-ontwikkeling" wordt getoond maar geweigerd met duidelijke melding), en TODO-marke... — nee, géén TODO's: de slijper-stub print dat de Prompt-slijper in fase 3 komt en sluit netjes af met exit-code 0.
+- [ ] **Step 1: Schrijf seed.py** — het volledige skelet met: argument-parsing, welkomsttekst (Nederlands), en een kiemkeuze-dialoog die de beschikbare profielen leest uit `profielen/*/profiel.json` (status "in-ontwikkeling" wordt getoond maar geweigerd met duidelijke melding). De Prompt-slijper zit er als nette stub in: `--slijp` meldt dat de slijper in fase 3 komt en sluit af met exit-code 0 — geen stub-beloftes, geen TODO's in code.
 
 ```python
 #!/usr/bin/env python3
