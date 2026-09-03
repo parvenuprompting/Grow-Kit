@@ -197,6 +197,35 @@ Daarmee ontstaat een zelfversterkende cirkel (het "oerwoud in het klein"):
 
 Consequentie voor het eerste profiel: het tweede-brein is niet zomaar de eerste boom — het is de **motor van de vliegwiel**, en daarmee extra rechtvaardiging voor de keuze in §10.
 
+### 11.3 Het vragenformulier — de slijper vraagt met opties, niet met open tekst
+
+De mens-momenten uit §11.1 worden niet als lopende tekst afgehandeld maar als een **klikbaar formulier**: vragen met opties, eventueel meerkeuze, en altijd een "iets anders"-veld. Voorbeeld van het formaat (vast JSON-schema, agent-onafhankelijk):
+
+```json
+{
+  "vragen": [
+    {
+      "vraag": "Wat wil je laten groeien?",
+      "opties": ["tweede-brein", "autonome-fabriek", "dev-werkplaats", "iets anders (beschrijf)"]
+    },
+    {
+      "vraag": "Waar moet het groeien?",
+      "opties": ["deze machine (lokaal)", "een VPS", "iets anders (beschrijf)"]
+    }
+  ]
+}
+```
+
+Waarom formulier i.p.v. vrije tekst:
+
+1. **Minimale actie, heldere scope** — aanwijzen in plaats van formuleren; antwoorden vullen de verplichte velden (doel, plek, slaag-criterium) één-op-één in.
+2. **Deterministische samenvoeging** — formulier-antwoorden mergeen zonder her-interpretatie in de opdracht; de onbetrouwbare slijp-stap wordt korter.
+3. **Opties uit drie bronnen:** (a) de profiel-catalogus met gelabelde standaardwaarden, (b) omgevingsdetectie (lokaal/VPS), (c) **het eigen geplante brein** (projecten, voorkeuren van de gebruiker) — hoe voller het brein, hoe persoonlijker de opties (§11.2 in de praktijk).
+4. **Agent-onafhankelijk:** het formulier is een vast JSON-formaat. Fase 11–3: de geleende agent presenteert het met zijn eigen interface (Hermes-vragenlijst, Claude Code-terminal). Fase 4: het harnas tekent het zelf (terminal-UI). Zelfde inhoud, elke omgeving.
+5. **Eén ronde, één klik:** formulier → samengevoegde concept-opdracht → "klopt dit? (ja / pas aan)". De slotbevestiging blijft niet-onderhandelbaar (§11.1), maar is zelf ook één klik.
+
+De weigeringsteksten uit §11 worden waar mogelijk vervangen door dit formulier: de poort stuurt niet alleen vragen mee, maar direct de opties waaruit gekozen kan worden.
+
 Afdwingbaarheid per fase:
 
 - **Fase 1–3 (geleende agent):** de poort zit in het *formaat* — seed.py weigert invoer zonder verplichte velden; een taak zonder bewijs-check is schema-ongeldig. Dit is hard: zonder geldige invoer draait er niets. De toon-uitvoering (de weigeringstekst) gebeurt wel door de geleende agent en is dus om te praten — al bereikt de gebruiker dan nog steeds niets zonder geldig stappenplan.
