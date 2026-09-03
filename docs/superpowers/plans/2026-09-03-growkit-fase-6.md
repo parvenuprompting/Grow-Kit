@@ -1,7 +1,7 @@
 # GrowKit Fase 6 — Implementatieplan: De macOS-UI (het huis)
 
 Datum: 3 september 2026
-Status: concept — ter goedkeuring (Tiëndo) en review (Claude) vóór uitvoering
+Status: v2 — audit (Claude, 3 sept) verwerkt: afkeur-reden in het schema, mijlpaal = fase 6.1 met nette weigering, brein-auto-vraag in het protocol — klaar voor uitvoering
 Spec: `docs/superpowers/specs/2026-09-03-growkit-design.md` (v10) + beslissingen gebruiker 3 sept (JSON-adapter · native SwiftUI · v1 = status + planten + ratificatie)
 Fase 1-5: af en bewezen (173 unit-tests, 6 E2E's; laatste commit `7dde550`).
 
@@ -37,19 +37,21 @@ Fase 1-5: af en bewezen (173 unit-tests, 6 E2E's; laatste commit `7dde550`).
 
 **Files:** Modify `adapter.py`; Test: `tests/test_adapter_plant.py`
 
-**Gedrag:** `plant` leest `{profiel, doel, brein?: "auto"|"pad"|"geen", bevestig?: bool}`. Zonder bevestiging: retourneert het poort-concept (kiemkeuze-check) + de mijlpaal-waarschuwing indien van toepassing — **niets uitgevoerd**. Met bevestiging: motor-run; het resultaat bevat per stap `{id, status, bewijs}` (machine-leesbaar uit het logboek) + geboortevolmaking + registratie (brein: auto = staat/pad/leeg-als-brein volgens taak-3-flow; "geen" = niet registreren). Faal → `{"ok": false, "stappen": [...]}` + exit 2.
+**Gedrag:** `plant` leest `{profiel, doel, brein?: "auto"|"pad"|"geen", bevestig?: bool}`. Zonder bevestiging: retourneert het poort-concept (kiemkeuze-check) — **niets uitgevoerd**. Met bevestiging: motor-run; het resultaat bevat per stap `{id, status, bewijs}` (machine-leesbaar uit het logboek) + geboortevolmaking + registratie. Faal → `{"ok": false, "stappen": [...]}` + exit 2.
 
-- [ ] **Step 1: Falende tests** — concept-modus voert niets uit (doelmap bestaat niet); bevestigde plant retourneert 8 stap-resultaten + geboorte-entry; faal-contract → exit 2 met stappen-overzicht; brein "geen" → geen registratie; "auto" → staat bijgewerkt; onbekend profiel → nette poort-fout.
+**Brein-semantiek (audit-punt 3):** `"auto"` werkt direct wanneer het brein bekend is in de oerwoud-staat; is het brein **onbekend**, dan kan de stateless adapter niets vragen — hij retourneert een **vragen-respons** (`vragen: [{vraag: "waar groeit je brein", opties: ["deze boom wordt het brein", "pad opgeven", "niet registreren"]}]`) en voert en registreert **niets**; de app doet een tweede aanroep met `brein` expliciet gevuld. `"geen"` registreert nooit. **Mijlpaal (beslissing 7):** raakt het profiel de mijlpaal-drempel (§11.4), dan weigert de adapter netjes ("dit profiel raakt de mijlpaal-drempel — plant via loop.py; adapter-ondersteuning komt in fase 6.1") — nooit een stilzwijgende midden-staat.
+
+- [ ] **Step 1: Falende tests** — concept-modus voert niets uit (doelmap bestaat niet); bevestigde plant retourneert 8 stap-resultaten + geboorte-entry; faal-contract → exit 2 met stappen-overzicht; brein "geen" → geen registratie; "auto" met bekend brein → staat onaangetast, registratie in dat brein; **"auto" met onbekend brein → vragen-respons, niets uitgevoerd, niets geregistreerd**; onbekend profiel → nette poort-fout; **profiel dat de mijlpaal-drempel raakt → nette weigering (beslissing 7), ook mét bevestiging**.
 - [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: adapter-plant — concept eerst, uitvoering mét bevestiging (fase 6)`
 
 ## Task 3: Adapter-ratificatie — lijst, goedkeuring, afkeur
 
 **Files:** Modify `adapter.py`; Test: `tests/test_adapter_ratificatie.py`
 
-**Gedrag:** `ratificeer` leest `{doel, bevestig?: bool, afkeur?: [stap-ids]}`. Zonder bevestiging: de lijst `review_ok_wacht_ratificatie`-stappen. Met bevestiging zonder afkeur → alles `geratificeerd`; met afkeur-ids → die stappen `herziening_nodig`, de rest onaangetast (fase-3-semantiek, hergebruik `ratificeer`-logica als pure functie).
+**Gedrag:** `ratificeer` leest `{doel, bevestig?: bool, afkeur?: [{stap_id, reden}]}` (audit-punt 1: de reden die de UI verzamelt, komt expliciet in het logboek). Zonder bevestiging: de lijst `review_ok_wacht_ratificatie`-stappen. Met bevestiging zonder afkeur → alles `geratificeerd`; met afkeur-entries → die stappen `herziening_nodig` **mét de reden als bewijs-tekst** in de vervolg-entry, de rest onaangetast (fase-3-semantiek, hergebruik `ratificeer`-logica als pure functie). Afkeur zonder reden → schema-fout (nette weigering).
 
-- [ ] **Step 1: Falende tests** — lijst-modus wijzigt niets; bevestiging → geratificeerd-entries append-only; afkeur → herziening_nodig + doorloop; geen wachtende stappen → ok met lege lijst.
-- [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: adapter-ratificatie — lijst, goedkeuring, afkeur (fase 6)`
+- [ ] **Step 1: Falende tests** — lijst-modus wijzigt niets; bevestiging → geratificeerd-entries append-only; afkeur → herziening_nodig **mét de doorgegeven reden in de logboek-entry**; afkeur zonder reden → nette schema-weigering; geen wachtende stappen → ok met lege lijst.
+- [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: adapter-ratificatie — lijst, goedkeuring, afkeur mét reden (fase 6)`
 
 ## Task 4: Beveiligings-contract — de adapter is een bedienaar
 
@@ -105,14 +107,19 @@ Fase 1-5: af en bewezen (173 unit-tests, 6 E2E's; laatste commit `7dde550`).
 
 ---
 
-## Open beslissingen — expliciet voor de reviewer (Claude)
+## Vastgelegde beslissingen (3 sept 2026, review Claude — niet meer open)
 
-1. **Adapter-locatie:** `adapter.py` in de repo-root, naast `seed.py`/`loop.py` (voorkeur: het is een entrypoint met hetzelfde staatsburgerschap) vs. in `kern/` (module-plek).
-2. **Confirm-semantiek:** stateless één-call-met-vlag (`bevestig: true`, voorkeur — geen sessie-staat, §11.3 "één ronde, één klik") vs. concept-id-terugkoppeling (twee calls, midden-staat).
-3. **Registreer/doorstroom in de adapter-plant:** automatisch (zoals de loop nu doet — machine-feit, beslissing fase-5) vs. aparte app-knop. Voorkeur: automatisch, de app toont het als gebeurtenis.
-4. **macOS-minimum:** 14 Sonoma (voorkeur: moderne SwiftUI) vs. 13 Ventura (bredere compat).
-5. **Font-licentie:** Fraunces/Inter embedden (beide SIL OFL — verlopen legaal) vs. systeemfonts als fallback. Voorkeur: embedden, de huisstijl is het product.
-6. **App in de GrowKit-repo:** `app/` als map in deze repo (voorkeur: één bron van waarheid, de adapter-contracttests blijven samen groen) vs. eigen repo (langzamere samen-loop).
+1. **Adapter-locatie:** `adapter.py` in de repo-root, naast `seed.py`/`loop.py` — het is een entrypoint met hetzelfde staatsburgerschap.
+2. **Confirm-semantiek:** stateless één-call-met-vlag (`bevestig: true`) — geen sessie-staat, §11.3 "één ronde, één klik". Er is geen concept-id-terugkoppeling; het concept is de return-waarde van de vlag-loze aanroep.
+3. **Registratie/doorstroom in de adapter-plant:** automatisch (machine-feit, fase-5-beslissing); de app toont het als gebeurtenis.
+4. **macOS-minimum:** 14 Sonoma.
+5. **Font-licentie:** Fraunces/Inter embedden (beide SIL OFL).
+6. **App in de GrowKit-repo:** `app/` als map in deze repo — één bron van waarheid, contracttests lopen samen groen.
+7. **Mijlpaal in de adapter = fase 6.1 (audit-punt 2):** het stateless één-call-model kan geen midden-run-bevestiging dragen; v1 weigert profielen die de mijlpaal-drempel (§11.4) raken met een nette, testbare weigering — ook mét bevestiging. Voor het huidige tweede-brein (8 stappen) is dit onbereikbaar, dus niets verliest vandaag functionaliteit; wanneer het eerste ≥10-stappen-profiel komt, levert fase 6.1 het twee-staps-protocol (plant-pauze + `bevestig_mijlpaal`).
+8. **Afkeur-schema (audit-punt 1):** `afkeur?: [{stap_id, reden}]` — de reden die de UI verzamelt, landt expliciet in de logboek-entry; afkeur zonder reden is een schema-fout.
+9. **Brein-auto (audit-punt 3):** `"auto"` met onbekend brein → vragen-respons, niets uitgevoerd of geregistreerd; de app doet een tweede aanroep met expliciete keuze. Getest in taak 2.
+
+**Vooraf bevestigd:** de twee fase-5-gaten (migratie oude bomen; `brein_onbereikbaar`) zijn gesloten én getest vóór deze fase — 11 tests groen (`test_oerwoud_plant` + `test_loop_status.TestOnbereikbaarBrein`), plus veld-bewezen tijdens de harnas-rondleiding (3 sept): een verontreinigde aanwijzing in `~/.growkit` werd door de status-modus correct als mens-vraag afgehandeld. Task 2 erft dus geen openstaand probleem.
 
 ## Zelfreview-checklist (voor de executor)
 
@@ -120,4 +127,4 @@ Fase 1-5: af en bewezen (173 unit-tests, 6 E2E's; laatste commit `7dde550`).
 2. **Confirmatie zonder uitzonderingen:** elke uitvoerende adapter-aanroep eist `"bevestig": true`; een UI-knop zonder vlag kan per definitie niets uitvoeren — test bewijst het.
 3. **Geen shell, geen secrets:** scan over adapter + Runner; stdout-parse-tests; reviewconfig-inhoud komt nooit in JSON-uitvoer.
 4. **Huisstijl trouw:** fonts ingebed, kleuren uit de mockup-CSS, geen systeem-blauw; screenshots in het bewijs-document.
-5. **Bekende valkuilen:** (a) `Process` zonder `shell`; (b) JSON-uitvoer — élke print in de adapter-paden moet via stderr of in het JSON-document (unit: stdout-parse-check); (c) XcodeGen-versie pinnen in build.sh; (d) geen SwiftUI-tests in v1 — het contract leeft in de adapter-tests; de UI is een weergave; (e) oerwoud-staat in app-tests → temp-home via env, nooit de echte `~/.growkit`; (f) app-build in E2E → pinned `xcodegen` en `xcodebuild -destination 'platform=macOS'`, geen simulator.
+5. **Bekende valkuilen:** (a) `Process` zonder `shell`; (b) JSON-uitvoer — élke print in de adapter-paden moet via stderr of in het JSON-document (unit: stdout-parse-check); (c) XcodeGen-versie pinnen in build.sh; (d) geen SwiftUI-tests in v1 — het contract leeft in de adapter-tests; de UI is een weergave; (e) oerwoud-staat in app-tests → temp-home via env, nooit de echte `~/.growkit` (les uit de harnas-rondleiding: een verontreinigde echte aanwijzing werd alleen door toeval zichtbaar); (f) app-build in E2E → pinned `xcodegen` en `xcodebuild -destination 'platform=macOS'`, geen simulator; (g) mijlpaal-weigering (beslissing 7) zit in de adapter vóór de motor — niet als app-afvang erna.
