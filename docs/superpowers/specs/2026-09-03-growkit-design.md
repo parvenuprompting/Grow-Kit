@@ -277,6 +277,7 @@ Kernidee:
 - **Eén brein, vele bomen.** Het tweede-brein is de enige plek waar identiteit, voorkeuren en vastgelegde kennis van de gëruiker leven. Elke nieuwe boom leest daaruit (bijv. voor de Prompt-slijper en de formulier-opties, §11.2) en schrijft er alleen VOORSTELLEN naartoe.
 - **Boom-register.** Elke boom krijgt bij het planten een geboortebewijs (boom-id, profiel, machine, locatie, aanmaakdatum). Het brein houdt een register van alle bomen. Zo weet het oerwoud altijd wie er bestaat en waar.
 - **Sync = append-only + git**, nooit muterend — de gëruiker blijft overal curator. Eén inbox, één mens, hoeveel bomen er ook staan.
+- **Omgevings-drift-guard.** Het brein bevat uitsluitend universele context: identiteit, voorkeuren, beslissingen en VOORSTELLEN. Omgevings-specifieke staat (paden, poorten, ssh-doele, sleutels, tool-versies) leeft uitsluitend lokaal per boom en wordt nooit gesynct — geen enkele boom erft de omgeving van een andere.
 
 Fase-volgorde (poort blijft staan): het oerwoud is fase 5 en wordt pas gebouwd na het harnas. MAAR: de geboortebewijs-structuur wordt nu al ontworpen en meegeplant in fase 1, zodat geen enkele boom ooit hoeft te worden "nageplaatst" in het register. Voorbereiden ≠ bouwen.
 
