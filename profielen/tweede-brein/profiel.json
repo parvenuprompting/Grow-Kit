@@ -1,0 +1,85 @@
+{
+  "profiel": "tweede-brein",
+  "status": "bewezen-vorm",
+  "beschrijving": "Generiek tweede brein: een gecontroleerd geheugen naast een AI-agent. De agent leest en stelt voor, de mens keurt goed. Nooit overschrijven, alleen toevoegen.",
+  "mappen": ["identiteit", "kennis", "projecten", "inbox", "logboek"],
+  "stappen": [
+    {
+      "id": "stap-001",
+      "commando": "mkdir -p identiteit kennis projecten inbox logboek",
+      "verwacht": "de vijf kernmappen bestaan in de doelmap",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -d identiteit && test -d kennis && test -d projecten && test -d inbox && test -d logboek && echo MAPPEN-OK",
+        "verwacht_substr": "MAPPEN-OK"
+      },
+      "bij_falen": {"alternatief_commando": "mkdir -p ./identiteit ./kennis ./projecten ./inbox ./logboek", "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-002",
+      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/INDEX.md ./INDEX.md",
+      "verwacht": "INDEX.md staat in de root van de plant en is identiek aan het sjabloon",
+      "bewijs": {"type": "file_equals", "sjabloon": "INDEX.md", "pad": "INDEX.md"},
+      "bij_falen": {"alternatief_commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/INDEX.md ./", "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-003",
+      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/AGENT-ROL.md ./identiteit/AGENT-ROL.md",
+      "verwacht": "identiteit/AGENT-ROL.md bestaat en is identiek aan het sjabloon",
+      "bewijs": {"type": "file_equals", "sjabloon": "AGENT-ROL.md", "pad": "identiteit/AGENT-ROL.md"},
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-004",
+      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/REGELS.md ./inbox/REGELS.md",
+      "verwacht": "inbox/REGELS.md bestaat en bevat de tekst VOORSTEL",
+      "bewijs": {"type": "file_equals", "sjabloon": "REGELS.md", "pad": "inbox/REGELS.md"},
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-005",
+      "commando": "printf '[]' > logboek/logboek.json",
+      "verwacht": "logboek/logboek.json is valide JSON en een lege array",
+      "bewijs": {"type": "json_valid", "pad": "logboek/logboek.json", "top_level": "array", "exacte_lengte": 0},
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": false
+    },
+    {
+      "id": "stap-006",
+      "commando": "touch kennis/.gitkeep projecten/.gitkeep identiteit/.gitkeep",
+      "verwacht": "lege mappen blijven bestaansrecht hebben in git",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -f kennis/.gitkeep && test -f projecten/.gitkeep && test -f identiteit/.gitkeep && echo GITKEEP-OK",
+        "verwacht_substr": "GITKEEP-OK"
+      },
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-007",
+      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/geboortebewijs.json.template ./geboortebewijs.json",
+      "verwacht": "geboortebewijs.json staat in de root van de plant (oerwoud-voorbereiding, spec §13)",
+      "bewijs": {"type": "file_equals", "sjabloon": "geboortebewijs.json.template", "pad": "geboortebewijs.json"},
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": true
+    },
+    {
+      "id": "stap-008",
+      "commando": "Toon INDEX.md, identiteit/AGENT-ROL.md en inbox/REGELS.md aan de mens ter bevestiging dat de structuur klopt.",
+      "verwacht": "de mens bevestigt dat het skelet klopt met de bedoeling",
+      "bewijs": {"type": "mens_verificatie"},
+      "mens_nodig": {
+        "type": "bevestiging",
+        "instructie": "Lees de drie getoonde bestanden in de doelmap en bevestig of wijs af. Geen secrets of sleutels nodig in deze stap."
+      },
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
+      "idempotent": true,
+      "review": "reviewer"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "boom_id": "{{BOOM_ID}}",
+  "profiel": "tweede-brein",
+  "machine": "{{MACHINE}}",
+  "locatie": "{{LOCATIE}}",
+  "geplant_op": "{{TIJDSTIP}}"
+}

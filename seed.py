@@ -101,6 +101,12 @@ def main(argv: list[str] | None = None) -> int:
     profiel_pad = PROFILES_DIR / keuze["profiel"] / "profiel.json"
     with open(profiel_pad, encoding="utf-8") as f:
         profiel = json.load(f)
+    growkit_root = str(Path(__file__).parent.resolve())
+    for stap in profiel.get("stappen", []):
+        stap["commando"] = stap["commando"].replace("{GROWKIT}", growkit_root)
+        alternatief = stap.get("bij_falen", {}).get("alternatief_commando")
+        if alternatief:
+            stap["bij_falen"]["alternatief_commando"] = alternatief.replace("{GROWKIT}", growkit_root)
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen)
     return 0 if geslaagd else 2
