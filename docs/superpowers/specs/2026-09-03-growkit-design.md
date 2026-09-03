@@ -1,13 +1,13 @@
-# Ontwerp — Growkit
+# Ontwerp — GrowKit
 
 Datum: 3 september 2026
 Status: goedgekeurd in brainstorm (Tiëndo + Mac Hermes); v2 na externe review (Claude) — model-switch, harnas-beslissing, groeifases-roadmap, keuze eerste profiel
 
 ## 1. Wat het is
 
-Growkit is een **zelfstandig product**: een repo die na installatie vanzelf "ontkiemt". Een AI-agent leest een korte geboortebrief, laat de gebruiker een groeiprofiel kiezen, voert een stappenplan uit mét machine-geverifieerd bewijs, en zet daarna een levenslange groeilaag op. De gebruiker plant met één actie; de agent doet de rest en vraagt de mens alleen bij echte mens-momenten.
+GrowKit (spelling: GrowKit; repo- en mapnamen blijven lowercase `growkit/`, volgens code-conventie) is een **zelfstandig product**: een repo die na installatie vanzelf "ontkiemt". Een AI-agent leest een korte geboortebrief, laat de gebruiker een groeiprofiel kiezen, voert een stappenplan uit mét machine-geverifieerd bewijs, en zet daarna een levenslange groeilaag op. De gebruiker plant met één actie; de agent doet de rest en vraagt de mens alleen bij echte mens-momenten.
 
-**Belangrijke grens:** Growkit staat volledig los van Tiëndo's eigen omgeving (Agent-Brain, VPS-configuratie). Het is géén kopie of kloon van zijn setup — zijn tweede-brein-werkwijze inspireert de *vorm* van het eerste profiel, niet de inhoud. Growkit schrijft nooit terug naar bestaande systemen van de gebruiker.
+**Belangrijke grens:** GrowKit staat volledig los van Tiëndo's eigen omgeving (Agent-Brain, VPS-configuratie). Het is géén kopie of kloon van zijn setup — zijn tweede-brein-werkwijze inspireert de *vorm* van het eerste profiel, niet de inhoud. GrowKit schrijft nooit terug naar bestaande systemen van de gebruiker.
 
 Metafoor: zaadje → kiemkeuze → plant → boom. Later mogelijk meerdere bomen (oerwoud).
 
@@ -21,9 +21,9 @@ Kernprincipes:
 
 ## 2. Naam en positionering
 
-- Productnaam: **Growkit** (Engels, herbruikbaar buiten het Nederlandstalige ecosysteem).
+- Productnaam: **GrowKit** (Engels, herbruikbaar buiten het Nederlandstalige ecosysteem).
 - De inhoud — profielen, geboortebrief, logboek — blijft Nederlandstalig.
-- Naamcheck 3 sept 2026: vrij op PyPI/npm (let op: het bestaande `grokit`-pakket is een ander product); GitHub kent geen vergelijkbaar product. Growkit.com (paddenstoelen) en Pimoroni "Grow Kit" (hardware) zijn andere markten; notitie voor eventueel later merkenonderzoek.
+- Naamcheck 3 sept 2026, definitief: `grokit` op PyPI bestaat, maar is een **onofficiële Grok-chat-client** (bèta, laatste release okt 2024, ±17 stars) — ander domein dan agent-tooling, geen actieve concurrent. Eén-letter-typorisico (`pip install grokit`) is reëel; mitigatie: GrowKit verspreidt zich in fase 1–2 **als git-repo** (`git clone`), niet als PyPI-pakket — zolang er geen pip-distributie is, is de collisie praktisch niet aan de orde. Bij een toekomstige PyPI-release opnieuw checken. GrowKit.com (paddenstoelen) en Pimoroni "Grow Kit" (hardware) zijn andere markten.
 
 ## 3. Bewijs: machine-toetsbaar, niet zelf-gerapporteerd
 
@@ -121,10 +121,12 @@ De roadmap volgt de eigen metafoor. Elke fase bewijst iets voordat de volgende b
 
 | Fase | Naam | Wat | Bewijst |
 |---|---|---|---|
-| 1 | Zaadje | Echte stappenplannen (geen voorbeelden), uitgevoerd via een bestaande agent van de gebruiker | Dat het stappenplan-formaat in de praktijk werkt |
+| 1 | Stappenplan | Echte stappenplannen (geen voorbeelden), uitgevoerd via een bestaande agent van de gebruiker | Dat het stappenplan-formaat in de praktijk werkt |
 | 2 | Kieming | seed.py met machine-bewijs + Test 1 (tweede-brein op schone plek) en Test 2 (vrije beschrijving) | Dat bewijs-afdwinging en leesroute werken |
 | 3 | Review-laag | `review`-rol voor mens_verificatie-stappen (§9) | Dat de mens minder vaak nodig is |
-| 4 | Eigen harnas | Dunne provider-agnostische orchestratieloop (paar honderd regels, geen framework) — alléén na fase 2 | Dat Growkit een zelfstandig product is zonder agent-dependency |
+| 4 | Eigen harnas | Dunne provider-agnostische orchestratieloop (paar honderd regels, geen framework) — alléén na fase 2 | Dat GrowKit een zelfstandig product is zonder agent-dependency |
+
+Fase-namen zijn bewust géén metafoor-termen: "zaadje" is gereserveerd als metafoor voor het héle product, niet als fase-naam — dubbelzinnigheid voorkomen in plannen die code-agents lezen.
 
 Beslissing: de **geleende-agent-modus is een feature, geen noodoplossing** — "werkt met je bestaande agent" is de lage instapdrempel. Het eigen harnas (fase 4) is de latere Pro-laat en wordt pas gebouwd nadat fase 2 is bewezen. Geen harnas-investering vóór bewijs.
 
