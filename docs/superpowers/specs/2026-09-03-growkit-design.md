@@ -166,6 +166,25 @@ Weigeringstoon: vaste, droge maar nette weigeringsteksten (Nederlands) plus de c
 
 > "Ik ga niet raden wat je bedoelt; ik ben een tuinier, geen helderziende. Drie vragen: doel, plek, slaag-criterium."
 
+### 11.1 De Prompt-slijper — ruwe invoer wordt pas opdracht na schuring en goedkeuring
+
+Aanvulling op de poort: een mechanisme dat elke vage prompt **optimaliseert vóór uitvoering** — zonder het §3-risico te lopen dat het systeem verzint wat de gebruiker "eigenlijk" bedoelde en dat dan uitvoert.
+
+De werkwijze (in de geest van de kernregel: de agent stelt voor, de mens keurt):
+
+1. **Ruwe prompt komt binnen** (bv. "maak me iets om m'n notities te ordenen of zo").
+2. **De slijper schuurt een concept-versie:** einddoel expliciet, locatie ingevuld of als open vraag gemarkeerd, slaag-criterium geformuleerd. Hij mag alleen expliciet maken wat er al in zit, plus standaardwaarden die als zodanig gelabeld zijn — hij vult nooit een doel in dat er niet is, dan stelt hij een vraag.
+3. **Eén mens-moment:** de geschuurde versie gaat terug naar de gebruiker ("Dit is wat ik begreep — klopt dit?"), die bevestigt of in één ronde verbetert.
+4. **Pas na goedkeuring is er een opdracht**, die door de Scope-poort gaat zoals die al stond.
+
+Loggen: ruwe versie + geschuurde versie + goedkeuring gaan append-only in groei/logboek.json — altijd terug te lezen wat er geïnterpreteerd is.
+
+Grenzen, eerlijk:
+- De slijper zelf blijft interpretatie en is dus nooit zo betrouwbaar als machine-bewijs; het mens-moment in stap 3 is daarom **niet onderhandelbaar**.
+- Wat de slijper niet uit de invoer kan afleiden, wordt een vraag, geen aanname.
+- In fase 4 (harnas) wordt dit hard afgedwongen: de loop voert niets uit dat niet de mensbevestiging heeft gehad.
+- Neveneffect (bewust): de slijper werkt als spiegel/trainer — wie ziet hoe zijn prompt in een heldere versie vertaalt, leert vanzelf helderder formuleren.
+
 Afdwingbaarheid per fase:
 
 - **Fase 1–3 (geleende agent):** de poort zit in het *formaat* — seed.py weigert invoer zonder verplichte velden; een taak zonder bewijs-check is schema-ongeldig. Dit is hard: zonder geldige invoer draait er niets. De toon-uitvoering (de weigeringstekst) gebeurt wel door de geleende agent en is dus om te praten — al bereikt de gebruiker dan nog steeds niets zonder geldig stappenplan.
