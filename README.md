@@ -24,6 +24,10 @@ Vage prompt → Scope-poort (structuurcheck)
            → Stappenplan met machine-bewijs → de boom groeit
 ```
 
+## Naam van de techniek
+
+De techniek waarmee de repo (de reeks Python-scripts) een stukje software autonoom helpt uitbouwen van zaadje tot boom heet het **GrowKit Grow Protocol** (NL: **Groeikit Groei Protocol**).
+
 ## Werking
 
 - **SEED.md** — de geboortebrief: het eerste wat de agent leest. Rol, regels, leesroute.
