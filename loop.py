@@ -249,6 +249,20 @@ def voer_taak(doel: Path, invoer_fn=input) -> int:
     return 2
 
 
+def detecteer_omgeving(profiel_pad: Path) -> dict:
+    """§11.3-3b: omgevingsdetectie als gelabelde bron (fase-3-mechanisme).
+
+    Alleen veldaanwezigheid: bestaat vps-doel.json in het profiel → VPS-
+    standaard, anders lokaal. De inhoud (host/gebruiker/poort) wordt nooit
+    geopend en kan daarom nooit in een concept verschijnen.
+    """
+    if (profiel_pad / "vps-doel.json").exists():
+        return {"waarde": "een VPS", "standaardwaarde": True,
+                "bron": "omgevingsdetectie: vps-doel.json aanwezig in het profiel (§11.3-3b)"}
+    return {"waarde": "deze machine (lokaal)", "standaardwaarde": True,
+            "bron": "omgevingsdetectie: geen vps-doel.json in het profiel (§11.3-3b)"}
+
+
 def main(invoer_fn=input) -> int:
     print()
     print("  ────────────────────────────────────────")
