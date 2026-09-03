@@ -226,6 +226,28 @@ Waarom formulier i.p.v. vrije tekst:
 
 De weigeringsteksten uit §11 worden waar mogelijk vervangen door dit formulier: de poort stuurt niet alleen vragen mee, maar direct de opties waaruit gekozen kan worden.
 
+### 11.4 Mijlpaal-bevestiging — bij grote scope altijd samenvatten en bevestigen vóór definitief
+
+De slijper bewaakt de ingang (11.1-11.3); dit mechanisme bewaakt het verloop. Lange of grote taken drijven af; een vaste tussen-controle vangt dat op voordat iets definitief wordt.
+
+Wanneer actief — een taak geldt als "groot" als die:
+- meer stappen omvat dan een configureerbare drempel,
+- meerdere sessies kan omvatten,
+- of stappen bevat die niet meer terug te draaien zijn (bijv. promoties, publicaties).
+
+Wat de agent bij elke mijlpaal toont, in vast formaat:
+1. **Wat ik begrepen heb** — het begrip van de agent op dat moment, niet de wens van de gebruiker.
+2. **Wat we afgesproken hebben** — met verwijzing naar groei/logboek.json (controleerbaar, geen "volgens mij was dat zo").
+3. **Het bewijs tot nu toe** — welke stappen machine-geverifieerd zijn geslaagd.
+4. **Wat hierna komt** — het pad tot de volgende mijlpaal.
+
+Dan één bevestigingsklik (of correctie in één ronde, net als het formulier in 11.3). Pas na bevestiging is de mijlpaal definitief; de bevestiging zelf wordt append-only gelogd.
+
+Gevolgen:
+- Achteraf is altijd te reconstrueren welke afspraak op welk moment bevestigd is.
+- Bij een sessie-onderbreking of crash is de laatste bevestigde mijlpaal het herstartpunt (samen met 7: het logboek bepaalt waar de agent was).
+- "Definitief" is in GrowKit dus altijd een bevestigde toestand, nooit een veronderstelde.
+
 Afdwingbaarheid per fase:
 
 - **Fase 1–3 (geleende agent):** de poort zit in het *formaat* — seed.py weigert invoer zonder verplichte velden; een taak zonder bewijs-check is schema-ongeldig. Dit is hard: zonder geldige invoer draait er niets. De toon-uitvoering (de weigeringstekst) gebeurt wel door de geleende agent en is dus om te praten — al bereikt de gebruiker dan nog steeds niets zonder geldig stappenplan.
