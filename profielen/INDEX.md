@@ -15,4 +15,13 @@ Wil je een andere boom? Beschrijf dan in eigen woorden: (1) wat het einddoel is,
 (2) waar het moet groeien (deze machine of een VPS), en (3) wanneer het geslaagd
 is. De Prompt-slijper schuurt je beschrijving tot een concept-profiel — maar
 let op: een vrij beschreven boom is nog niet bewezen; de agent stelt onderweg
-vragen. (Prompt-slijper: fase 3.)
+vragen.
+
+## VPS-doel per profiel (§12.3)
+
+Een boom die op een VPS groeit, legt zijn ssh-doel vast in het profiel
+(`profielen/<boom>/vps-doel.json`, herbruikbaar) — nooit opgevraagd tijdens
+het planten: planten blijft één klik. Zie `profielen/_vps-doel.example.json`
+voor de vorm (`host`, `gebruiker`, `poort`). Vuistregel: ssh-sleutels leven
+uitsluitend op de doelmachine in `~/.ssh/config`; er staan geen sleutels of
+secrets in GrowKit-bestanden of de chat.

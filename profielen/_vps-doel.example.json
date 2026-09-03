@@ -1,0 +1,7 @@
+{
+  "_comment": "VOORBEELD — kopieer naar profielen/<jouw-profiel>/vps-doel.json (niet committen: per-machine). Doelen worden per profiel vastgelegd, nooit tijdens het planten opgevraagd: planten blijft één klik (spec §11.3-geest).",
+  "_vuistregel": "SSH-sleutels leven alleen op de doelmachine, in ~/.ssh/config. Geen sleutels, wachtwoorden of secrets in GrowKit-bestanden of de chat (SEED.md regel 6).",
+  "host": "vps.voorbeeld.nl",
+  "gebruiker": "tuinier",
+  "poort": 22
+}
