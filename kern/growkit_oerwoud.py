@@ -92,3 +92,79 @@ def volmaak_na_plant(doel: Path, logboek: Path) -> bool:
     except (json.JSONDecodeError, OSError):
         return False
     return True
+
+
+def lees_register(pad: Path) -> list[dict]:
+    """Lees het boom-register; afwezig is een leeg oerwoud."""
+    if not pad.exists():
+        return []
+    try:
+        return json.loads(pad.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"boom-register {pad} is corrupt — roep de mens, nooit auto-repareren: {e}") from e
+
+
+def _schrijf_entry(pad: Path, entry: dict) -> None:
+    """Append-only helper: het register krijgt alleen nieuwe entries."""
+    pad.parent.mkdir(parents=True, exist_ok=True)
+    entries = lees_register(pad)
+    entries.append(entry)
+    pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def meld_geboorte(register_pad: Path, bewijs_pad: Path, is_brein: bool = False) -> dict:
+    """Registreer een geboorte in het register van het brein.
+
+    Verwijst naar een geldig, gecontroleerd geboortebewijs; een boom die al
+    actief geregistreerd staat wordt geweigerd (na deregistratie mag hij
+    terug als type 'registratie')."""
+    bevindingen = controleer_geboortebewijs(bewijs_pad)
+    if bevindingen:
+        raise ValueError("geboortebewijs ongeldig — " + "; ".join(bevindingen))
+    bewijs = json.loads(bewijs_pad.read_text(encoding="utf-8"))
+    boom_id = bewijs["boom_id"]
+    vorige = recentste_status(lees_register(register_pad), boom_id)
+    if vorige in ("geboorte", "registratie"):
+        raise ValueError(f"boom {boom_id} staat al in het register — geen dubbele geboorte")
+    entry = {
+        "type": "registratie" if vorige == "gederegistreerd" else "geboorte",
+        "boom_id": boom_id,
+        "profiel": bewijs["profiel"],
+        "machine": bewijs["machine"],
+        "locatie": bewijs["locatie"],
+        "geplant_op": bewijs["geplant_op"],
+        "tijdstip": _nu(),
+    }
+    if is_brein:
+        entry["is_brein"] = True
+    _schrijf_entry(register_pad, entry)
+    return entry
+
+
+def meld_deregistratie(register_pad: Path, boom_id: str, reden: str) -> dict:
+    """Vervolg-entry door de mens: de boom telt niet meer als actief —
+    niets wordt verwijderd, de geschiedenis blijft intact."""
+    if recentste_status(lees_register(register_pad), boom_id) is None:
+        raise ValueError(f"boom {boom_id} staat niet in het register — deregistratie bestaat niet")
+    entry = {
+        "type": "deregistratie",
+        "boom_id": boom_id,
+        "bewijs": reden,
+        "tijdstip": _nu(),
+    }
+    _schrijf_entry(register_pad, entry)
+    return entry
+
+
+def recentste_status(register: list[dict], boom_id: str) -> str | None:
+    """Laatste status van een boom: 'geboorte'/'registratie' (actief),
+    'gederegistreerd', of None als de boom onbekend is."""
+    laatste = None
+    for entry in register:
+        if entry.get("boom_id") == boom_id:
+            laatste = entry.get("type")
+    if laatste in ("geboorte", "registratie"):
+        return laatste
+    if laatste == "deregistratie":
+        return "gederegistreerd"
+    return None
