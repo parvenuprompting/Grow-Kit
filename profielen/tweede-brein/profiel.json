@@ -18,15 +18,15 @@
     },
     {
       "id": "stap-002",
-      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/INDEX.md ./INDEX.md",
+      "commando": "cp \"{GROWKIT}/profielen/tweede-brein/sjablonen/INDEX.md\" ./INDEX.md",
       "verwacht": "INDEX.md staat in de root van de plant en is identiek aan het sjabloon",
       "bewijs": {"type": "file_equals", "sjabloon": "INDEX.md", "pad": "INDEX.md"},
-      "bij_falen": {"alternatief_commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/INDEX.md ./", "anders": "roep_mens"},
+      "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
       "idempotent": true
     },
     {
       "id": "stap-003",
-      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/AGENT-ROL.md ./identiteit/AGENT-ROL.md",
+      "commando": "cp \"{GROWKIT}/profielen/tweede-brein/sjablonen/AGENT-ROL.md\" ./identiteit/AGENT-ROL.md",
       "verwacht": "identiteit/AGENT-ROL.md bestaat en is identiek aan het sjabloon",
       "bewijs": {"type": "file_equals", "sjabloon": "AGENT-ROL.md", "pad": "identiteit/AGENT-ROL.md"},
       "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
@@ -34,7 +34,7 @@
     },
     {
       "id": "stap-004",
-      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/REGELS.md ./inbox/REGELS.md",
+      "commando": "cp \"{GROWKIT}/profielen/tweede-brein/sjablonen/REGELS.md\" ./inbox/REGELS.md",
       "verwacht": "inbox/REGELS.md bestaat en bevat de tekst VOORSTEL",
       "bewijs": {"type": "file_equals", "sjabloon": "REGELS.md", "pad": "inbox/REGELS.md"},
       "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
@@ -62,7 +62,7 @@
     },
     {
       "id": "stap-007",
-      "commando": "cp {GROWKIT}/profielen/tweede-brein/sjablonen/geboortebewijs.json.template ./geboortebewijs.json",
+      "commando": "cp \"{GROWKIT}/profielen/tweede-brein/sjablonen/geboortebewijs.json.template\" ./geboortebewijs.json",
       "verwacht": "geboortebewijs.json staat in de root van de plant (oerwoud-voorbereiding, spec §13)",
       "bewijs": {"type": "file_equals", "sjabloon": "geboortebewijs.json.template", "pad": "geboortebewijs.json"},
       "bij_falen": {"alternatief_commando": null, "anders": "roep_mens"},
