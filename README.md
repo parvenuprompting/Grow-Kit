@@ -4,7 +4,7 @@
 [![Status](https://img.shields.io/badge/status-fase_1_–_5_bewezen-brightgreen?style=flat-square)]()
 [![Taal](https://img.shields.io/badge/inhoud-Nederlands-blue?style=flat-square)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-geen_(stdlib_only)-success?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-171_unit_+_6_E2E_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-206_unit_+_7_E2E_groen-success?style=flat-square)]()
 
 > **Het eerste zaadje dat jij controleert — niet de agent.**
 > Een repo die na installatie vanzelf ontkiemt: jouw AI-agent leest de geboortebrief, jij kiest de boom, de agent plant mét machine-geverifieerd bewijs, en daarna groeit het door — met een eigen harnas dat zonder AI-agent draait, en een oerwoud van bomen onder één gedeeld brein.
@@ -32,7 +32,7 @@ Vage prompt → Scope-poort (structuurcheck, weigering bij vage invoer)
 
 De techniek waarmee de repo (de reeks Python-scripts) een stukje software autonoom helpt uitbouwen van zaadje tot boom heet het **GrowKit Grow Protocol** (NL: **Groeikit Groei Protocol**).
 
-## De vijf fases — allemaal bewezen
+## De zes fases — allemaal bewezen
 
 Elke fase bewees iets voordat de volgende begon. Er is niks "nog af te maken" aan het fundament:
 
@@ -43,6 +43,7 @@ Elke fase bewees iets voordat de volgende begon. Er is niks "nog af te maken" aa
 | 3 | **Review-laag** | `reviewer`-rol (provider-agnostisch) vóór het mens-moment; ratificatie i.p.v. storing | Test 3: 5/5 |
 | 4 | **Eigen harnas** | `loop.py` draait zonder AI-agent — inclusief `kill -9`-crash en herstart uit het logboek | Test 4: 6/6 |
 | 5 | **Oerwoud** | Boom-register, VOORSTEL-doorstroom, vliegwiel onder één gedeeld brein | Test 5: 6/6 |
+| 6 | **De app** | Native macOS-app via JSON-adapter — bedienaar, geen machthebber; crash- en poort-contract bewezen | Test 6: groen |
 
 ## Hoe het werkt — de kern in drie wetten
 
@@ -66,7 +67,10 @@ De volledige uitleg — gewone mens én techneut — staat in **[`docs/HOE-HET-W
 | `kern/growkit_leesroute.py` | Per-fase content-injectie: wat de agent niet krijgt, kan hij niet lezen. |
 | `kern/growkit_hervat.py` | Crash-herstel: reconstructie uit het logboek; niet-idempotent nooit herdraaid. |
 | `kern/growkit_taken.py` | Takenlijst van de groeilaag: taken bestaan alleen mét bewijs. |
-| `kern/growkit_oerwoud.py` | Geboortebewijs, boom-register, VOORSTEL-doorstroom, brein-opties. |
+| `kern/growkit_oerwoud.py` | Geboortebewijs, boom-register, VOORSTEL-doorstroom, brein-opties, status-data. |
+| `kern/growkit_ratificatie.py` | Bulk-ratificatie-logica — één bron voor loop.py en de adapter. |
+| `adapter.py` | Machine-leesbare JSON-CLI over de kern — de brug voor de app. Bedienaar, geen machthebber. |
+| `app/` | De native macOS-app (SwiftUI via XcodeGen) in de editorial-monochrome huisstijl. |
 | `profielen/` | De bomen: JSON-stappenplannen met gecodeerd bewijs + sjablonen. |
 | `groei/` | Groeilaag-documentatie (`SETUP.md`) en het slijper-logboek. |
 
@@ -126,7 +130,7 @@ Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-H
 
 ## Tests en bewijs
 
-- **171 unit-tests** (unittest, stdlib) + **6 end-to-end-scripts** — allemaal groen, alle draaien in ~2 seconden.
+- **206 unit-tests** (unittest, stdlib) + **7 end-to-end-scripts** — allemaal groen.
 - Bewijs per fase, letterlijk vastgelegd: `docs/superpowers/bewijs/` (fase-2-test1/2, fase-3-test3, fase-4-test4, fase-5-test5 + zelfreviews).
 - Test 4 bewijst de agent-onafhankelijkheid: het harnas plant, crasht (`kill -9`), hervat uit het logboek en ratificeert — met alleen python3 en gepijpte antwoorden.
 - Test 5 bewijst het oerwoud: register, doorstroom, drift-guard en corrupt-register-afhandeling op een schone plek.
@@ -137,6 +141,6 @@ Het idee bleek ouder dan deze repo: het leefde al in notities en concept-documen
 
 ## Status
 
-- **Fase 1-5 bewezen** (3 september 2026). Zelfreviews met letterlijke evidence: `docs/superpowers/bewijs/fase-4-zelfreview.md` en `fase-5-zelfreview.md`.
+- **Fase 1-6 bewezen** (3-4 september 2026). Zelfreviews met letterlijke evidence: `docs/superpowers/bewijs/fase-4-zelfreview.md`, `fase-5-zelfreview.md` en `fase-6-zelfreview.md`.
 - **Volgende stappen** (voorstellen, nog niet afgesproken): fase 5.1 (cross-machine sync via git — eigen bewijsronde), de nachtfabriek (autonome-fabriek-profiel binnen de bewezen kaders), of de eerste echte gebruiker (distributie-beslissing: git-kloon vs. PyPI — naamcheck §2 herhalen bij een PyPI-release).
 - Repo privé opzettelijk (ontwerpfase); openbaarmeming wordt een bewuste beslissing.
