@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrowKit — Uitleg v1</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23000000'/%3E%3Cpath%20d='M32%2050C32%2042%2032%2038%2032%2030'%20stroke='%23ffffff'%20stroke-width='4'%20stroke-linecap='round'/%3E%3Cpath%20d='M32%2032C32%2020%2023%2016%2012%2016c0%2012%209%2016%2020%2016Z'%20fill='%23ffffff'/%3E%3Cpath%20d='M32%2032c0-10%207-14%2017-14%200%2010-7%2014-17%2014Z'%20fill='%23ffffff'%20fill-opacity='.55'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --paper-soft: #F8F8F8;
+    --ink: #000000;
+    --ink-soft: #555555;
+    --ink-muted: #888888;
+    --line: rgba(0, 0, 0, 0.12);
+    --font-display: 'Fraunces', Georgia, 'Iowan Old Style', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+  .serif { font-family: var(--font-display); font-variation-settings: 'opsz' 100; }
+
+  /* Header */
+  header { border-bottom: 1px solid var(--line); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--paper); z-index: 10; }
+  .brand { font-family: var(--font-display); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  .brand em { font-style: italic; font-weight: 300; color: var(--ink-soft); }
+  .pill { border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 500; padding: 8px 18px; }
+  a.pill, a.knop { text-decoration: none; }
+  a.knop { display: inline-block; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 32px; }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.25em; color: var(--ink-soft); font-weight: 500; }
+  .fase { font-size: 11px; color: var(--ink-muted); letter-spacing: 0.1em; }
+
+  /* Hero */
+  .hero { padding: 96px 0 72px; border-bottom: 1px solid var(--line); }
+  .hero h1 { font-family: var(--font-display); font-weight: 300; font-size: clamp(40px, 7vw, 72px); line-height: 1.05; letter-spacing: -0.03em; margin: 18px 0 24px; }
+  .hero h1 em { font-style: italic; color: var(--ink-soft); }
+  .hero p { font-size: 15px; color: var(--ink-soft); line-height: 1.7; max-width: 560px; }
+
+  /* Schermen als genummerde editorial rijen */
+  .scherm { border-top: 1px solid var(--line); padding: 56px 0; }
+  .scherm-grid { display: grid; grid-template-columns: 80px 1fr 2fr; gap: 0 40px; }
+  @media (max-width: 720px) { .scherm-grid { grid-template-columns: 1fr; gap: 16px; } }
+  .scherm-nr { font-family: var(--font-display); font-size: 28px; font-weight: 300; color: var(--ink-muted); }
+  .scherm-titel h2 { font-family: var(--font-display); font-weight: 300; font-size: 26px; letter-spacing: -0.01em; margin: 4px 0 12px; }
+  .scherm-titel p { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
+
+  /* Panel = het "app"-oppervlak */
+  .paneel { border: 1px solid var(--line); background: var(--paper); }
+  .paneel-kop { border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .paneel-kop .titel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-muted); font-weight: 500; }
+  .paneel-inhoud { padding: 24px 20px; }
+
+  /* Uitleg */
+  .uitleg-item { border-bottom: 1px solid var(--line); padding: 14px 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.65; }
+  .uitleg-item:last-child { border-bottom: none; }
+  .uitleg-item b { color: var(--ink); font-weight: 600; }
+  .uitleg-item .nr { font-family: var(--font-display); font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; margin-right: 10px; }
+  .flow { border: 1px solid var(--line); padding: 16px 18px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12px; line-height: 1.9; color: var(--ink-soft); white-space: pre; overflow-x: auto; }
+  .flow b { color: var(--ink); font-weight: 600; }
+  .tabel { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .tabel th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-muted); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--ink); }
+  .tabel td { padding: 9px 8px; border-bottom: 1px solid var(--line); color: var(--ink-soft); vertical-align: top; line-height: 1.55; }
+  .tabel td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+
+  /* Voet */
+  .slot { padding: 80px 0 56px; text-align: center; border-top: 1px solid var(--line); margin-top: 40px; }
+  .slot h2 { font-family: var(--font-display); font-weight: 300; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; margin-bottom: 20px; }
+  .slot h2 em { font-style: italic; color: var(--ink-soft); }
+  footer { border-top: 1px solid var(--line); padding: 24px 32px; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-muted); letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Grow<em>Kit</em></div>
+  <div style="display:flex; gap:16px; align-items:center;">
+    <a class="pill" href="growkit-ui-v1.html">Naar de mockup</a>
+    <div class="fase">Uitleg v1 · 3 sept 2026</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Hoe het werkt</div>
+    <h1>Eén methode.<br>Twee <em>brillen.</em></h1>
+    <p>In gewone woorden voor wie het begrijpen wil, en in architectuur voor wie het moet bouwen — met de bewijs-status van wat er vandaag al draait.</p>
+  </div>
+</section>
+
+<!-- 01 Uitleg — gewoon Nederlands -->
+<section class="scherm">
+  <div class="wrap scherm-grid">
+    <div class="scherm-nr">01</div>
+    <div class="scherm-titel">
+      <div class="eyebrow">Gewoon Nederlands</div>
+      <h2>Zes regels</h2>
+      <p>GrowKit is een methode om AI-gestuurd software te bouwen op een veilige en voorspelbare manier. In plaats van de AI blind te vertrouwen, gaat GrowKit er altijd vanuit dat de AI fouten kan maken — zero-trust. De controle ligt buiten de AI.</p>
+    </div>
+    <div class="paneel">
+      <div class="paneel-kop"><span class="titel">De werking in zes regels</span><span class="titel">Voor iedereen</span></div>
+      <div class="paneel-inhoud">
+        <div class="uitleg-item"><span class="nr">1</span> <b>De AI is een tuinier, geen alwetend orakel.</b> Bij gewone AI-systemen mag de AI zelf bepalen of zijn werk gelukt is — dat leidt tot onterechte succesmeldingen. Binnen GrowKit mag de AI planten en snoeien, maar hij werkt binnen een onwrikbaar hek dat hij zelf niet kan verplaatsen. De controle ligt altijd buiten de AI om.</div>
+        <div class="uitleg-item"><span class="nr">2</span> <b>Alles begint met een zaadje.</b> Ieder project start vanuit een vaste, gestandaardiseerde mappenstructuur. Het zaadje is gebouwd met uitsluitend de standaard-onderdelen van Python — geen externe pakketten. Daardoor is het superlicht en raakt het nooit in de war door updates van andere software.</div>
+        <div class="uitleg-item"><span class="nr">3</span> <b>De poortwachter weigert vage opdrachten.</b> Zeg je "bouw een leuke app", dan weigert het systeem direct de dienst. Je wordt eerst gedwongen tot een heldere opdracht: wat is het exacte einddoel, in welke omgeving moet het draaien, en wanneer is het objectief geslaagd? Pas na jouw goedkeuring gaat de motor draaien.</div>
+        <div class="uitleg-item"><span class="nr">4</span> <b>De stappenmotor met een strak faalcontract.</b> De AI voert de opdracht stap voor stap uit en legt elke beslissing vast in een logboek. Gaat iets mis, dan krijgt de AI exact één kans op een alternatieve oplossing. Mislukt die ook, dan stopt het systeem onmiddellijk en wordt de mens erbij geroepen. Geen oneindige lus van fouten, geen onnodig budgetverbruik.</div>
+        <div class="uitleg-item"><span class="nr">5</span> <b>Hard machine-bewijs, geen gevoel.</b> De AI mag nooit zelf concluderen "ik denk dat het werkt". Een onafhankelijk controleprogramma voert harde technische tests uit: bestaat het bestand? Is de inhoud identiek aan het sjabloon (digitale vingerafdruk)? Is de JSON geldig? Bevat de output de verwachte tekenreeks?</div>
+        <div class="uitleg-item"><span class="nr">6</span> <b>De mens heeft de laatste stem.</b> De AI bouwt autonoom, maar publiceert nooit zomaar definitief. Alles landt als voorstel in een digitale inbox; jij als menselijke curator geeft de definitieve goedkeuring (ratificatie). Een tweede AI-model mag vooraf meekijken om jouw werk te verminderen — maar bij twijfel wordt altijd jij geroepen.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 Uitleg — voor techneuten -->
+<section class="scherm">
+  <div class="wrap scherm-grid">
+    <div class="scherm-nr">02</div>
+    <div class="scherm-titel">
+      <div class="eyebrow">Voor techneuten</div>
+      <h2>De engine room</h2>
+      <p>Een gedisciplineerd, deterministisch framework dat de betrouwbaarheidskloof van probabilistische AI-agents overbrugt. Waar populaire agent-frameworks falen door blinde autonomie, pakt GrowKit dit aan bij de fundamenten van de architectuur.</p>
+    </div>
+    <div class="paneel">
+      <div class="paneel-kop"><span class="titel">Architectuur · provider-agnostisch · stdlib-only</span><span class="titel">Fase 1-4 bewezen</span></div>
+      <div class="paneel-inhoud">
+        <div class="uitleg-item"><b>Het kernprobleem.</b> Twee fatale systeemfouten bij traditionele agents: <b>self-reported success</b> (de agent leest een traceback als succes en rapporteert triomfantelijk) en <b>hallucinatie-lussen</b> (een faalende stap leidt tot ad-hoc bash-hacks, codebase-degradatie en onbeheersbare token-kosten). GrowKit haalt de interpretatiebevoegdheid over procesuitkomsten volledig weg bij het LLM en onderbrengt die in een deterministische controlelaag.</div>
+        <div class="uitleg-item"><b>Stdlib-only doctrine.</b> De gehele kern is pure Python 3.11+ (getest op 3.13) met uitsluitend <i>pathlib, subprocess, hashlib, json, shlex</i>. Immuun voor versieconflicten en transitive dependencies: Docker-proof, razendsnel, 110 unit-tests (unittest) plus vijf end-to-end shell-scripts draaien in zo'n seconde.</div>
+        <div class="uitleg-item" style="padding-bottom:18px;"><b>De stroom.</b><div class="flow"><b>gebruiker</b> → loop.py / seed.py
+        → growkit_poort.py      (weigering · vragenlijst · concept, gelabelde standaardwaarden)
+        → mens-bevestiging      (hard: niets draait zonder bevestigde scope)
+        → growkit_motor.py      (stappen-motor, append-only logboek.json)
+        → growkit_bewijs.py     (5 checktypes — de LLM claimt nooit succes)
+        → growkit_review.py     (alleen mens_verificatie-stappen; stdin, shell=False)
+        → ratificatie in bulk   (de mens keurt; geen auto-rollback)
+        ↳ crash? growkit_hervat.py leest het logboek en bouwt de restdraai</div></div>
+        <div class="uitleg-item" style="padding-bottom:18px;"><b>Machine-bewijs — vijf harde checks.</b> Succes is een binaire machine-toestand, nooit een interpretatieve claim. Voorwaarden zijn altijd gecodeerde vaste velden, nooit vrije tekst.<div style="margin-top:10px;">
+          <table class="tabel">
+            <tr><th>Check</th><th>Mechanisme</th><th>Vangt af</th></tr>
+            <tr><td>shell_check</td><td>check-commando draait; output bevat de verwachte letterlijke tekenreeks</td><td>foutpatronen in terminal-output</td></tr>
+            <tr><td>file_exists</td><td>pad bestaat (optioneel met verplichte tekst)</td><td>missende bestanden en mappen</td></tr>
+            <tr><td>json_valid</td><td>valide JSON met top_level / exacte_lengte / verplicht_veld</td><td>kapotte of incomplete data</td></tr>
+            <tr><td>file_equals</td><td>byte-voor-byte gelijk aan sjabloon (SHA256-vergelijking)</td><td>stiekeme "stealth-hallucinaties"</td></tr>
+            <tr><td>http_check</td><td>URL reageert met de verwachte status</td><td>onbereikbare of foutieve diensten</td></tr>
+          </table></div></div>
+        <div class="uitleg-item"><b>Faalcontract.</b> Bij falen van een stap: precies één <i>alternatief_commando</i>. Faalt dat ook → status <i>gefaald</i> in het append-only logboek, stopt de run, exit-code 2, de mens wordt geroepen. Geen retries zonder mens — daarmee zijn oneindige herstellussen en context-bloat structureel onmogelijk.</div>
+        <div class="uitleg-item"><b>Review-laag, herstel en mijlpalen.</b> De reviewer is een <i>rol</i> in reviewconfig.json (velden als model/provider/leverancier zijn een schema-fout); payloads gaan uitsluitend via stdin met <i>shlex.split</i> en <i>shell=False</i>; het oordeel is exact-match op geslaagd/gefaald/onduidelijk — technische twijfel is altijd "onduidelijk" = de mens. Een goedgekeurde review is ratificatie-vermindering, nooit definitief; de motor bouwt door en de mens ratificeert later in bulk. Bij crash reconstrueert growkit_hervat.py de staat uit het logboek: geslaagde niet-idempotente stappen worden nooit herdraaid, en de laatste bevestigde mijlpaal is het herstartpunt.</div>
+        <div class="uitleg-item"><b>Governance &amp; kosten.</b> Kostenbeheersing zit bij GrowKit in de architectuur zelf: het faalcontract (geen lussen), bulk-ratificatie (minder mens-momenten), mijlpaal-bevestiging bij grote scope (§11.4) en hervatting uit het logboek (geen dubbel werk na een crash). Sessie-reset, toolset-beperking en contexthygiëne van de omringende agent vallen bewust buiten GrowKit — elke omgeving mapt dat zelf.</div>
+        <div class="uitleg-item"><b>Voortborduur-fase 5: het Oerwoud.</b> Meerdere onafhankelijke bomen onder één gedeeld brein op Git. Elke boom wordt geplaatst met een geboortebewijs (boom-id, profiel, machine, locatie) en registreert zich in het boom-register. Groei gaat via VOORSTELLEN naar de inbox — de mens curateert, er is geen verborgen leerproces. Harde drift-guard: het brein bevat uitsluitend universele context; omgevings-specifieke staat (paden, poorten, ssh-doele, sleutels) leeft uitsluitend lokaal per boom en wordt nooit gesynct.</div>
+        <div class="uitleg-item"><b>Status.</b> Fase 1-4 bewezen met machine-bewijs: stappenplan, kieming (Test 1: 7/7, Test 2: 5/5), review-laag (Test 3: 5/5) en het eigen harnas zonder agent-dependency (Test 4: 6/6, inclusief kill-9-crash en herstart). Fase 5 (oerwoud) volgt — en daarmee de "nachtfabriek": de autonome-fabriek-profiel dat elke nacht zelfstandig bouwt en rapporteert, binnen deze zelfde kaders.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slot">
+  <div class="wrap">
+    <h2>Zo werkt het.<br><em>Nu zie je het groeien.</em></h2>
+    <a class="knop" href="growkit-ui-v1.html" style="font-size:14px; padding:12px 28px;">Bekijk de mockup — vijf schermen</a>
+  </div>
+</section>
+
+<footer>
+  <span>GrowKit — Uitleg v1</span>
+  <span>Editorial Monochrome · Fraunces / Inter</span>
+</footer>
+
+</body>
+</html>
