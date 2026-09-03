@@ -63,6 +63,8 @@ struct ChatView: View {
 
     @State private var geselecteerdeAgentId: String = "alle"
     @State private var invoerTekst: String = ""
+    // DEMO: deze berichten zijn een ontwerpschets — de echte agent-koppeling
+    // komt in een volgende fase en loopt via adapter.py, nooit om de poort heen.
     @State private var berichten: [ChatBericht] = [
         ChatBericht(afzender: "Tuinier", rol: .tuinier, tijdstip: "15:40:02",
                     tekst: "Welkom in het GrowKit-dialoogvenster. Ik ben je tuinier. Ik kan stappen voorstellen, prompts slijpen en het logboek inspecteren. Ik beslis nooit zelf: elke mutatie vereist jouw bekrachtiging.",
@@ -85,6 +87,7 @@ struct ChatView: View {
     @ViewBuilder private var inhoudView: some View {
         VStack(alignment: .leading, spacing: 20) {
             kop
+            demoBanner
             StappenStreep(stappen: ["Agentkeuze", "Prompt-slijper", "Voorstel", "Curatie"], actieveIndex: 1)
             agentKiezer
             gespreksPaneel
@@ -93,6 +96,24 @@ struct ChatView: View {
             Spacer(minLength: 16)
         }
         .padding(28)
+    }
+
+    // MARK: - Demo-banner
+
+    private var demoBanner: some View {
+        HStack(spacing: 10) {
+            Text("DEMO-RONDE").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .overlay(Capsule().stroke(Thema.kleur(.zacht), style: StrokeStyle(lineWidth: 1, dash: [3])))
+                .foregroundStyle(Thema.kleur(.zacht))
+            Text("Dit dialoog is een ontwerpschets: de berichten zijn voorbeelden. De echte agent-koppeling komt in een volgende fase en loopt via adapter.py — nooit om de poort heen.")
+                .font(Thema.tekst(11))
+                .foregroundStyle(Thema.kleur(.zacht))
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Thema.kleur(.papierZacht))
+        .overlay(alignment: .leading) { Rectangle().fill(Thema.kleur(.zacht)).frame(width: 2) }
     }
 
     // MARK: - Kop
@@ -266,9 +287,12 @@ struct ChatView: View {
                 Image(systemName: "bubble.left.and.bubble.right")
                     .font(.system(size: 13))
                     .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("Stel een vraag of geef een opdracht aan de geselecteerde agent…", text: $invoerTekst)
+                TextField("Stel een vraag of geef een opdracht aan de geselecteerde agent…", text: $invoerTekst,
+                          prompt: Text("Stel een vraag of geef een opdracht aan de geselecteerde agent…")
+                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
                     .textFieldStyle(.plain)
                     .font(Thema.tekst(13))
+                    .foregroundStyle(Thema.kleur(.inkt))
                     .onSubmit { verzendBericht() }
             }
             .padding(10)

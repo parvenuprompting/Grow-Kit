@@ -154,9 +154,12 @@ struct PlantView: View {
                     Image(systemName: "folder")
                         .font(.system(size: 13))
                         .foregroundStyle(Thema.kleur(.gedempt))
-                    TextField("Pad, bijv. ~/mijn-brein", text: $doelPad)
+                    TextField("Pad, bijv. ~/mijn-brein", text: $doelPad,
+                              prompt: Text("Pad, bijv. ~/mijn-brein")
+                                  .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
                         .textFieldStyle(.plain)
                         .font(Thema.tekst(13))
+                        .foregroundStyle(Thema.kleur(.inkt))
                 }
                 .padding(10)
                 .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))
@@ -184,9 +187,12 @@ struct PlantView: View {
                         Image(systemName: "link")
                             .font(.system(size: 12))
                             .foregroundStyle(Thema.kleur(.gedempt))
-                        TextField("Pad naar het brein", text: $breinPadVeld)
+                        TextField("Pad naar het brein", text: $breinPadVeld,
+                                  prompt: Text("Pad naar het brein")
+                                      .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
                             .textFieldStyle(.plain)
                             .font(Thema.tekst(13))
+                            .foregroundStyle(Thema.kleur(.inkt))
                     }
                     .padding(8)
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))

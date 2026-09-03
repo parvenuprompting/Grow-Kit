@@ -34,6 +34,7 @@ struct ContentView: View {
             }
         }
         var actiefInV1: Bool { self != .hervatten && self != .taak }
+        var demo: Bool { self == .dialoog }
     }
 
     @State private var geselecteerd: Modi = .status
@@ -114,6 +115,12 @@ struct ContentView: View {
 
                 Spacer()
 
+                if modus.demo {
+                    Text("DEMO").font(Thema.tekst(9, gewicht: .semibold)).tracking(1)
+                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .overlay(Capsule().stroke(Thema.kleur(.zacht), style: StrokeStyle(lineWidth: 1, dash: [3])))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                }
                 if !modus.actiefInV1 {
                     Text("6.1")
                         .font(Thema.tekst(9, gewicht: .semibold))
@@ -228,7 +235,10 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("GROWKIT-REPO").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                             .foregroundStyle(Thema.kleur(.gedempt))
-                        TextField("~/Documents/Code 7/growkit", text: $repoPad)
+                        TextField("~/Documents/Code 7/growkit", text: $repoPad,
+                                  prompt: Text("~/Documents/Code 7/growkit")
+                                      .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
+                                .foregroundStyle(Thema.kleur(.inkt))
                             .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
                             .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                             .background(Thema.kleur(.papierZacht))
@@ -236,7 +246,10 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("PYTHON-INTERPRETER (3.11+)").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                             .foregroundStyle(Thema.kleur(.gedempt))
-                        TextField("/opt/homebrew/bin/python3.13", text: $interpreter)
+                        TextField("/opt/homebrew/bin/python3.13", text: $interpreter,
+                                  prompt: Text("/opt/homebrew/bin/python3.13")
+                                      .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
+                                .foregroundStyle(Thema.kleur(.inkt))
                             .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
                             .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                             .background(Thema.kleur(.papierZacht))

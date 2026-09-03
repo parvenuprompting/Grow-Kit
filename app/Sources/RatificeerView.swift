@@ -87,9 +87,12 @@ struct RatificeerView: View {
                 Image(systemName: "folder")
                     .font(.system(size: 13))
                     .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad)
+                TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad,
+                          prompt: Text("Pad naar de boom, bijv. ~/mijn-brein")
+                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
                     .textFieldStyle(.plain)
                     .font(Thema.tekst(13))
+                    .foregroundStyle(Thema.kleur(.inkt))
             }
             .padding(10)
             .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))
@@ -147,9 +150,12 @@ struct RatificeerView: View {
                                 .font(Thema.tekst(9))
                                 .foregroundStyle(Thema.kleur(.gedempt))
                         }
-                        TextField("Beschrijf waarom deze stap niet akkoord is…", text: $reden)
+                        TextField("Beschrijf waarom deze stap niet akkoord is…", text: $reden,
+                                  prompt: Text("Beschrijf waarom deze stap niet akkoord is…")
+                                      .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
                             .textFieldStyle(.plain)
                             .font(Thema.tekst(13))
+                            .foregroundStyle(Thema.kleur(.inkt))
                             .padding(10)
                             .overlay(Rectangle().stroke(Thema.kleur(.inkt), lineWidth: 1))
                             .background(Thema.kleur(.papierZacht))
