@@ -92,10 +92,18 @@ def main(argv: list[str] | None = None) -> int:
             print("  Geen opdracht — geen actie. Tot ziens.")
             return 1
 
-    # Fase 2-motor en groeilaag komen in de volgende taken.
-    print(f"  Gepland: profiel '{keuze['profiel']}' in '{keuze['doel']}'.")
-    print("  (De stappen-motor wordt in de volgende taak aangesloten.)")
-    return 0
+    import growkit_motor
+    doel = Path(keuze["doel"]).expanduser().resolve()
+    doel.mkdir(parents=True, exist_ok=True)
+    logboek = doel / "logboek.json"
+    if not logboek.exists():
+        logboek.write_text("[]", encoding="utf-8")
+    profiel_pad = PROFILES_DIR / keuze["profiel"] / "profiel.json"
+    with open(profiel_pad, encoding="utf-8") as f:
+        profiel = json.load(f)
+    sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
+    geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen)
+    return 0 if geslaagd else 2
 
 
 if __name__ == "__main__":
