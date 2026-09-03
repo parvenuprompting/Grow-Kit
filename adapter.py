@@ -154,10 +154,34 @@ def cmd_plant(invoer: dict) -> dict:
                                  "brein_pad": str(brein_pad) if brein_pad else None}}
 
 
+def cmd_ratificeer(invoer: dict) -> dict:
+    from kern import growkit_ratificatie
+
+    doel = _doel_uit(invoer)
+    logboek = doel / "logboek.json"
+    wacht = growkit_ratificatie.wacht_ratificatie_stappen(logboek)
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {"stappen": wacht, "bevestiging_vereist": True}}
+    afkeur = []
+    for afkeuring in (invoer.get("afkeur") or []):
+        sid = str(afkeuring.get("stap_id", "")).strip()
+        reden = str(afkeuring.get("reden", "")).strip()
+        if not sid or not reden:
+            raise AdapterFout("afkeur vereist stap_id én reden — zonder reden bestaat de afkeur niet")
+        if sid not in wacht:
+            raise AdapterFout(f"stap {sid} wacht niet op ratificatie — afkeur bestaat niet")
+        afkeur.append({"stap_id": sid, "reden": reden})
+    geratificeer = [] if afkeur else wacht
+    geschreven = growkit_ratificatie.ratificeer_bulk(logboek, geratificeer, afkeur)
+    return {"ok": True, "data": {"verwerkt": [{"stap": e["stap"], "status": e["status"]}
+                                              for e in geschreven]}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
     "plant": cmd_plant,
+    "ratificeer": cmd_ratificeer,
 }
 
 
