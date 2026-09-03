@@ -400,6 +400,8 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
             brein_pad = nieuw_pad
             register = gw.lees_register(brein_pad / "register" / "bomen.json")
             geregistreerd = gw.recentste_status(register, boom_id) if boom_id else None
+            print(f"  Register:  {geregistreerd if geregistreerd else 'niet geregistreerd'} "
+                  f"(brein: {brein_pad})")
         else:
             print("  Afgebroken — het bestaande oerwoud blijft staan.")
             return 1
