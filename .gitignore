@@ -1,0 +1,5 @@
+# Groeilaag is per-installatie, niet per-repo
+groei/logboek.json
+groei/takenlijst.md
+__pycache__/
+*.pyc
