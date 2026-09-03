@@ -52,9 +52,10 @@ class TestPlantModus(unittest.TestCase):
         self.assertEqual(code, 0)
         logboek = json.loads((self.doel / "logboek.json").read_text(encoding="utf-8"))
         statuses = [e["status"] for e in logboek]
-        self.assertEqual(statuses.count("geslaagd"), 7)
+        self.assertEqual(statuses.count("geslaagd"), 8)      # 7 stappen + geboorte-entry
         self.assertIn("wacht_op_mens", statuses)
         self.assertIn("[mens-moment]", uit.getvalue())
+        self.assertEqual(len([e for e in logboek if e.get("type") == "geboorte"]), 1)
 
     def test_geen_bevestiging_niets_uitgevoerd(self):
         self._antwoorden = ["1", str(self.doel), "nee"]

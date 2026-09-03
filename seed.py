@@ -195,6 +195,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen, reviewconfig=reviewconfig)
+    if geslaagd:
+        from kern import growkit_oerwoud
+        growkit_oerwoud.volmaak_na_plant(doel, logboek)
     return 0 if geslaagd else 2
 
 

@@ -44,9 +44,11 @@ from pathlib import Path
 tmp, kloon = Path(sys.argv[1]), Path(sys.argv[2])
 plant = tmp / "plant"
 
-# Criterium 1.2: 8 stappen, 7 geslaagd + 1 wacht_op_mens
+# Criterium 1.2: 8 stappen (7 geslaagd + 1 wacht_op_mens) + 1 geboorte-systeem-entry
+# Protocol-uitbreiding fase 5 taak 1, vastgelegd vóór de run: seed.py maakt het
+# geboortebewijs vol en logt dat append-only als negende entry.
 entries = json.loads((plant / "logboek.json").read_text(encoding="utf-8"))
-assert len(entries) == 8, f"1.2 FAIL: {len(entries)} entries, verwacht 8"
+assert len(entries) == 9, f"1.2 FAIL: {len(entries)} entries, verwacht 9 (8 stappen + 1 geboorte)"
 assert all(e["status"] in ("geslaagd", "wacht_op_mens") for e in entries), \
     f"1.2 FAIL: niet-geslaagde stappen: {[e for e in entries if e['status'] not in ('geslaagd', 'wacht_op_mens')]}"
 assert sum(e["status"] == "wacht_op_mens" for e in entries) == 1, "1.2 FAIL: verwacht precies 1 wacht_op_mens"

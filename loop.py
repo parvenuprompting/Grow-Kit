@@ -78,6 +78,9 @@ def plant_profiel(invoer_fn=input) -> int:
             return 1
     sjablonen = PROFILES_DIR / naam / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel_pad, logboek, sjablonen, reviewconfig=reviewconfig)
+    if geslaagd:
+        from kern import growkit_oerwoud
+        growkit_oerwoud.volmaak_na_plant(doel_pad, logboek)
     return 0 if geslaagd else 2
 
 
