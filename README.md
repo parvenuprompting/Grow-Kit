@@ -114,6 +114,9 @@ git clone <repo-url>
 cd growkit
 python3.11+ seed.py            # geleende-agent-modus: kiemkeuze + planten
 python3.11+ loop.py            # het harnas: planten / hervatten / taak / ratificatie / status
+
+# de macOS-app bouwen en installeren:
+(cd app && bash build.sh) && ditto app/.build/Build/Products/Debug/GrowKit.app /Applications/GrowKit.app
 ```
 
 - Plant je tweede boom, dan vraagt de loop waar je brein groeit — of maakt van de eerste boom automatisch het brein.
