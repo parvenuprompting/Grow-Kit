@@ -17,6 +17,22 @@ from pathlib import Path
 from kern.growkit_bewijs import controleer
 
 
+def vervang_growkit_pad(profiel: dict, growkit_root: Path) -> dict:
+    """Vervang {GROWKIT}-plaatshouders in stap-commando's door het echte repo-pad.
+
+    Enige plek waar deze substitutie mag plaatsvinden — de motor draait
+    commando's met cwd=doel, dus paden naar sjablonen moeten absoluut zijn.
+    """
+    root = str(growkit_root)
+    for stap in profiel.get("stappen", []):
+        if "commando" in stap and isinstance(stap["commando"], str):
+            stap["commando"] = stap["commando"].replace("{GROWKIT}", root)
+        alternatief = stap.get("bij_falen", {}).get("alternatief_commando")
+        if alternatief:
+            stap["bij_falen"]["alternatief_commando"] = alternatief.replace("{GROWKIT}", root)
+    return profiel
+
+
 def _nu() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 
