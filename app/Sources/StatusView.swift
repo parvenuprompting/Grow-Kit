@@ -1,4 +1,5 @@
 // Status-scherm — identiteit, register, tellers en logboek-momenten.
+// Editorial Monochrome · Zero-Trust Harnas
 
 import SwiftUI
 
@@ -46,6 +47,7 @@ struct StatusView: View {
     @State private var boomPad = ""
     @State private var gegevens: StatusGegevens?
     @State private var fout: String?
+    @State private var toonVoorbeeldTijdlijn: Bool = true
 
     var body: some View {
         groep
@@ -59,24 +61,17 @@ struct StatusView: View {
     }
 
     @ViewBuilder private var inhoudView: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 22) {
             kop
-            StappenStreep(stappen: ["Pad", "Identiteit", "Register", "Tellers"])
+            StappenStreep(stappen: ["Zoekpad", "Identiteit", "Register", "Tellers", "Tijdlijn"],
+                          actieveIndex: gegevens != nil ? 4 : 0)
             zoekrij
+            if runner.bezig { laadIndicator }
             if let fout { foutKaart(fout) }
-            if gegevens == nil && fout == nil {
-                LegeStaat(kop: "Nog geen boom geladen",
-                          tekst: "Vul hierboven het pad naar een geplante boom in — bijv. ~/mijn-brein — en druk op 'Laad status'.",
-                          regels: ["de identiteit komt uit het geboortebewijs van de boom",
-                                   "het register vertelt bij welk brein de boom hoort",
-                                   "de tellers tonen VOORSTELLEN wachtend en verzonden"])
-            }
-            if runner.bezig {
-                Text("De adapter denkt na…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
-            }
+
             if let gegevens {
                 if let melding = gegevens.melding {
-                    Kaart(kop: "Melding") {
+                    Kaart(kop: "Melding", rechterKop: "Adapter") {
                         Text(melding).font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
                     }
                 }
@@ -84,112 +79,230 @@ struct StatusView: View {
                     identiteitsKaart(identiteit)
                 }
                 if gegevens.voorFase5 {
-                    Kaart(kop: "Migratie") {
-                        Text("Geboortebewijs is van vóór fase 5 (placeholders) — migreer via loop.py, modus 5.")
+                    Kaart(kop: "Migratie", rechterKop: "Fase 5") {
+                        Text("Geboortebewijs is van vóór fase 5 (bevat placeholders) — migreer via loop.py, modus 5.")
                             .font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
                     }
                 }
-                registerKaart(gegevens)
-                tellerKaart(gegevens)
-                if let laatste = gegevens.laatste {
-                    Kaart(kop: "Laatste mijlpaal / faal") {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(laatste["stap"] as? String ?? "?") — \(laatste["status"] as? String ?? "?")")
-                                .font(Thema.tekst(13, gewicht: .medium))
-                            Text(laatste["tijdstip"] as? String ?? "")
-                                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
-                        }
-                    }
+                HStack(alignment: .top, spacing: 18) {
+                    registerKaart(gegevens)
+                    tellerKaart(gegevens)
                 }
+                logboekKaart(gegevens: gegevens)
+            } else if fout == nil {
+                LegeStaat(kop: "Geen boom geselecteerd",
+                          tekst: "Vul hierboven het pad naar een geplante boom in — bijv. ~/mijn-brein — en druk op 'Laad status' om de machine-feiten op te vragen.",
+                          regels: ["de identiteit komt rechtstreeks uit het geboortebewijs.json van de boom",
+                                   "het register toont of de boom verbonden is met een oerwoud-brein",
+                                   "de tellers tonen VOORSTELLEN: wachtend op ratificatie of reeds verzonden",
+                                   "de tijdlijn hieronder toont de append-only historie conform het faalcontract"])
+
+                // DEMO: Voorbeeld append-only tijdlijn conform faalcontract
+                demoTijdlijnKaart
             }
-            Spacer()
+            Spacer(minLength: 16)
         }
         .padding(28)
     }
 
+    // MARK: - Kop & Zoekveld
+
     private var kop: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("STATUS").font(Thema.tekst(10, gewicht: .semibold)).tracking(4).foregroundStyle(Thema.kleur(.zacht))
-            Text("De staat van de boom").font(Thema.display(30))
+        VStack(alignment: .leading, spacing: 5) {
+            Text("01 STATUS · IDENTITEIT & REGISTER")
+                .font(Thema.tekst(10, gewicht: .semibold))
+                .tracking(3)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text("De staat van de ").font(Thema.display(30))
+                Text("boom.").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+            }
         }
     }
 
     private var zoekrij: some View {
-        HStack(spacing: 10) {
-            TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad)
-                .textFieldStyle(.plain)
-                .font(Thema.tekst(13))
-                .padding(10)
-                .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
-            knop("Laad status") { laad() }
+        HStack(spacing: 12) {
+            HStack {
+                Image(systemName: "folder")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad,
+                          prompt: Text("Pad naar de boom, bijv. ~/mijn-brein")
+                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
+                    .textFieldStyle(.plain)
+                    .font(Thema.tekst(13))
+                    .foregroundStyle(Thema.kleur(.inkt))
+            }
+            .padding(10)
+            .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))
+            .background(Thema.kleur(.papierZacht))
+
+            PillKnop(titel: "Laad status", gevuld: true) { laad() }
         }
     }
 
+    private var laadIndicator: some View {
+        HStack(spacing: 10) {
+            ProgressView()
+                .controlSize(.small)
+            Text("De adapter verifieert de machine-feiten via Process…")
+                .font(Thema.tekst(12))
+                .foregroundStyle(Thema.kleur(.gedempt))
+        }
+        .padding(.vertical, 4)
+    }
+
+    // MARK: - Kaarten
+
     private func identiteitsKaart(_ identiteit: [String: Any]) -> some View {
-        Kaart(kop: "Identiteit") {
-            VStack(alignment: .leading, spacing: 8) {
-                rij("Boom-id", identiteit["boom_id"] as? String ?? "?")
+        Kaart(kop: "Identiteit", rechterKop: "Geboortebewijs") {
+            VStack(alignment: .leading, spacing: 10) {
+                rij("Boom-id", identiteit["boom_id"] as? String ?? "?", monospaced: true)
                 rij("Profiel", identiteit["profiel"] as? String ?? "?")
                 rij("Machine", identiteit["machine"] as? String ?? "?")
-                rij("Geplant", "\(identiteit["geplant_op"] as? String ?? "?")")
+                rij("Geplant", "\(identiteit["geplant_op"] as? String ?? "?")", monospaced: true)
             }
         }
     }
 
     private func registerKaart(_ g: StatusGegevens) -> some View {
-        Kaart(kop: "Register") {
-            VStack(alignment: .leading, spacing: 6) {
+        Kaart(kop: "Register", rechterKop: "Oerwoud") {
+            VStack(alignment: .leading, spacing: 8) {
                 if g.registerFout == "brein_onbereikbaar" {
-                    Text("Het brein is niet bereikbaar (verplaatst of weg?) — corrigeer via loop.py, modus 5.")
+                    Text("Brein onbereikbaar")
                         .font(Thema.tekst(13, gewicht: .medium))
+                    Text("Het gekoppelde brein kan niet worden gevonden. Corrigeer via loop.py, modus 5.")
+                        .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
                 } else if let breinPad = g.registerBreinPad {
-                    Text(g.registerStatus ?? "niet geregistreerd")
-                        .font(Thema.tekst(13, gewicht: .medium))
+                    HStack {
+                        Text(g.registerStatus ?? "niet geregistreerd")
+                            .font(Thema.tekst(13, gewicht: .medium))
+                        Spacer()
+                        StatusBadge(tekst: "Gekoppeld", stijl: .bewezen)
+                    }
                     Text("brein: \(breinPad)")
                         .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
+                        .monospacedDigit()
                 } else {
-                    Text("geen oerwoud-brein bekend op deze machine")
-                        .font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
+                    Text("Geen oerwoud-brein gekoppeld")
+                        .font(Thema.tekst(13, gewicht: .medium))
+                    Text("Deze boom draait standalone op deze machine.")
+                        .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
                 }
             }
         }
     }
 
     private func tellerKaart(_ g: StatusGegevens) -> some View {
-        Kaart(kop: "VOORSTEL") {
-            HStack(spacing: 14) {
-                StatusBadge(tekst: "\(g.wachtend) wachtend", bewezen: g.wachtend > 0)
-                StatusBadge(tekst: "\(g.verzonden) verzonden", bewezen: g.verzonden > 0)
-                Spacer()
+        Kaart(kop: "Voorstellen", rechterKop: "Curatie §9") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    StatusBadge(tekst: "\(g.wachtend) Wachtend", stijl: g.wachtend > 0 ? .mens : .neutraal)
+                    StatusBadge(tekst: "\(g.verzonden) Verzonden", stijl: g.verzonden > 0 ? .bewezen : .neutraal)
+                    Spacer()
+                }
+                Text("Voorstellen worden pas actief na menselijke ratificatie.")
+                    .font(Thema.tekst(11))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+            }
+        }
+    }
+
+    private func logboekKaart(gegevens: StatusGegevens) -> some View {
+        Kaart(kop: "Logboek (append-only)", rechterKop: "Laatste Mijlpaal") {
+            VStack(alignment: .leading, spacing: 12) {
+                if let laatste = gegevens.laatste {
+                    TijdlijnRij(tijdstip: formatteerTijd(laatste["tijdstip"] as? String),
+                                titel: laatste["stap"] as? String ?? "Mijlpaal",
+                                detail: "Status: \(laatste["status"] as? String ?? "?") — geregistreerd in logboek.json",
+                                statusTekst: laatste["status"] as? String ?? "geslaagd",
+                                stijl: (laatste["status"] as? String == "geslaagd") ? .bewezen : .mens,
+                                isEerste: true, isLaatste: true)
+                } else {
+                    Text("Nog geen append-only logboekregels geregistreerd.")
+                        .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                }
+            }
+        }
+    }
+
+    // DEMO: Getrouwe tijdlijn conform het faalcontract voor weergave vóór laden
+    private var demoTijdlijnKaart: some View {
+        Kaart(kop: "Logboek (append-only)", rechterKop: "Voorbeeld · Faalcontract") {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("VOORBEELD VAN EEN BEWEZEN BOOM-HISTORIE (APPEND-ONLY):")
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                    .padding(.bottom, 14)
+
+                TijdlijnRij(tijdstip: "15:40:12",
+                            titel: "stap-001: Mappen aanmaken (kern)",
+                            detail: "bewijs: shell_check — 'alle kernmappen bestaan' → OK",
+                            statusTekst: "✓ Bewezen",
+                            stijl: .bewezen,
+                            isEerste: true, isLaatste: false)
+
+                TijdlijnRij(tijdstip: "15:40:14",
+                            titel: "stap-002: Sjabloon INDEX.md kopiëren",
+                            detail: "bewijs: file_equals — identiek aan sjabloon (SHA256) → OK",
+                            statusTekst: "✓ Bewezen",
+                            stijl: .bewezen,
+                            isEerste: false, isLaatste: false)
+
+                TijdlijnRij(tijdstip: "15:40:17",
+                            titel: "stap-005: Logboek initialiseren",
+                            detail: "bewijs: json_valid — top-level array gevalideerd → OK",
+                            statusTekst: "✓ Bewezen",
+                            stijl: .bewezen,
+                            isEerste: false, isLaatste: false)
+
+                TijdlijnRij(tijdstip: "15:41:02",
+                            titel: "stap-008: Structuur tonen aan de mens",
+                            detail: "bewijs: mens_verificatie — wacht op curatie door mens",
+                            statusTekst: "Mens-moment",
+                            stijl: .mens,
+                            isEerste: false, isLaatste: true)
             }
         }
     }
 
     private func foutKaart(_ tekst: String) -> some View {
-        Kaart(kop: "Fout") {
-            Text(tekst).font(Thema.tekst(13, gewicht: .medium))
+        Kaart(kop: "Fout", rechterKop: "Faalcontract §7") {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 14))
+                Text(tekst)
+                    .font(Thema.tekst(13, gewicht: .medium))
+            }
         }
     }
 
-    private func rij(_ label: String, _ waarde: String) -> some View {
+    private func rij(_ label: String, _ waarde: String, monospaced: Bool = false) -> some View {
         HStack(alignment: .top) {
-            Text(label).font(Thema.tekst(12)).tracking(1).textCase(.uppercase)
-                .foregroundStyle(Thema.kleur(.gedempt)).frame(width: 90, alignment: .leading)
-            Text(waarde).font(Thema.tekst(13, gewicht: .medium))
+            Text(label)
+                .font(Thema.tekst(11, gewicht: .medium))
+                .tracking(1)
+                .textCase(.uppercase)
+                .foregroundStyle(Thema.kleur(.gedempt))
+                .frame(width: 90, alignment: .leading)
+            Text(waarde)
+                .font(Thema.tekst(13, gewicht: .medium))
+                .monospacedDigit()
                 .textSelection(.enabled)
             Spacer()
         }
     }
 
-    private func knop(_ titel: String, actie: @escaping () -> Void) -> some View {
-        Button(action: actie) {
-            Text(titel).font(Thema.tekst(12, gewicht: .medium))
-                .padding(.horizontal, 18).padding(.vertical, 10)
+    private func formatteerTijd(_ t: String?) -> String {
+        guard let t, !t.isEmpty else { return "--:--:--" }
+        // Als het een ISO timestamp is, neem het tijd-deel
+        if t.contains("T") {
+            let delen = t.components(separatedBy: "T")
+            if delen.count > 1 {
+                return String(delen[1].prefix(8))
+            }
         }
-        .buttonStyle(.plain)
-        .background(Thema.kleur(.inkt))
-        .foregroundStyle(Thema.kleur(.papier))
-        .clipShape(Capsule())
+        return String(t.suffix(8))
     }
 
     private func laad() {

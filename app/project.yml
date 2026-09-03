@@ -19,12 +19,19 @@ targets:
       - path: Sources
       - path: Fonts
         buildPhase: resources
+      - path: Resources
+        buildPhase: resources
     assets:
       - path: Assets.xcassets
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     info:
       path: Sources/Info.plist
       properties:
         CFBundleDisplayName: GrowKit
         CFBundleShortVersionString: "0.6.0"
+        CFBundleIconFile: AppIcon
+        CFBundleIconName: AppIcon
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "Editorial Monochrome — Fraunces & Inter (SIL OFL)"
