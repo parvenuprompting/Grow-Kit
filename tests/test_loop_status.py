@@ -8,6 +8,8 @@ Regels:
   → geen actie.
 - Zonder geboortebewijs → nette mededeling, geen crash.
 """
+import contextlib
+import io
 import json
 import os
 import tempfile
@@ -79,11 +81,11 @@ class TestStatus(unittest.TestCase):
 
     def test_teller_klopt_bij_n_en_n_plus_een(self):
         self._voorstel("VOORSTEL-a.md")
-        _, uit1 = self._run()
-        self.assertIn("1", uit1)
+        _, uit1 = self._run(invoer_fn=lambda _: "nee")      # doorstroom uitstellen
+        self.assertIn("1 wachtend", uit1)
         self._voorstel("VOORSTEL-b.md")
-        _, uit2 = self._run()
-        self.assertIn("2", uit2)
+        _, uit2 = self._run(invoer_fn=lambda _: "nee")
+        self.assertIn("2 wachtend", uit2)
 
     def test_laatste_mijlpaal_wordt_getoond(self):
         entries = [{"type": "mijlpaal", "stap": "mijlpaal-start", "status": "bevestigd",
@@ -106,7 +108,7 @@ class TestStatus(unittest.TestCase):
         self.logboek.write_text(json.dumps([
             {"stap": "stap-001", "status": "geslaagd", "bewijs": "test",
              "tijdstip": "2026-09-01T08:15:00+00:00"}]), encoding="utf-8")
-        antwoorden = iter(["ja"])                               # migratie: ja
+        antwoorden = iter(["nee", "ja"])                        # doorstroom nee, migratie ja
         code, uit = self._run(invoer_fn=lambda _: next(antwoorden))
         self.assertEqual(code, 0)
         bewijs = json.loads(self.bewijs.read_text(encoding="utf-8"))
@@ -127,3 +129,70 @@ class TestStatus(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDoorstroomAanbod(unittest.TestCase):
+    """Beslissing 4: wachtende VOORSTELLEN krijgen in de status één aanbod."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.home = Path(self._tmp.name) / "growkit-home"
+        self._oude_env = os.environ.get("GROWKIT_OERWOUD_STAAT")
+        os.environ["GROWKIT_OERWOUD_STAAT"] = str(self.home / "oerwoud.json")
+        self.brein = Path(self._tmp.name) / "brein"
+        self.brein.mkdir(parents=True)
+        (self.brein / "inbox").mkdir()
+        (self.brein / "register").mkdir()
+        (self.brein / "register" / "bomen.json").write_text("[]", encoding="utf-8")
+        self.doel = Path(self._tmp.name) / "boom"
+        self.doel.mkdir()
+        (self.doel / "inbox").mkdir()
+        (self.doel / "geboortebewijs.json").write_text(json.dumps({
+            "boom_id": str(uuid.uuid4()), "profiel": "tweede-brein", "machine": "mac",
+            "locatie": str(self.doel.resolve()),
+            "geplant_op": "2026-09-03T20:00:00+00:00"}), encoding="utf-8")
+        self.logboek = self.doel / "logboek.json"
+        self.logboek.write_text("[]", encoding="utf-8")
+        from kern.growkit_oerwoud import sla_brein_pad
+        sla_brein_pad(self.brein)
+        # de boom is bij het planten al geregistreerd (fase 5-flow)
+        boom_id = json.loads((self.doel / "geboortebewijs.json").read_text(encoding="utf-8"))["boom_id"]
+        (self.brein / "register" / "bomen.json").write_text(json.dumps([
+            {"type": "geboorte", "boom_id": boom_id, "profiel": "tweede-brein",
+             "machine": "mac", "locatie": str(self.doel.resolve()),
+             "geplant_op": "2026-09-03T20:00:00+00:00", "tijdstip": "2026-09-03T20:00:01+00:00"},
+        ]), encoding="utf-8")
+
+    def tearDown(self):
+        if self._oude_env is None:
+            os.environ.pop("GROWKIT_OERWOUD_STAAT", None)
+        else:
+            os.environ["GROWKIT_OERWOUD_STAAT"] = self._oude_env
+        self._tmp.cleanup()
+
+    def test_wachtende_voorstellen_krijgen_een_aanbod(self):
+        (self.doel / "inbox" / "VOORSTEL-inzicht.md").write_text("inzicht", encoding="utf-8")
+        antwoorden = iter(["ja"])
+        uit = io.StringIO()
+        with contextlib.redirect_stdout(uit):
+            code = toon_status(self.doel, invoer_fn=lambda _: next(antwoorden))
+        self.assertEqual(code, 0)
+        verzonden = [p for p in (self.brein / "inbox").iterdir()
+                     if p.name.startswith("VOORSTEL-")]
+        self.assertEqual(len(verzonden), 1)
+        self.assertIn("VOORSTELLEN verzonden", uit.getvalue())
+
+    def test_weigering_verstuurt_niets(self):
+        (self.doel / "inbox" / "VOORSTEL-inzicht.md").write_text("inzicht", encoding="utf-8")
+        antwoorden = iter(["nee"])
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = toon_status(self.doel, invoer_fn=lambda _: next(antwoorden))
+        self.assertEqual(code, 0)
+        verzonden = [p for p in (self.brein / "inbox").iterdir()
+                     if p.name.startswith("VOORSTEL-")]
+        self.assertEqual(verzonden, [])
+
+    def test_geen_wachtende_voorstellen_geen_vraag(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = toon_status(self.doel, invoer_fn=lambda _: self.fail("geen vraag verwacht"))
+        self.assertEqual(code, 0)

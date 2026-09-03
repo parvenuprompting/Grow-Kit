@@ -347,6 +347,12 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
         print(f"  Machine:   {bewijs['machine']}")
         print(f"  Geplant:   {bewijs['geplant_op']} ({bewijs['locatie']})")
 
+    try:
+        staat = gw.laad_oerwoud_staat()
+        brein_pad = staat["brein_pad"]
+    except ValueError as e:
+        print(f"  {e}")
+        return 1
     entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
     verzonden = set()
     for entry in entries:
@@ -357,6 +363,13 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
                  if p.name.startswith("VOORSTEL-") and p.is_file()] if inbox.exists() else []
     wachtend = [n for n in bestanden if n not in verzonden]
     print(f"  VOORSTEL:  {len(wachtend)} wachtend, {len(verzonden)} verzonden")
+    if wachtend and brein_pad and not staat["fout"]:
+        antwoord = invoer_fn("  Wachtende VOORSTELLEN naar het brein sturen? (ja / nee): ").strip().lower()
+        if antwoord == "ja":
+            aantal, _ = gw.stuur_voorstellen(doel, brein_pad)
+            print(f"  {aantal} VOORSTELLEN verzonden — append-only, het origineel blijft in de boom.")
+        else:
+            print("  Niets verzonden.")
 
     for entry in reversed(entries):
         if entry.get("type") == "mijlpaal" or entry.get("status") == "gefaald":
@@ -364,13 +377,15 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
                   f"{entry.get('status', '?')} ({entry.get('tijdstip', '?')})")
             break
 
-    staat = gw.laad_oerwoud_staat()
-    brein_pad = staat["brein_pad"]
     boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8")).get("boom_id", "") \
         if not gw.is_voor_fase5(bewijs_pad) else None
     geregistreerd = None
     if brein_pad:
-        register = gw.lees_register(brein_pad / "register" / "bomen.json")
+        try:
+            register = gw.lees_register(brein_pad / "register" / "bomen.json")
+        except ValueError as e:
+            print(f"  {e}")
+            return 1
         geregistreerd = gw.recentste_status(register, boom_id) if boom_id else None
         print(f"  Register:  {geregistreerd if geregistreerd else 'niet geregistreerd'} "
               f"(brein: {brein_pad})")
