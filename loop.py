@@ -387,7 +387,23 @@ def toon_status(doel: Path, invoer_fn=input) -> int:
     boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8")).get("boom_id", "") \
         if not gw.is_voor_fase5(bewijs_pad) else None
     geregistreerd = None
-    if brein_pad:
+    if staat["fout"] == "brein_onbereikbaar":
+        print(f"  Register:  het brein op {brein_pad} is niet bereikbaar (verplaatst of weg?)")
+        keuze = invoer_fn("  Brein-pad corrigeren (c) of afbreken (a)? ").strip().lower()
+        if keuze == "c":
+            nieuw = invoer_fn("  Waar groeit het brein nu? (pad): ").strip()
+            nieuw_pad = Path(nieuw).expanduser().resolve()
+            if not nieuw_pad.exists():
+                print("  Dit pad bestaat niet — geen registratie.")
+                return 1
+            gw.sla_brein_pad(nieuw_pad)
+            brein_pad = nieuw_pad
+            register = gw.lees_register(brein_pad / "register" / "bomen.json")
+            geregistreerd = gw.recentste_status(register, boom_id) if boom_id else None
+        else:
+            print("  Afgebroken — het bestaande oerwoud blijft staan.")
+            return 1
+    elif brein_pad:
         try:
             register = gw.lees_register(brein_pad / "register" / "bomen.json")
         except ValueError as e:

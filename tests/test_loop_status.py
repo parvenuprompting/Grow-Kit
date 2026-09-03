@@ -196,3 +196,63 @@ class TestDoorstroomAanbod(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             code = toon_status(self.doel, invoer_fn=lambda _: self.fail("geen vraag verwacht"))
         self.assertEqual(code, 0)
+
+
+class TestOnbereikbaarBrein(unittest.TestCase):
+    """Gat 2 in de status: een dood brein-pad roept de mens, geen crash."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.home = Path(self._tmp.name) / "growkit-home"
+        self._oude_env = os.environ.get("GROWKIT_OERWOUD_STAAT")
+        os.environ["GROWKIT_OERWOUD_STAAT"] = str(self.home / "oerwoud.json")
+        self.doel = Path(self._tmp.name) / "boom"
+        self.doel.mkdir()
+        (self.doel / "geboortebewijs.json").write_text(json.dumps({
+            "boom_id": str(uuid.uuid4()), "profiel": "tweede-brein", "machine": "mac",
+            "locatie": str(self.doel.resolve()),
+            "geplant_op": "2026-09-03T20:00:00+00:00"}), encoding="utf-8")
+        (self.doel / "logboek.json").write_text("[]", encoding="utf-8")
+        verdwenen = Path(self._tmp.name) / "verdwenen-brein"
+        verdwenen.mkdir()
+        from kern.growkit_oerwoud import sla_brein_pad
+        sla_brein_pad(verdwenen)
+        verdwenen.rmdir()
+
+    def tearDown(self):
+        if self._oude_env is None:
+            os.environ.pop("GROWKIT_OERWOUD_STAAT", None)
+        else:
+            os.environ["GROWKIT_OERWOUD_STAAT"] = self._oude_env
+        self._tmp.cleanup()
+
+    def test_onbereikbaar_brein_geeft_mens_vraag_geen_crash(self):
+        import contextlib
+        import io
+        antwoorden = iter(["a"])                                # afbreken
+        uit = io.StringIO()
+        with contextlib.redirect_stdout(uit):
+            code = toon_status(self.doel, invoer_fn=lambda _: next(antwoorden))
+        self.assertEqual(code, 1)
+        self.assertIn("niet bereikbaar", uit.getvalue())
+        self.assertNotIn("Traceback", uit.getvalue())
+
+    def test_pad_correctie_in_de_status_werkt(self):
+        import contextlib
+        import io
+        nieuw = Path(self._tmp.name) / "nieuw-brein"
+        nieuw.mkdir()
+        (nieuw / "register").mkdir()
+        (nieuw / "register" / "bomen.json").write_text("[]", encoding="utf-8")
+        antwoorden = iter(["c", str(nieuw), "nee"])
+        uit = io.StringIO()
+        with contextlib.redirect_stdout(uit):
+            code = toon_status(self.doel, invoer_fn=lambda _: next(antwoorden))
+        self.assertEqual(code, 0)
+        self.assertIn("niet geregistreerd", uit.getvalue())
+        staat = json.loads((self.home / "oerwoud.json").read_text(encoding="utf-8"))
+        self.assertEqual(Path(staat["brein_pad"]), nieuw.resolve())
+
+
+if __name__ == "__main__":
+    unittest.main()
