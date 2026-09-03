@@ -86,3 +86,19 @@ class TestModuskeuze(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEofAfhandeling(unittest.TestCase):
+    def test_droge_stdin_is_nette_weigering_geen_traceback(self):
+        """E2E-les Test 4: EOF tijdens interactie = nette weigering, geen crash."""
+        import contextlib
+        import io
+
+        def droog(_vraag: str) -> str:
+            raise EOFError
+
+        uit = io.StringIO()
+        with contextlib.redirect_stdout(uit):
+            code = loop.main(invoer_fn=droog)
+        self.assertEqual(code, 1)
+        self.assertIn("Geen invoer meer", uit.getvalue())

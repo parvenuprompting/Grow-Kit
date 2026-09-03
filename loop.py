@@ -95,12 +95,23 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
         doel = Path(doel_invoer).expanduser().resolve()
     logboek = doel / "logboek.json"
     if profiel is None:
+        naam = None
+        if (doel / "geboortebewijs.json").exists():
+            try:
+                naam = json.loads((doel / "geboortebewijs.json").read_text(encoding="utf-8")).get("profiel")
+            except (OSError, json.JSONDecodeError):
+                naam = None
+        if naam is None:
+            # crash vóór het geboortebewijs (stap 007): de mens noemt het profiel
+            naam = invoer_fn("  Geen geboortebewijs gevonden — welk profiel is deze boom? ").strip()
+            if not naam or naam not in [p["profiel"] for p in laad_profielen()]:
+                print("  Onbekend profiel — geen actie. Roep de mens.")
+                return 1
         try:
-            bewijs = json.loads((doel / "geboortebewijs.json").read_text(encoding="utf-8"))
-            with open(PROFILES_DIR / bewijs["profiel"] / "profiel.json", encoding="utf-8") as f:
+            with open(PROFILES_DIR / naam / "profiel.json", encoding="utf-8") as f:
                 profiel = json.load(f)
-        except (OSError, json.JSONDecodeError, KeyError) as e:
-            print(f"  Geboortebewijs of profiel onleesbaar ({e}) — roep de mens.")
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"  Profiel '{naam}' onleesbaar ({e}) — roep de mens.")
             return 1
     profiel = growkit_motor.vervang_growkit_pad(profiel, REPO.resolve())
     resultaat = growkit_hervat.reconstructie(logboek, profiel)
@@ -263,11 +274,7 @@ def detecteer_omgeving(profiel_pad: Path) -> dict:
             "bron": "omgevingsdetectie: geen vps-doel.json in het profiel (§11.3-3b)"}
 
 
-def main(invoer_fn=input) -> int:
-    print()
-    print("  ────────────────────────────────────────")
-    print("   GrowKit — het harnas")
-    print("  ────────────────────────────────────────")
+def _modus(invoer_fn) -> int:
     print("  Wat wil je doen?")
     for nummer, (_, omschrijving) in MODI.items():
         print(f"    {nummer}. {omschrijving}")
@@ -297,6 +304,19 @@ def main(invoer_fn=input) -> int:
         return 0
     print("  Onbekende modus — geen actie.")
     return 1
+
+
+def main(invoer_fn=input) -> int:
+    print()
+    print("  ────────────────────────────────────────")
+    print("   GrowKit — het harnas")
+    print("  ────────────────────────────────────────")
+    try:
+        return _modus(invoer_fn)
+    except EOFError:
+        print()
+        print("  Geen invoer meer — geen actie.")
+        return 1
 
 
 if __name__ == "__main__":

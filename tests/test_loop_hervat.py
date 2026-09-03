@@ -134,16 +134,27 @@ class TestHervatUitGeboortebewijs(unittest.TestCase):
         with contextlib.redirect_stdout(uit):
             code = loop.hervat_boom(doel=self.doel, invoer_fn=lambda _: "nee")
         self.assertEqual(code, 1)                        # geweigerd, maar het profiel is wél geladen
-        self.assertIn("8 stappen", uit.getvalue())                  # tweede-brein heeft 8 stappen
+        self.assertIn("8 stappen", uit.getvalue())    # tweede-brein heeft 8 stappen
 
-    def test_corrupt_geboortebewijs_geeft_nette_fout(self):
+    def test_ontbrekend_geboortebewijs_vraagt_het_profiel(self):
+        """Crash vóór stap-007: het geboortebewijs bestaat nog niet — de mens
+        noemt het profiel, de loop valt niet terug op raden."""
+        uit = io.StringIO()
+        antwoorden = iter(["tweede-brein", "nee"])
+        with contextlib.redirect_stdout(uit):
+            code = loop.hervat_boom(doel=self.doel, invoer_fn=lambda _: next(antwoorden))
+        self.assertEqual(code, 1)                        # "nee" op de restdraai-bevestiging
+        self.assertIn("8 stappen", uit.getvalue())
+
+    def test_onbekende_profielnaam_wordt_geweigerd(self):
         (self.doel / "geboortebewijs.json").write_text("{geen json", encoding="utf-8")
         uit = io.StringIO()
+        antwoorden = iter(["bestaat-niet"])
         with contextlib.redirect_stdout(uit):
-            code = loop.hervat_boom(doel=self.doel, invoer_fn=lambda _: "nee")
+            code = loop.hervat_boom(doel=self.doel, invoer_fn=lambda _: next(antwoorden))
         self.assertEqual(code, 1)
-        self.assertIn("roep de mens", uit.getvalue().lower())
-        self.assertNotIn("Traceback", uit)
+        self.assertIn("Onbekend profiel", uit.getvalue())
+        self.assertNotIn("Traceback", uit.getvalue())
 
 
 if __name__ == "__main__":
