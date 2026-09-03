@@ -1,7 +1,7 @@
 # GrowKit Fase 4 — Implementatieplan: Eigen harnas (loop.py)
 
 Datum: 3 september 2026
-Status: concept — ter goedkeuring (Tiëndo) en review (Claude) vóór uitvoering
+Status: v2 — beslissingen vastgelegd na review (Claude, 3 sept 2026); herziening_nodig-gat gedicht (zie taak 2/5/8) — klaar voor uitvoering
 Spec: `docs/superpowers/specs/2026-09-03-growkit-design.md` (v10, incl. §13-drift-guard)
 Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken 1-8, Test 3: 5/5; afsluiting `a52d4ca`) — 61 unit-tests + 4 E2E's groen.
 
@@ -35,12 +35,12 @@ Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken
 
 **Files:** Create `kern/growkit_hervat.py`; Test: `tests/test_hervat.py`
 
-**Interface:** `reconstructie(logboek: Path, profiel: dict) -> dict` — per stap een beslissing: `"overslaan"` (geslaagd of `review_ok_wacht_ratificatie`), `"heraanbieden"` (`wacht_op_mens`/`gefaald` — na mens-fix), en het herstartpunt: de laatste bevestigde mijlpaal (§11.4). Regels:
+**Interface:** `reconstructie(logboek: Path, profiel: dict) -> dict` — per stap een beslissing: `"overslaan"` (geslaagd of `review_ok_wacht_ratificatie`), `"heraanbieden"` (`wacht_op_mens`/`gefaald`/`herziening_nodig` — na mens-fix; herziening_nodig ontstaat pas in taak 5, maar de afbeelding staat hier vanaf de geboorte van de functie — geen mazen), en het herstartpunt: de laatste bevestigde mijlpaal (§11.4). Regels:
 1. Een **niet-idempotent geslaagde** stap mag bij hervatting **nooit** opnieuw draaien — ook niet als later gestopt werd vóór ratificatie.
-2. `review_ok_wacht_ratificatie` wordt niet opnieuw uitgevoerd en niet opnieuw gereviewd — hij wacht op de bulk-ratificatie.
+2. `review_ok_wacht_ratificatie` wordt niet opnieuw uitgevoerd en niet opnieuw gereviewd — hij wacht op de bulk-ratificatie (bevestigd in beslissing 4).
 3. Corrupt JSON in het logboek → expliciete foutstatus `corrupt_logboek` (mens roepen), geen crash.
 
-- [ ] **Step 1: Falende tests** — gesynthetiseerde logboeken: geslaagd-idempotent → overslaan; geslaagd-niet-idempotent → overslaan mét noot "nooit herdraaien"; gefaald → heraanbieden; review_ok → wachten op ratificatie; geen mijlpaal-bevestiging → herstartpunt = start; corrupt JSON → `corrupt_logboek`, geen exceptie naar buiten.
+- [ ] **Step 1: Falende tests** — gesynthetiseerde logboeken: geslaagd-idempotent → overslaan; geslaagd-niet-idempotent → overslaan mét noot "nooit herdraaien"; gefaald → heraanbieden; review_ok → wachten op ratificatie; **herziening_nodig → heraanbieden** (status-string kan gesynthetiseerd worden vóór taak 5 bestaat — de afbeelding wordt hier getest, de echte doorloop in taak 5); geen mijlpaal-bevestiging → herstartpunt = start; corrupt JSON → `corrupt_logboek`, geen exceptie naar buiten.
 - [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: state-reconstructie — herstart uit het logboek, niet-idempotent nooit herdraaid (§7)`
 
 ## Task 3: loop.py plant-modus — formulier + harde bevestigingsdrempel (§5, §11.1)
@@ -67,7 +67,7 @@ Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken
 
 **Gedrag:** na een run toont loop.py alle stappen met status `review_ok_wacht_ratificatie` als één lijst en vraagt **één** bevestiging: "ja" → elke stap krijgt append-only een vervolg-entry status `geratificeerd` (originele entry blijft); afkeuring van één stap → status `herziening_nodig` + doorloop-vermelding (welke latere stappen erop bouwen — staat al in het logboek), géén auto-rollback; geen `review_ok`-stappen → geen ratificatie-moment.
 
-- [ ] **Step 1: Falende tests** — twee review_ok-stappen: één "ja" → twee `geratificeerd`-entries, originele entries intact (append-only); afkeur van stap 1 → `herziening_nodig` voor die stap, stap 2 blijft `wacht_ratificatie`, bestanden onaangetast; nul review_ok-stappen → geen vraag gesteld (aanroep-teller = 0).
+- [ ] **Step 1: Falende tests** — twee review_ok-stappen: één "ja" → twee `geratificeerd`-entries, originele entries intact (append-only); afkeur van stap 1 → `herziening_nodig` voor die stap, stap 2 blijft `wacht_ratificatie`, bestanden onaangetast; **doorloop na afkeuring: `reconstructie()` behandelt de `herziening_nodig`-stap als `heraanbieden`** (gat-review 3 sept: taak-2's oorspronkelijke testset dekte dit scenario niet — hier bewezen gesloten); nul review_ok-stappen → geen vraag gesteld (aanroep-teller = 0).
 - [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: ratificatie in bulk — één bevestiging, append-only, geen rollback (§9)`
 
 ## Task 6: Taak-uitvoering via de loop — poort eerst, motor uit (§7)
@@ -96,7 +96,7 @@ Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken
 1. `loop.py` plant een boom volledig met uitsluitend python3 + gepijpte antwoorden — géén agent betrokken (bewijst §8-zelfstandigheid).
 2. Plant wordt halverwege gedood (`kill -9` na eerste geslaagde stap; bewijs via logboek).
 3. Herstart: stap-001 wordt **niet** opnieuw uitgevoerd (logboek toont exact één geslaagd-entry per stap + hervat-entry); de niet-idempotent geslaagde stap wordt nooit herdraaid.
-4. Bulk-ratificatie: `review_ok`-stappen → `geratificeerd`; afkeur-variant → `herziening_nodig`, bestanden onaangetast (geen rollback).
+4. Bulk-ratificatie: `review_ok`-stappen → `geratificeerd`; afkeur-variant → `herziening_nodig`, bestanden onaangetast (geen rollback); **herstart ná afkeuring: de `herziening_nodig`-stap wordt als `heraanbieden` behandeld (gat vóór deze taak gedicht — taak 5 doorloop-test).**
 5. Poort-weigering in de loop (geen bevestiging) → niets uitgevoerd, doel-logboek `[]`.
 6. Exit-codes netjes; geen traceback naar de gebruiker bij verwachte paden (corrupt logboek → mens-boodschap).
 
@@ -110,13 +110,15 @@ Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken
 
 ---
 
-## Open beslissingen — expliciet voor de reviewer (Claude)
+## Vastgelegde beslissingen (3 sept 2026, review Claude — niet meer open)
 
-1. **Ratificatie-opslag:** zelfde doel-logboek (append-only vervolg-entries, voorkeur: één bron van waarheid, §11.4) vs apart ratificatiebestand.
-2. **Takenlijst-bron:** JSON als enige machine-formaat; `takenlijst.md` blijft dan buiten fase 4 (mens-leesbare spiegel is fase-5-materiaal) — of .md nu al als spiegel mee?
-3. **Detectie-signaal:** aanwezigheid van `vps-doel.json` (voorkeur: raakt geen secrets) vs lezen van `~/.ssh/config` (afgeraden — secrets-gebied).
-4. **Crash vóór ratificatie:** `review_ok_wacht_ratificatie`-stappen wachten op bulk-ratificatie zonder her-review (voorkeur) — of toch opnieuw reviewen?
-5. **Corrupt logboek:** mens roepen met `corrupt_logboek`-status, nooit auto-reparatie (voorkeur — auto-reparatie is interpretatie).
+1. **Ratificatie-opslag:** hetzelfde doel-logboek (append-only vervolg-entries). Rationale: één bron van waarheid weegt zwaarder dan de scheiding van een apart bestand; een los ratificatiebestand is precies het soort sync-risico dat `reconstructie()` door alles uit één append-only bron te lezen probeert te elimineren.
+2. **Takenlijst-bron:** alleen JSON; `takenlijst.md` verhuist naar fase 5. Een mens-leesbare view is een presentatielaag, geen kern-mechanisme — bouw hem pas als er een concrete lezer is.
+3. **Detectie-signaal:** aanwezigheid van `vps-doel.json`. Lezen van `~/.ssh/config` is het secrets-gebied dat de global constraints vermijden; aanwezigheid-alleen is bovendien testbaar tot "de inhoud kan niet in een concept verschijnen, simpelweg omdat de code hem nooit opent".
+4. **Crash vóór ratificatie:** wachten, geen her-review. Her-review zou non-deterministisch zijn (zelfde stap, tweede aanroep, ander oordeel) en het logboek een oordeel laten tonen dat niet meer matcht met wat er werkelijk gebeurde. Bevestigt taak-2 regel 2 expliciet.
+5. **Corrupt logboek:** mens roepen met `corrupt_logboek`-status, nooit auto-reparatie. Auto-reparatie is per definitie een gok naar wat er "eigenlijk" had moeten staan — interpretatie is voor de mens.
+
+**Gevonden gat (gesloten in dit document):** `herziening_nodig` ontbrak in de besliscategorieën van `reconstructie()` (taak 2 introduceerde overslaan/heraanbieden vóórdat taak 5 de status introduceert). Oplossing, in dit plan verankerd: de afbeelding `herziening_nodig → heraanbieden` staat vanaf taak 2 in de functie-definitie, wordt daar getest op een gesynthetiseerd logboek, als echte doorloop getest in taak 5, en als herstart-pad afgedekt in taak 8, criterium 4 — vóórdat de E2E draait.
 
 ## Zelfreview-checklist (voor de executor)
 
