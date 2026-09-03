@@ -3,7 +3,7 @@
 Datum: 3 september 2026
 Status: concept — ter goedkeuring (Tiëndo) en optionele review (Claude) vóór uitvoering
 Spec: `docs/superpowers/specs/2026-09-03-growkit-design.md` (v10)
-Fase 1: af (16 tests + E2E, `cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5, `64bfce6`).
+Fase 1: af (16 tests + E2E, `cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5; plan-correcties `062c349`/`d047e0a` vóór de uitvoering, afsluiting `64bfce6` — alle vier zijn plan-fixes, er is niets tussendoor weggevallen).
 
 **Goal:** Fase 3 reduceert het aantal mens-momenten zonder de mens te vervangen: mens_verificatie-stappen krijgen eerst een onafhankelijke reviewer-blik (§9), de ruwe prompt wordt geschuurd tot een concept vóór de poort (§11.1), grote taken krijgen een vaste mijlpaal-controle (§11.4), en VPS-doele worden per profiel configureerbaar (§12.3). Kernbegrenzing uit de spec blijft overeind: machine-bewijs is eerste keuze; de reviewer vermindert mens-inzet, vervangt de mens niet; bij "onduidelijk" wordt alsnog de mens geroepen.
 
@@ -40,7 +40,7 @@ Fase 1: af (16 tests + E2E, `cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5, `6
 
 **Interface:** `roep_reviewer(rol: str, stap: dict, uitvoer: str, config: dict) -> str` — retourneert `"geslaagd"`, `"gefaald"`, of `"onduidelijk"`. Gedrag:
 - `type: "http"`: POST de stap-definitie + uitvoer naar de geconfigureerde URL; het antwoord bevat een gecodeerd oordeel-veld (`{"oordeel": "geslaagd|gefaald|onduidelijk"}`).
-- `type: "cli"`: voer het geconfigureerde commando uit met de stap+uitvoer als stdin-argument; het antwoord wordt gelezen als één van de drie gecodeerde oordelen (geen vrije tekst-parsing: exacte string-match op de drie waarden, anders `"onduidelijk"`).
+- `type: "cli"`: voer het geconfigureerde commando uit; de stap+uitvoer gaat **altijd via stdin** (`subprocess.run([commando], input=payload, shell=False)` — nóoit shell-interpolatie van de uitvoer: wat een eerdere stap produceerde is onvoorspelbare inhoud en mag nooit in een shell-string terechtkomen). Het antwoord wordt gelezen als één van de drie gecodeerde oordelen (geen vrije tekst-parsing: exacte string-match op de drie waarden, anders `"onduidelijk"`).
 - Time-out (10s http / 60s cli) of elke exceptie → `"onduidelijk"` — bij technische twijfel roep je de mens, nooit een gok.
 
 - [ ] **Step 1: Falende tests** — cli-reviewer die "geslaagd" print → geslaagd; http-reviewer die een oordeel-JSON teruggeeft → correct vertaald; reviewer die onzin antwoordt → `"onduidelijk"`; crash/timeout → `"onduidelijk"`.
@@ -53,7 +53,13 @@ Fase 1: af (16 tests + E2E, `cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5, `6
 
 **Gedrag:** bij een `mens_nodig`-stap mét een `review: "reviewer"`-veld én een geldige reviewconfig: roep de reviewer; `"geslaagd"` → log `review_ok_wacht_ratificatie` (de mens ratificeert later in bulk, niet per stap); `"gefaald"`/`"onduidelijk"`/geen config → exact het fase-1-2-gedrag (`wacht_op_mens`, bericht aan de mens). Het logboek noteert altijd welke rol is geraadpleegd en wat het oordeel was (append-only, geen verdwijnen van het mens-moment uit de geschiedenis).
 
-- [ ] **Step 1: Falende tests** — stap mét reviewer en config: reviewer-oordeel "geslaagd" → status `review_ok_wacht_ratificatie`, geen `roep_mens`-print; oordeel "onduidelijk" → klassiek mens-moment; géén config → klassiek mens-moment; stappen zonder `review`-veld onaangetast.
+**Ratificatie-semantiek (expliciete regels, geen impliciete aanname):**
+1. De motor **gaat door** na `review_ok_wacht_ratificatie` — pauzeren zou het mens-moment alleen uitstellen, niet verminderen.
+2. **Voortbouwen op een nog-niet-geratificeerde stap is toegestaan**, mits logbaar: het logboek vermeldt dat latere stappen op een nog-te-ratificeren stap bouwen.
+3. **Bij afkeuring tijdens de bulk-ratificatie:** géén auto-rollback (de mens blijft curator). De afkeuring wordt append-only gelogd en zet de boom-status op `herziening_nodig`; wat erop voortbouwt staat in het logboek en dus zichtbaar voor de mens.
+4. Grens: dit geldt alléén voor `mens_verificatie`-stappen; machine-bewijs-stappen zijn definitief bij bewijs.
+
+- [ ] **Step 1: Falende tests** — stap mét reviewer en config: reviewer-oordeel "geslaagd" → status `review_ok_wacht_ratificatie`, geen `roep_mens`-print, **motor gaat door naar de volgende stap**; oordeel "onduidelijk" → klassiek mens-moment (harde stop); géén config → klassiek mens-moment; stappen zonder `review`-veld onaangetast; **afkeuringspad: log-entry met status `herziening_nodig` + doorloop-vermelding**.
 - [ ] **Step 2: Run — falen. Step 3: Bouw. Step 4: Groen (incl. alle fase 1-2 tests onaangetast).**
 - [ ] **Step 5: Commit** — `feat: reviewer vóór het mens-moment — ratificatie i.p.v. storing (§9)`
 
@@ -76,7 +82,7 @@ Slaag-criteria (protocol-uitbreiding, vóór de run vastgelegd):
 
 **Gedrag:** de slijper in `beoordeel_invoer` wordt uitgebreid: bij complete velden wordt het concept *samengevoegd zonder her-interpretatie* (formulier-antwoorden → opdracht, §11.3-punt 2); wat niet uit de invoer af te leiden is, wordt een vraag, nooit een aanname. Het mens-moment (bevestiging) blijft onaangetast.
 
-- [ ] **Step 1: Falende tests** — complete invoer → concept bevat exact de drie velden, geen verzonnen extra's; incomplete invoer → alleen vragen over ontbrekende velden; concept vermeldt de rauwe invoer als bron.
+- [ ] **Step 1: Falende tests** — complete invoer → concept bevat exact de drie velden, geen verzonnen extra's; incomplete invoer → alleen vragen over ontbrekende velden; concept vermeldt de rauwe invoer als bron; **gelabelde standaardwaarden (§11.1 punt 2): een door de slijper ingevulde default krijgt altijd een `standaardwaarde: true`-markering + bronvermelding in het concept — ongelabelde defaults zijn een testfaal**.
 - [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit.**
 
 ## Task 6: Mijlpaal-bevestiging (§11.4)
