@@ -61,8 +61,16 @@ struct StatusView: View {
     @ViewBuilder private var inhoudView: some View {
         VStack(alignment: .leading, spacing: 20) {
             kop
+            StappenStreep(stappen: ["Pad", "Identiteit", "Register", "Tellers"])
             zoekrij
             if let fout { foutKaart(fout) }
+            if gegevens == nil && fout == nil {
+                LegeStaat(kop: "Nog geen boom geladen",
+                          tekst: "Vul hierboven het pad naar een geplante boom in — bijv. ~/mijn-brein — en druk op 'Laad status'.",
+                          regels: ["de identiteit komt uit het geboortebewijs van de boom",
+                                   "het register vertelt bij welk brein de boom hoort",
+                                   "de tellers tonen VOORSTELLEN wachtend en verzonden"])
+            }
             if runner.bezig {
                 Text("De adapter denkt na…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
             }

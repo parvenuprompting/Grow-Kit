@@ -54,3 +54,45 @@ struct StatusBadge: View {
             .foregroundStyle(Thema.kleur(bewezen ? .inkt : .zacht))
     }
 }
+
+struct LegeStaat: View {
+    let kop: String
+    let tekst: String
+    var regels: [String] = []
+
+    var body: some View {
+        Kaart(kop: "Begin hier") {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(kop).font(Thema.display(20))
+                Text(tekst).font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
+                ForEach(regels.indices, id: \.self) { i in
+                    HStack(alignment: .top, spacing: 10) {
+                        Text(String(format: "%02d", i + 1))
+                            .font(Thema.display(12, cursief: true))
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                        Text(regels[i]).font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct StappenStreep: View {
+    let stappen: [String]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(stappen.indices, id: \.self) { i in
+                if i > 0 {
+                    Text("→").font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt)).padding(.horizontal, 10)
+                }
+                Text(stappen[i])
+                    .font(Thema.tekst(10, gewicht: .semibold)).tracking(1.5).textCase(.uppercase)
+                    .foregroundStyle(Thema.kleur(.zacht))
+            }
+            Spacer()
+        }
+    }
+}

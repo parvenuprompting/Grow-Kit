@@ -34,6 +34,7 @@ struct PlantView: View {
     @ViewBuilder private var inhoudView: some View {
         VStack(alignment: .leading, spacing: 20) {
             kop
+            StappenStreep(stappen: ["Kies", "Concept", "Bevestig", "Bewijs"])
             profielKeuze
             doelVeld
             breinKeuzeRij
@@ -56,6 +57,11 @@ struct PlantView: View {
     private var profielKeuze: some View {
         Kaart(kop: "Kies een boom") {
             VStack(alignment: .leading, spacing: 0) {
+                if profielen.isEmpty {
+                    Text("Profielen worden geladen uit de kiemkeuze-catalogus…")
+                        .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                        .padding(.vertical, 10)
+                }
                 ForEach(profielen.indices, id: \.self) { i in
                     let profiel = profielen[i]
                     profielRij(naam: profiel["naam"] as? String ?? "?",

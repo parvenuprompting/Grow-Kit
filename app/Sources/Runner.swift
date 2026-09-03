@@ -1,4 +1,4 @@
-// Runner — roept adapter.py aan via Process, zonder shell, met time-out.
+// Runner — roept adapter.py rechtstreeks aan via Process, met time-out.
 // Contract: JSON in via stdin, precies één JSON-document uit op stdout.
 
 import Foundation
