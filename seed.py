@@ -143,6 +143,8 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     from kern import growkit_motor
+    from kern.growkit_review import laad_reviewconfig
+    reviewconfig = laad_reviewconfig(Path(__file__).parent / "reviewconfig.json")
     doel = Path(keuze["doel"]).expanduser().resolve()
     doel.mkdir(parents=True, exist_ok=True)
     logboek = doel / "logboek.json"
@@ -158,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         if alternatief:
             stap["bij_falen"]["alternatief_commando"] = alternatief.replace("{GROWKIT}", growkit_root)
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
-    geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen)
+    geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen, reviewconfig=reviewconfig)
     return 0 if geslaagd else 2
 
 
