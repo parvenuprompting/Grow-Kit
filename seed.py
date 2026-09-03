@@ -7,12 +7,28 @@ Gebruik:
     python3 seed.py --slijp                  # Prompt-slijper (fase 3)
 """
 import argparse
+import datetime
 import json
 import sys
 from pathlib import Path
 
 PROFILES_DIR = Path(__file__).parent / "profielen"
+SLIJPER_LOG = Path(__file__).parent / "groei" / "slijper-logboek.json"
 VERSIE = "0.1.0"
+
+
+def _log_slijper(ruwe_invoer: str, geschuurd: str, beslissing: str) -> None:
+    """Append-only log van elke slijper-beurt: ruw + geschuurd + beslissing (§11.1)."""
+    SLIJPER_LOG.parent.mkdir(parents=True, exist_ok=True)
+    entries = json.loads(SLIJPER_LOG.read_text(encoding="utf-8")) if SLIJPER_LOG.exists() else []
+    entries.append({
+        "type": "slijper",
+        "ruw": ruwe_invoer,
+        "concept": geschuurd,
+        "beslissing": beslissing,
+        "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+    })
+    SLIJPER_LOG.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def laad_profielen() -> list[dict]:
@@ -81,6 +97,7 @@ def verwerk_vrije_beschrijving(beschrijving: str) -> int:
         if sleutel in beschrijving:
             invoer[veld] = beschrijving.split(sleutel, 1)[1].strip()
     ok, tekst, vragen = growkit_poort.beoordeel_invoer(invoer, "vrije_beschrijving")
+    _log_slijper(beschrijving, tekst, "geaccepteerd_concept" if ok else "geweigerd")
     print()
     if not ok:
         print(f"  {tekst}")
