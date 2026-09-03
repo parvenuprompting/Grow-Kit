@@ -185,6 +185,18 @@ Grenzen, eerlijk:
 - In fase 4 (harnas) wordt dit hard afgedwongen: de loop voert niets uit dat niet de mensbevestiging heeft gehad.
 - Neveneffect (bewust): de slijper werkt als spiegel/trainer — wie ziet hoe zijn prompt in een heldere versie vertaalt, leert vanzelf helderder formuleren.
 
+### 11.2 De groeivliegwiel — het geplante brein voedt de slijper
+
+De slijper raadt niet; hij haalt op. Wie via GrowKit een tweede-brein heeft geplant, heeft een groeiende bron van eigen context (identiteit, voorkeuren, beslissingen, projecten). De slijper gebruikt die als **alleen-lezen grondstof** bij het schuren: hoe voller het brein, hoe scherper de geschuurde versie, hoe kleiner de kans dat de mens moet corrigeren.
+
+Terugkoppeling naar het brein: elke goedgekeurde schuring kan een inzicht opleveren ("blijkbaar wil deze gebruiker altijd X"). Zo'n inzicht gaat als VOORSTEL naar de inbox van het brein; de mens curatieert. Geen verborgen leerproces, geen model-training — groei door curatie, consistent met §7.
+
+Daarmee ontstaat een zelfversterkende cirkel (het "oerwoud in het klein"):
+
+    GrowKit plant het brein → het brein voedt de slijper → de slijper schuurt scherper → betere opdrachten → nieuwe VOORSTELLEN → het brein wordt voller → …
+
+Consequentie voor het eerste profiel: het tweede-brein is niet zomaar de eerste boom — het is de **motor van de vliegwiel**, en daarmee extra rechtvaardiging voor de keuze in §10.
+
 Afdwingbaarheid per fase:
 
 - **Fase 1–3 (geleende agent):** de poort zit in het *formaat* — seed.py weigert invoer zonder verplichte velden; een taak zonder bewijs-check is schema-ongeldig. Dit is hard: zonder geldige invoer draait er niets. De toon-uitvoering (de weigeringstekst) gebeurt wel door de geleende agent en is dus om te praten — al bereikt de gebruiker dan nog steeds niets zonder geldig stappenplan.
