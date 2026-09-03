@@ -56,7 +56,7 @@ Fase 1: af (`cbaa26e`). Fase 2: af (Test 1: 7/7, Test 2: 5/5). Fase 3: af (taken
 
 **Files:** Modify `loop.py`; Test: `tests/test_loop_hervat.py`
 
-**Gedrag:** hervatten = `reconstructie()` (taak 2) → loop.py bouwt een restdraai-profiel (alleen stappen met beslissing `heraanbieden`, plus de nooit-herdraai-beslissing als harde filter) → bestaande `voer_uit`. Het herstartpunt (laatste bevestigde mijlpaal) wordt getoond vóór de restdraai. Geen hervatting nodig (alles geslaagd/geratificeerd) → nette mededeling, niets draait.
+**Gedrag:** hervatten = `reconstructie()` (taak 2) → loop.py bouwt een restdraai-profiel (stappen met beslissing `heraanbieden` én stappen zonder logregel, beslissing `uitvoeren`; de nooit-herdraai-beslissing is een hard filter dat niks extra's laat door) → bestaande `voer_uit`. Het herstartpunt (laatste bevestigde mijlpaal) wordt getoond vóór de restdraai. Geen hervatting nodig (alles geslaagd/geratificeerd) → nette mededeling, niets draait.
 
 - [ ] **Step 1: Falende tests** — logboek met stap-001 geslaagd (idempotent), stap-002 niet-idempotent geslaagd, stap-003 gefaald: restdraai bevat alléén stap-003; herstartpunt correct getoond; geen hervatting nodig → geen motor-aanroep; corrupt logboek → mens-boodschap, geen crash.
 - [ ] **Step 2-4: falen → bouwen → groen. Step 5: Commit** — `feat: loop.py hervat-modus — restdraai-profiel, motor ongewijzigd (§7)`
