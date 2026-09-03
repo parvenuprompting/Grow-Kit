@@ -8,10 +8,13 @@ import datetime
 import json
 import os
 import platform
+import re
 import uuid
 from pathlib import Path
 
 _VERPLICHTE_VELDEN = ("boom_id", "profiel", "machine", "locatie", "geplant_op")
+_ONTVANGEN_VOORSTEL = re.compile(
+    r"^VOORSTEL-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-")
 
 
 def _nu() -> str:
@@ -275,6 +278,66 @@ def log_gebeurtenis(logboek: Path, bewijstekst: str) -> None:
         "tijdstip": _nu(),
     })
     logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def status_data(doel: Path) -> dict:
+    """Puwe status-gegevens van een boom (§13) — één bron voor loop.py én de
+    adapter. Retourneert identiteit, register, tellers en de laatste
+    mijlpaal/faal; problemen komen als 'fout' (nette tekst) of 'melding'
+    terug, nooit als exceptie."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    logboek = doel / "logboek.json"
+    data = {"identiteit": None, "voor_fase5": False, "melding": None, "fout": None,
+            "register": {"brein_pad": None, "status": None, "fout": None},
+            "tellers": {"wachtend": 0, "verzonden": 0},
+            "laatste_mijlpaal_faal": None}
+    if not bewijs_pad.exists():
+        data["melding"] = "geen geboortebewijs in deze boom — de status kan de identiteit niet tonen"
+        return data
+    data["voor_fase5"] = is_voor_fase5(bewijs_pad)
+    if not data["voor_fase5"]:
+        data["identiteit"] = json.loads(bewijs_pad.read_text(encoding="utf-8"))
+
+    try:
+        entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    except (json.JSONDecodeError, OSError) as e:
+        data["fout"] = f"boom-logboek {logboek} is corrupt — roep de mens, nooit auto-repareren: {e}"
+        return data
+    verzonden = {entry.get("bewijs", "").split(" → ")[0]
+                 for entry in entries if entry.get("type") == "doorstroom"}
+    inbox = doel / "inbox"
+    bestanden = [p.name for p in inbox.iterdir()
+                 if p.name.startswith("VOORSTEL-") and p.is_file()] if inbox.exists() else []
+    eigen = [n for n in bestanden if not _ONTVANGEN_VOORSTEL.match(n)]
+    data["tellers"] = {"wachtend": len([n for n in eigen if n not in verzonden]),
+                       "verzonden": len(verzonden)}
+    for entry in reversed(entries):
+        if entry.get("type") == "mijlpaal" or entry.get("status") == "gefaald":
+            data["laatste_mijlpaal_faal"] = {"stap": entry.get("stap", "?"),
+                                             "status": entry.get("status", "?"),
+                                             "tijdstip": entry.get("tijdstip", "?")}
+            break
+
+    try:
+        staat = laad_oerwoud_staat()
+    except ValueError as e:
+        data["fout"] = str(e)
+        return data
+    brein_pad = staat["brein_pad"]
+    data["register"] = {"brein_pad": str(brein_pad) if brein_pad else None,
+                        "status": None, "fout": staat["fout"]}
+    if staat["fout"] == "brein_onbereikbaar":
+        return data
+    if brein_pad:
+        try:
+            register = lees_register(brein_pad / "register" / "bomen.json")
+        except ValueError as e:
+            data["fout"] = str(e)
+            return data
+        boom_id = data["identiteit"]["boom_id"] if data["identiteit"] else None
+        data["register"]["status"] = recentste_status(register, boom_id) if boom_id else None
+    return data
 
 
 def brein_opties(brein_pad: Path) -> list[str]:
