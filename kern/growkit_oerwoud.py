@@ -6,6 +6,7 @@ De drift-guard (§13) is hard: omgevings-specifieke staat reist nooit mee.
 """
 import datetime
 import json
+import os
 import platform
 import uuid
 from pathlib import Path
@@ -15,6 +16,128 @@ _VERPLICHTE_VELDEN = ("boom_id", "profiel", "machine", "locatie", "geplant_op")
 
 def _nu() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+
+def oerwoud_staat_pad() -> Path:
+    """Per-machine staat (waar groeit het brein): ~/.growkit/oerwoud.json.
+    Tests overschrijven de home via GROWKIT_OERWOUD_STAAT — nooit de echte."""
+    omgeving = os.environ.get("GROWKIT_OERWOUD_STAAT")
+    if omgeving:
+        return Path(omgeving)
+    return Path.home() / ".growkit" / "oerwoud.json"
+
+
+def laad_oerwoud_staat() -> dict:
+    """{'brein_pad': Path | None, 'fout': None | 'brein_onbereikbaar'}.
+
+    Wijst de staat naar een brein dat niet (meer) bestaat, dan is dat een
+    expliciete foutstatus: de mens wordt geroepen — er is géén fallback naar
+    'nieuw brein', dat zou een bestaand oerwoud onbedoeld splitsen.
+    """
+    pad = oerwoud_staat_pad()
+    if not pad.exists():
+        return {"brein_pad": None, "fout": None}
+    try:
+        staat = json.loads(pad.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"oerwoud-staat {pad} is corrupt — roep de mens: {e}") from e
+    brein_pad = Path(staat["brein_pad"]) if staat.get("brein_pad") else None
+    fout = "brein_onbereikbaar" if brein_pad and not brein_pad.exists() else None
+    return {"brein_pad": brein_pad, "fout": fout}
+
+
+def sla_brein_pad(brein_pad: Path) -> None:
+    pad = oerwoud_staat_pad()
+    pad.parent.mkdir(parents=True, exist_ok=True)
+    pad.write_text(json.dumps({"brein_pad": str(brein_pad)}, indent=2) + "\n", encoding="utf-8")
+
+
+def _eerste_logboek_tijdstip(logboek: Path) -> str:
+    """Het oudste logboek-tijdstip — bij migratie de werkelijke geboortedatum."""
+    if not logboek.exists():
+        raise ValueError("geen logboek — migratie kan de geboortedatum niet terugrekenen")
+    try:
+        entries = json.loads(logboek.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"boom-logboek is corrupt — migratie gestopt, roep de mens: {e}") from e
+    if not entries or not entries[0].get("tijdstip"):
+        raise ValueError("logboek bevat geen tijdstip — migratie kan de geboortedatum niet vaststellen")
+    return entries[0]["tijdstip"]
+
+
+def migratie_en_registratie(doel: Path, logboek: Path, brein_pad: Path | None = None,
+                            invoer_fn=input) -> int:
+    """Migratie van een oude boom (fase 1-4): geboortebewijs volmaken met
+    geplant_op teruggerekend uit de eerste logboek-entry, daarna registreren
+    bij het bekende brein. Weigering of een kapot logboek → geen registratie,
+    geen overschrijven."""
+    antwoord = invoer_fn(
+        "  Geboortebewijs is van vóór fase 5 — volmaken met de oorspronkelijke geboortedatum? (ja / nee): "
+    ).strip().lower()
+    if antwoord != "ja":
+        print("  Geen migratie — geen registratie.")
+        return 1
+    try:
+        geboorte_tijdstip = _eerste_logboek_tijdstip(logboek)
+        vul_geboortebewijs(doel / "geboortebewijs.json", geplant_op=geboorte_tijdstip)
+        log_geboorte_entry(logboek, "geboortebewijs gemigreerd: volgemaakt met de "
+                                    "oorspronkelijke geboortedatum uit het logboek")
+    except ValueError as e:
+        print(f"  {e}")
+        return 1
+    if brein_pad is None:
+        brein_pad = laad_oerwoud_staat()["brein_pad"]
+        if brein_pad is None:
+            return 0
+    return _registreer_in_brein(doel, brein_pad)
+
+
+def _registreer_in_brein(doel: Path, brein_pad: Path, is_brein: bool = False) -> int:
+    meld_geboorte(brein_pad / "register" / "bomen.json", doel / "geboortebewijs.json",
+                  is_brein=is_brein)
+    return 0
+
+
+def registreer_nieuwe_boom(doel: Path, invoer_fn=input) -> int:
+    """Post-plant (§13): de geboorte aanmelden bij het oerwoud.
+
+    Brein onbekend → één vraag (pad / leeg = deze boom wordt het brein /
+    nee = niet registreren). Brein bekend → direct registreren (machine-feit).
+    Brein onbereikbaar → de mens kiest: pad corrigeren of afbreken.
+    """
+    staat = laad_oerwoud_staat()
+    if staat["fout"] == "brein_onbereikbaar":
+        print(f"  Het brein op {staat['brein_pad']} is niet bereikbaar (verplaatst of weg?)")
+        keuze = invoer_fn("  Brein-pad corrigeren (c) of afbreken (a)? ").strip().lower()
+        if keuze == "c":
+            nieuw = invoer_fn("  Waar groeit het brein nu? (pad): ").strip()
+            brein_pad = Path(nieuw).expanduser().resolve()
+            if not brein_pad.exists():
+                print("  Dit pad bestaat niet — geen registratie.")
+                return 1
+            sla_brein_pad(brein_pad)
+            return _registreer_in_brein(doel, brein_pad)
+        print("  Afgebroken — het bestaande oerwoud blijft staan.")
+        return 1
+    brein_pad = staat["brein_pad"]
+    if brein_pad is None:
+        antwoord = invoer_fn(
+            "  Waar groeit je brein? (pad / leeg = deze boom wordt het brein / nee = niet registreren): "
+        ).strip()
+        if antwoord.lower() == "nee":
+            print("  Niet geregistreerd — niets opgeslagen.")
+            return 1
+        if antwoord == "":
+            brein_pad = doel.resolve()
+            sla_brein_pad(brein_pad)
+            return _registreer_in_brein(doel, brein_pad, is_brein=True)
+        brein_pad = Path(antwoord).expanduser().resolve()
+        if not brein_pad.exists():
+            print("  Dit brein-pad bestaat niet — geen registratie, niets opgeslagen.")
+            return 1
+        sla_brein_pad(brein_pad)
+        return _registreer_in_brein(doel, brein_pad)
+    return _registreer_in_brein(doel, brein_pad)
 
 
 def is_voor_fase5(bestand: Path) -> bool:
@@ -80,7 +203,7 @@ def volmaak_na_plant(doel: Path, logboek: Path) -> bool:
     niets loggen; de mens ziet de situatie bij de volgende controle.
     """
     bewijs_pad = doel / "geboortebewijs.json"
-    if not is_voor_fase5(bewijs_pad):
+    if not bewijs_pad.exists() or not is_voor_fase5(bewijs_pad):
         return False
     vul_geboortebewijs(bewijs_pad)
     bevindingen = controleer_geboortebewijs(bewijs_pad)

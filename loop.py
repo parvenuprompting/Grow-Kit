@@ -81,6 +81,7 @@ def plant_profiel(invoer_fn=input) -> int:
     if geslaagd:
         from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel_pad, logboek)
+        growkit_oerwoud.registreer_nieuwe_boom(doel_pad, invoer_fn=invoer_fn)
     return 0 if geslaagd else 2
 
 
@@ -143,6 +144,9 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
     geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
                                       PROFILES_DIR / profiel["profiel"] / "sjablonen",
                                       reviewconfig=reviewconfig)
+    if geslaagd:
+        from kern import growkit_oerwoud
+        growkit_oerwoud.volmaak_na_plant(doel, logboek)
     return 0 if geslaagd else 2
 
 

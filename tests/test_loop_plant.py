@@ -10,6 +10,7 @@ Regels (fase 4, taak 3):
 import contextlib
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -37,15 +38,22 @@ class TestPlantModus(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.doel = Path(self._tmp.name) / "boom"
         self._antwoorden = []
+        self._home = Path(self._tmp.name) / "growkit-home"
+        self._oude_env = os.environ.get("GROWKIT_OERWOUD_STAAT")
+        os.environ["GROWKIT_OERWOUD_STAAT"] = str(self._home / "oerwoud.json")
 
     def tearDown(self):
+        if self._oude_env is None:
+            os.environ.pop("GROWKIT_OERWOUD_STAAT", None)
+        else:
+            os.environ["GROWKIT_OERWOUD_STAAT"] = self._oude_env
         self._tmp.cleanup()
 
     def _invoer_fn(self, _vraag: str) -> str:
         return self._antwoorden.pop(0)
 
     def test_plant_na_bevestiging_via_poort_en_motor(self):
-        self._antwoorden = ["1", str(self.doel), "ja"]
+        self._antwoorden = ["1", str(self.doel), "ja", ""]
         uit = io.StringIO()
         with contextlib.redirect_stdout(uit):
             code = loop.plant_profiel(invoer_fn=self._invoer_fn)
@@ -56,6 +64,10 @@ class TestPlantModus(unittest.TestCase):
         self.assertIn("wacht_op_mens", statuses)
         self.assertIn("[mens-moment]", uit.getvalue())
         self.assertEqual(len([e for e in logboek if e.get("type") == "geboorte"]), 1)
+        # de boom is geregistreerd als brein in de geïsoleerde oerwoud-staat
+        staat = json.loads((self._home / "oerwoud.json").read_text(encoding="utf-8"))
+        self.assertEqual(Path(staat["brein_pad"]), self.doel.resolve())
+        self.assertTrue((self.doel / "register" / "bomen.json").exists())
 
     def test_geen_bevestiging_niets_uitgevoerd(self):
         self._antwoorden = ["1", str(self.doel), "nee"]

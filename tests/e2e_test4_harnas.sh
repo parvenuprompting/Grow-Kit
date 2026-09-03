@@ -16,6 +16,7 @@ done
 test -n "$PY" || { echo "FAIL: geen Python 3.11+ gevonden"; exit 1; }
 
 TMP="$(mktemp -d)"
+export GROWKIT_OERWOUD_STAAT="$TMP/growkit-home/oerwoud.json"
 trap 'rm -rf "$TMP"; rm -f "$REPO/reviewconfig.json"' EXIT
 
 # cli-test-reviewer (localhost-vrij, zoals Test 3): stap-008 → review_ok_wacht_ratificatie
@@ -78,7 +79,7 @@ echo "OK 4a: bulk-ratificatie — stap-008 geratificeerd als vervolg-entry; orig
 
 # ——— Criterium 4b: afkeur — herziening_nodig, geen rollback, herstart = heraanbieden ———
 DOEL2="$TMP/boom-afkeur"
-printf '1\n1\n%s\nja\n' "$DOEL2" | "$PY" "$REPO/loop.py" > "$TMP/plant2-uit.log" 2>&1
+printf '1\n1\n%s\nja\n\n' "$DOEL2" | "$PY" "$REPO/loop.py" > "$TMP/plant2-uit.log" 2>&1
 LOG2="$DOEL2/logboek.json"
 CHECK "$LOG2" "[e for e in entries if e['stap']=='stap-008'][0]['status'] == 'review_ok_wacht_ratificatie'"
 RC=0
