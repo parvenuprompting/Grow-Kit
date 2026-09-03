@@ -6,3 +6,6 @@ groei/slijper-logboek.json
 reviewconfig.json
 __pycache__/
 *.pyc
+
+# macOS
+.DS_Store
