@@ -31,6 +31,41 @@ def _log_slijper(ruwe_invoer: str, geschuurd: str, beslissing: str) -> None:
     SLIJPER_LOG.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def mijlpaal_blok(profiel: dict, doel: Path, logboek: Path) -> str:
+    """Vast mijlpaal-formaat (spec §11.4): begrepen / afgesproken mèt
+    logboek-verwijzing / bewijs tot nu toe / hierna."""
+    stappen = len(profiel.get("stappen", []))
+    return (
+        "  ── Mijlpaal-controle (§11.4) ──\n"
+        f"  1. Wat ik begrepen heb: profiel '{profiel['profiel']}' planten in {doel} — {stappen} stappen.\n"
+        f"  2. Wat we afgesproken hebben: het stappenplan staat in het profiel; elke stap wordt\n"
+        f"     append-only gelogd in {logboek} (controleerbaar, geen 'volgens mij was dat zo').\n"
+        "  3. Het bewijs tot nu toe: nog geen stappen uitgevoerd — dit is de start van de plant.\n"
+        "  4. Wat hierna komt: de motor voert de stappen uit; bij faal of twijfel stopt zij en roept de mens."
+    )
+
+
+def vraag_mijlpaal_bevestiging(profiel: dict, doel: Path, logboek: Path,
+                               invoer_fn=input) -> bool:
+    """Eén bevestiging vóór de motorstart (§11.4). 'ja' → append-only gelogd,
+    daarna pas planten. Alles anders → geen actie."""
+    print(mijlpaal_blok(profiel, doel, logboek))
+    antwoord = invoer_fn("  Klopt dit? (ja / pas aan): ").strip().lower()
+    if antwoord != "ja":
+        print("  Geen bevestiging — geen actie.")
+        return False
+    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries.append({
+        "type": "mijlpaal",
+        "stap": "mijlpaal-start",
+        "status": "bevestigd",
+        "bewijs": "mijlpaal-controle bevestigd door de mens (§11.4)",
+        "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+    })
+    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return True
+
+
 def laad_profielen() -> list[dict]:
     """Lees alle profiel.json-bestanden uit profielen/."""
     profielen = []
@@ -154,6 +189,10 @@ def main(argv: list[str] | None = None) -> int:
     with open(profiel_pad, encoding="utf-8") as f:
         profiel = json.load(f)
     profiel = growkit_motor.vervang_growkit_pad(profiel, Path(__file__).parent.resolve())
+    from kern import growkit_poort
+    if growkit_poort.mijlpaal_nodig(profiel):
+        if not vraag_mijlpaal_bevestiging(profiel, doel, logboek):
+            return 1
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen, reviewconfig=reviewconfig)
     return 0 if geslaagd else 2

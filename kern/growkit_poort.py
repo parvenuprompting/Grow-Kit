@@ -52,6 +52,20 @@ _OMGEVING_STANDAARD = {
     "bron": "slijper-standaard (§11.1 punt 2) — niet uit de invoer afgeleid; bevestig of pas aan",
 }
 
+# §11.4-mijlpaal: drempel voor "grote" planten; per profiel overschrijfbaar
+# via het veld mijlpaal_drempel, nooit hardcoded in de aanroepende code.
+STANDAARD_MIJLPAAL_DREMPEL = 10
+
+
+def mijlpaal_nodig(profiel: dict) -> bool:
+    """True als het profiel de mijlpaal-drempel raakt (aantal stappen ≥ N).
+
+    N komt uit het profiel zelf (mijlpaal_drempel) of uit de standaard —
+    dynamisch, nooit in code vastgezet.
+    """
+    drempel = profiel.get("mijlpaal_drempel", STANDAARD_MIJLPAAL_DREMPEL)
+    return len(profiel.get("stappen", [])) >= drempel
+
 
 def _vragenlijst_vrij() -> list[dict]:
     """Vragenlijst in het vaste §11.3-JSON-formaat (alle verplichte velden)."""
