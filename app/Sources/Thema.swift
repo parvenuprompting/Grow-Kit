@@ -6,13 +6,14 @@ import CoreText
 import SwiftUI
 
 enum ThemaKleur {
-    case papier, inkt, zacht, gedempt, lijn
+    case papier, papierZacht, inkt, zacht, gedempt, lijn
 }
 
 enum Thema {
     static func nsKleur(_ k: ThemaKleur) -> NSColor {
         switch k {
         case .papier: return NSColor.white
+        case .papierZacht: return NSColor(red: 0xF8 / 255.0, green: 0xF8 / 255.0, blue: 0xF8 / 255.0, alpha: 1)
         case .inkt: return NSColor.black
         case .zacht: return NSColor(red: 0x55 / 255.0, green: 0x55 / 255.0, blue: 0x55 / 255.0, alpha: 1)
         case .gedempt: return NSColor(red: 0x88 / 255.0, green: 0x88 / 255.0, blue: 0x88 / 255.0, alpha: 1)
