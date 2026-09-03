@@ -306,11 +306,81 @@ def _modus(invoer_fn) -> int:
             print("  Geen map — geen actie.")
             return 1
         return ratificeer(Path(doel_invoer).expanduser().resolve(), invoer_fn=invoer_fn)
+    if keuze == "5":
+        doel_invoer = invoer_fn("  Waar groeit de boom? (map): ").strip()
+        if not doel_invoer:
+            print("  Geen map — geen actie.")
+            return 1
+        return toon_status(Path(doel_invoer).expanduser().resolve(), invoer_fn=invoer_fn)
     if keuze in MODI:
         print(f"  Modus '{MODI[keuze][0]}' volgt in een latere taak van fase 4.")
         return 0
     print("  Onbekende modus — geen actie.")
     return 1
+
+
+def toon_status(doel: Path, invoer_fn=input) -> int:
+    """Status-modus (§13, taak 5): identiteit, register, tellers, laatste
+    mijlpaal/faal. Puur lezen — met één uitzondering: het migratie- en
+    registratie-aanbod voor oude of niet-geregistreerde bomen."""
+    from kern import growkit_oerwoud as gw
+
+    logboek = doel / "logboek.json"
+    bewijs_pad = doel / "geboortebewijs.json"
+    if not bewijs_pad.exists():
+        print("  Geen geboortebewijs in deze boom — de status kan de identiteit niet tonen.")
+        return 0
+    if gw.is_voor_fase5(bewijs_pad):
+        print("  Geboortebewijs is van vóór fase 5 (placeholders) — migratie mogelijk.")
+    else:
+        bewijs = json.loads(bewijs_pad.read_text(encoding="utf-8"))
+        print(f"  Boom-id:   {bewijs['boom_id']}")
+        print(f"  Profiel:   {bewijs['profiel']}")
+        print(f"  Machine:   {bewijs['machine']}")
+        print(f"  Geplant:   {bewijs['geplant_op']} ({bewijs['locatie']})")
+
+    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    verzonden = set()
+    for entry in entries:
+        if entry.get("type") == "doorstroom":
+            verzonden.add(entry.get("bewijs", "").split(" → ")[0])
+    inbox = doel / "inbox"
+    bestanden = [p.name for p in inbox.iterdir()
+                 if p.name.startswith("VOORSTEL-") and p.is_file()] if inbox.exists() else []
+    wachtend = [n for n in bestanden if n not in verzonden]
+    print(f"  VOORSTEL:  {len(wachtend)} wachtend, {len(verzonden)} verzonden")
+
+    for entry in reversed(entries):
+        if entry.get("type") == "mijlpaal" or entry.get("status") == "gefaald":
+            print(f"  Laatste mijlpaal/faal: {entry.get('stap', '?')} — "
+                  f"{entry.get('status', '?')} ({entry.get('tijdstip', '?')})")
+            break
+
+    staat = gw.laad_oerwoud_staat()
+    brein_pad = staat["brein_pad"]
+    boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8")).get("boom_id", "") \
+        if not gw.is_voor_fase5(bewijs_pad) else None
+    geregistreerd = None
+    if brein_pad:
+        register = gw.lees_register(brein_pad / "register" / "bomen.json")
+        geregistreerd = gw.recentste_status(register, boom_id) if boom_id else None
+        print(f"  Register:  {geregistreerd if geregistreerd else 'niet geregistreerd'} "
+              f"(brein: {brein_pad})")
+    else:
+        print("  Register:  geen oerwoud-brein bekend op deze machine")
+
+    voor_fase5 = gw.is_voor_fase5(bewijs_pad)
+    if voor_fase5 or (geregistreerd is None and brein_pad):
+        print("  Deze boom staat nog niet in het oerwoud-register.")
+        if voor_fase5:
+            # de migratie-flow bevat zelf de bevestigingsvraag
+            gw.migratie_en_registratie(doel, logboek, brein_pad=brein_pad,
+                                       invoer_fn=invoer_fn)
+            return 0
+        if invoer_fn("  Registreren in het brein? (ja / nee): ").strip().lower() == "ja":
+            return gw._registreer_in_brein(doel, brein_pad)
+        print("  Geen actie.")
+    return 0
 
 
 def main(invoer_fn=input) -> int:
