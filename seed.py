@@ -68,11 +68,41 @@ def slijper_stub() -> int:
     return 0
 
 
+def verwerk_vrije_beschrijving(beschrijving: str) -> int:
+    """Vrije beschrijving → eerst de Scope-poort; geen actie zonder scope (spec §11)."""
+    import json as _json
+
+    import growkit_poort
+
+    invoer = {"type": "vrije_beschrijving", "tekst": beschrijving}
+    # Eenvoudige veldextractie: wat expliciet genoemd is, wordt meegenomen;
+    # wat ontbreekt blijft ontbrekend — de poort beslist, nooit de agent.
+    for veld, sleutel in (("einddoel", "einddoel:"), ("omgeving", "omgeving:"), ("slaag_criterium", "slaag-criterium:")):
+        if sleutel in beschrijving:
+            invoer[veld] = beschrijving.split(sleutel, 1)[1].strip()
+    ok, tekst, vragen = growkit_poort.beoordeel_invoer(invoer, "vrije_beschrijving")
+    print()
+    if not ok:
+        print(f"  {tekst}")
+        print()
+        print("  Vragenlijst (§11.3):")
+        print(f"  {_json.dumps({'vragen': vragen}, indent=2, ensure_ascii=False)}")
+        print()
+        print("  Geen opdracht — geen actie.")
+        return 1
+    print("  Concept-opdracht (§11.1 — wacht op mens-bevestiging):")
+    print(f"  {tekst}")
+    print()
+    print("  Klopt dit? (ja / pas aan) — pas na jouw bevestiging wordt er geplant.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="seed.py", description="GrowKit — plant een boom.")
     parser.add_argument("--profiel", help="profielnaam, bijv. tweede-brein")
     parser.add_argument("--doel", help="doelmap voor de plant")
     parser.add_argument("--slijp", action="store_true", help="open de Prompt-slijper (fase 3)")
+    parser.add_argument("--vrij", metavar="BESCHRIJVING", help="vrije beschrijving van een nieuwe boom (gaat eerst door de Scope-poort)")
     args = parser.parse_args(argv)
 
     print()
@@ -83,6 +113,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.slijp:
         return slijper_stub()
+
+    if args.vrij is not None:
+        return verwerk_vrije_beschrijving(args.vrij)
 
     if args.profiel and args.doel:
         keuze = {"profiel": args.profiel, "doel": args.doel}
