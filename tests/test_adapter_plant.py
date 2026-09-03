@@ -180,15 +180,25 @@ class TestFaalEnMijlpaal(PlantBasis):
         self.assertEqual(len(ctx.exception.stappen), 1)
         self.assertEqual(ctx.exception.stappen[0]["status"], "gefaald")
 
-    def test_mijlpaal_profiel_wordt_net_geweigerd_ook_met_bevestiging(self):
-        """Beslissing 7: nooit een stilzwijgende midden-staat — fase 6.1."""
+    def test_mijlpaal_profiel_wacht_op_expliciete_bevestiging(self):
+        """Beslissing 7a (fase 6.1): het §11.4-blok wordt geretourneerd zonder
+        uitvoering — de motor draait pas na mijlpaal_bevestigd: true."""
         groot_profiel = {
             "profiel": "groot-boom",
-            "stappen": [{"id": f"stap-{i:03d}", "idempotent": True} for i in range(1, 11)],
+            "stappen": [{"id": f"stap-{i:03d}", "idempotent": True,
+                         "commando": f"echo OK-{i}",
+                         "bewijs": {"type": "shell_check", "commando": f"echo OK-{i}",
+                                    "verwacht_substr": f"OK-{i}"}}
+                        for i in range(1, 11)],
         }
-        with self.assertRaises(adapter_adapter_fout()) as ctx:
-            self._verwerk(groot_profiel)
-        self.assertIn("mijlpaal", ctx.exception.args[0].lower())
+        with mock.patch.object(sys.modules["adapter"], "_laad_profiel",
+                               return_value=groot_profiel), \
+                contextlib.redirect_stdout(io.StringIO()):
+            uit = sys.modules["adapter"].cmd_plant(
+                {"profiel": "groot-boom", "doel": str(self._doel("mijlpaal")),
+                 "bevestig": True, "brein": "geen"})
+        self.assertEqual(uit["data"]["status"], "wacht_op_mijlpaal_bevestiging")
+        self.assertFalse(Path(self._doel("mijlpaal")).exists())   # niets uitgevoerd
 
 
 def adapter_adapter_faal():

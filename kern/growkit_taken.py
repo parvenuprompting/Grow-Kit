@@ -45,3 +45,34 @@ def log_taakgebeurtenis(pad: Path, taak_id: str, status: str, bewijs: str) -> No
         "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     })
     pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None) -> tuple[bool, list[str]]:
+    """Poort → gebeurtenissen → motor: de volledige taak-uitvoering als kern.
+
+    Geen prints — loop.py en de adapter geven zelf hun eigen vorm. Retourneert
+    (geslaagd, bevindingen): bevindingen non-leeg = poort-weigering (niets
+    uitgevoerd, gebeurtenis 'geweigerd' gelogd). Faalcontract van de motor
+    staat onaangetast: één alternatief, dan de mens.
+    """
+    import json as _json
+    from kern import growkit_motor
+
+    taak_id = taak.get("id", "onbekend")
+    taken_logboek = doel / "taken-logboek.json"
+    bevindingen = valideer_taak(taak)
+    if bevindingen:
+        log_taakgebeurtenis(taken_logboek, taak_id, "geweigerd",
+                            "poort-weigering: " + "; ".join(bevindingen))
+        return False, bevindingen
+    log_taakgebeurtenis(taken_logboek, taak_id, "bezig", "motor-start")
+    boom_logboek = doel / "logboek.json"
+    if not boom_logboek.exists():
+        boom_logboek.write_text("[]", encoding="utf-8")
+    geslaagd = growkit_motor.voer_uit({"profiel": f"taak-{taak_id}", "stappen": [taak]},
+                                      doel, boom_logboek, None, reviewconfig=reviewconfig)
+    if geslaagd:
+        log_taakgebeurtenis(taken_logboek, taak_id, "geslaagd", "machine-bewijs (§3)")
+    else:
+        log_taakgebeurtenis(taken_logboek, taak_id, "gefaald", "motor-faalcontract — roep de mens")
+    return geslaagd, []

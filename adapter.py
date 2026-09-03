@@ -53,6 +53,85 @@ def cmd_status(invoer: dict) -> dict:
     return {"ok": True, "data": data}
 
 
+def cmd_hervat(invoer: dict) -> dict:
+    import contextlib
+
+    from kern import growkit_hervat, growkit_motor
+
+    doel = _doel_uit(invoer)
+    logboek = doel / "logboek.json"
+    bewijs_pad = doel / "geboortebewijs.json"
+    naam = str(invoer.get("profiel", "")).strip()
+    if not naam:
+        if not bewijs_pad.exists():
+            raise AdapterFout("geen geboortebewijs in deze boom — geef 'profiel' expliciet "
+                              "in de invoer (de app vraagt het aan de mens)")
+        try:
+            naam = json.loads(bewijs_pad.read_text(encoding="utf-8"))["profiel"]
+        except (json.JSONDecodeError, KeyError) as e:
+            raise AdapterFout(f"geboortebewijs onleesbaar ({e}) — geef 'profiel' expliciet") from e
+    profiel = growkit_motor.vervang_growkit_pad(_laad_profiel(naam), REPO)
+    resultaat = growkit_hervat.reconstructie(logboek, profiel)
+    if resultaat.get("fout") == "corrupt_logboek":
+        raise AdapterFout("boom-logboek is corrupt — roep de mens, nooit auto-repareren")
+    restdraai = [s for s in profiel.get("stappen", [])
+                 if resultaat["stappen"][s["id"]]["beslissing"] in ("heraanbieden", "uitvoeren")]
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {"herstartpunt": resultaat["herstartpunt"],
+                                     "stappen": resultaat["stappen"],
+                                     "restdraai": [s["id"] for s in restdraai],
+                                     "bevestiging_vereist": True}}
+    if not restdraai:
+        return {"ok": True, "data": {"melding": "Niets te hervatten — alle stappen zijn "
+                                                "geslaagd of wachten op ratificatie."}}
+    with contextlib.redirect_stdout(sys.stderr):
+        from kern.growkit_review import laad_reviewconfig
+        reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+        geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
+                                          Path(__file__).parent / "profielen" / naam / "sjablonen",
+                                          reviewconfig=reviewconfig)
+        if geslaagd:
+            growkit_oerwoud.volmaak_na_plant(doel, logboek)
+    stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"]}
+               for e in json.loads(logboek.read_text(encoding="utf-8"))
+               if e.get("stap", "").startswith("stap-")]
+    if not geslaagd:
+        raise AdapterFaal("restdraai faalde na alternatief — roep de mens", stappen)
+    return {"ok": True, "data": {"stappen": stappen,
+                                 "herstartpunt": resultaat["herstartpunt"]}}
+
+
+def cmd_taak(invoer: dict) -> dict:
+    from kern.growkit_taken import laad_taken, valideer_taak, voer_taak_uit
+
+    doel = _doel_uit(invoer)
+    taken = laad_taken(doel / "takenlijst.json")
+    if not taken:
+        return {"ok": True, "data": {"taken": []}}
+    lijst = [{"id": t.get("id", "onbekend"), "titel": t.get("titel", ""),
+              "geldig": not valideer_taak(t)} for t in taken]
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {"taken": lijst, "bevestiging_vereist": True}}
+    taak_id = str(invoer.get("taak_id", "")).strip()
+    if not taak_id:
+        raise AdapterFout("bevestigde taak-uitvoering vereist taak_id")
+    taak = next((t for t in taken if t.get("id") == taak_id), None)
+    if taak is None:
+        raise AdapterFout(f"taak '{taak_id}' bestaat niet in de takenlijst")
+    import contextlib
+
+    from kern.growkit_review import laad_reviewconfig
+    reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    with contextlib.redirect_stdout(sys.stderr):
+        geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+    if bevindingen:
+        raise AdapterFout("deze taak bestaat niet: " + "; ".join(bevindingen))
+    if not geslaagd:
+        raise AdapterFaal(f"taak {taak_id} faalde na alternatief — roep de mens",
+                          [{"id": taak_id, "status": "gefaald"}])
+    return {"ok": True, "data": {"taak": taak_id, "status": "geslaagd"}}
+
+
 def cmd_profielen(invoer: dict) -> dict:
     profielen = [{"naam": p["profiel"], "beschrijving": p.get("beschrijving", "")}
                  for p in laad_profielen() if p.get("status") == "bewezen-vorm"]
@@ -90,15 +169,21 @@ def cmd_plant(invoer: dict) -> dict:
         raise AdapterFout("verplicht veld ontbreekt: profiel")
     doel = _doel_uit(invoer)
     profiel = _laad_profiel(naam)
-    if growkit_poort.mijlpaal_nodig(profiel):
-        raise AdapterFout("dit profiel raakt de mijlpaal-drempel (§11.4) — "
-                          "plant via loop.py; adapter-ondersteuning komt in fase 6.1")
     ok, tekst, _ = growkit_poort.beoordeel_invoer({"profiel": naam, "doel": str(doel)},
                                                   "kiemkeuze")
     if not ok:
         raise AdapterFout(tekst)
     if not invoer.get("bevestig"):
         return {"ok": True, "data": {"concept": tekst, "bevestiging_vereist": True}}
+    if growkit_poort.mijlpaal_nodig(profiel) and not invoer.get("mijlpaal_bevestigd"):
+        # beslissing 7a (fase 6.1): het §11.4-blok retourneren, niets uitvoeren —
+        # de app toont het en her-vraagt met mijlpaal_bevestigd: true
+        from seed import mijlpaal_blok
+        blok = mijlpaal_blok(profiel, doel, doel / "logboek.json")
+        return {"ok": True, "data": {"mijlpaal_blok": blok,
+                                     "status": "wacht_op_mijlpaal_bevestiging",
+                                     "uitgevoerd": False},
+                "bevestiging_vereist": True}
 
     brein_keuze = str(invoer.get("brein", "auto"))
     if brein_keuze not in ("auto", "pad", "geen"):
@@ -182,6 +267,8 @@ COMMANDOS = {
     "profielen": cmd_profielen,
     "plant": cmd_plant,
     "ratificeer": cmd_ratificeer,
+    "hervat": cmd_hervat,
+    "taak": cmd_taak,
 }
 
 
