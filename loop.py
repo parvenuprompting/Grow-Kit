@@ -6,11 +6,13 @@ de Scope-poort blijft de enige invoerbescherming en de motor het enige
 uitvoeringspad. Kernregel in fase 4 (§11.1 hard): de loop voert niets uit
 dat niet de mensbevestiging heeft gehad.
 """
+import json
 import sys
 from pathlib import Path
 
 from seed import laad_profielen, vraag_mijlpaal_bevestiging, PROFILES_DIR
 from kern import growkit_motor, growkit_poort
+from kern import growkit_hervat
 from kern.growkit_review import laad_reviewconfig
 
 REPO = Path(__file__).parent
@@ -68,7 +70,6 @@ def plant_profiel(invoer_fn=input) -> int:
     if not logboek.exists():
         logboek.write_text("[]", encoding="utf-8")
     with open(PROFILES_DIR / naam / "profiel.json", encoding="utf-8") as f:
-        import json
         profiel = json.load(f)
     profiel = growkit_motor.vervang_growkit_pad(profiel, REPO.resolve())
     if growkit_poort.mijlpaal_nodig(profiel):
@@ -76,6 +77,57 @@ def plant_profiel(invoer_fn=input) -> int:
             return 1
     sjablonen = PROFILES_DIR / naam / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel_pad, logboek, sjablonen, reviewconfig=reviewconfig)
+    return 0 if geslaagd else 2
+
+
+def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn=input) -> int:
+    """Hervat-modus: reconstructie uit het logboek (§7) → restdraai-profiel.
+
+    Overslaan-stappen draaien nooit opnieuw (niet-idempotent: hard filter).
+    De rest draait pas na mens-bevestiging. Corrupt logboek → mens, geen crash.
+    """
+    if doel is None:
+        doel_invoer = invoer_fn("  Waar groeit de boom? (map): ").strip()
+        if not doel_invoer:
+            print("  Geen map — geen actie.")
+            return 1
+        doel = Path(doel_invoer).expanduser().resolve()
+    logboek = doel / "logboek.json"
+    if profiel is None:
+        try:
+            bewijs = json.loads((doel / "geboortebewijs.json").read_text(encoding="utf-8"))
+            with open(PROFILES_DIR / bewijs["profiel"] / "profiel.json", encoding="utf-8") as f:
+                profiel = json.load(f)
+        except (OSError, json.JSONDecodeError, KeyError) as e:
+            print(f"  Geboortebewijs of profiel onleesbaar ({e}) — roep de mens.")
+            return 1
+    profiel = growkit_motor.vervang_growkit_pad(profiel, REPO.resolve())
+    resultaat = growkit_hervat.reconstructie(logboek, profiel)
+    if resultaat.get("fout") == "corrupt_logboek":
+        print("  Logboek is corrupt — roep de mens. Geen auto-reparatie.")
+        return 1
+    restdraai = [s for s in profiel.get("stappen", [])
+                 if resultaat["stappen"][s["id"]]["beslissing"] in ("heraanbieden", "uitvoeren")]
+    if not restdraai:
+        print("  Niets te hervatten — alle stappen zijn geslaagd of wachten op ratificatie.")
+        return 0
+    herstartpunt = resultaat["herstartpunt"]
+    if herstartpunt == "start":
+        print("  Herstartpunt: de start — er is nog geen mijlpaal bevestigd.")
+    else:
+        print(f"  Herstartpunt: {herstartpunt['stap']} bevestigd op {herstartpunt['tijdstip']}.")
+    for stap in profiel.get("stappen", []):
+        info = resultaat["stappen"][stap["id"]]
+        if info["beslissing"] == "overslaan" and info["noot"]:
+            print(f"  — {stap['id']}: {info['noot']}")
+    print(f"  Restdraai: {len(restdraai)} stappen ({', '.join(s['id'] for s in restdraai)}).")
+    if invoer_fn("  Restdraai uitvoeren? (ja / pas aan): ").strip().lower() != "ja":
+        print("  Geen bevestiging — geen actie.")
+        return 1
+    reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
+                                      PROFILES_DIR / profiel["profiel"] / "sjablonen",
+                                      reviewconfig=reviewconfig)
     return 0 if geslaagd else 2
 
 
@@ -94,6 +146,8 @@ def main(invoer_fn=input) -> int:
         return 0
     if keuze == "1":
         return plant_profiel(invoer_fn)
+    if keuze == "2":
+        return hervat_boom(invoer_fn=invoer_fn)
     if keuze in MODI:
         print(f"  Modus '{MODI[keuze][0]}' volgt in een latere taak van fase 4.")
         return 0
