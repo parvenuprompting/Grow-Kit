@@ -79,7 +79,7 @@ cd growkit
 python3 seed.py            # interactieve kiemkeuze — welke boom, welke plek?
 ```
 
-Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → ontwerpdoc `docs/superpowers/specs/2026-09-03-growkit-design.md`.
+Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-HET-WERKT.md`** (de complete, correcte uitleg) → ontwerpdoc `docs/superpowers/specs/2026-09-03-growkit-design.md`.
 
 ## Ontstaan
 
