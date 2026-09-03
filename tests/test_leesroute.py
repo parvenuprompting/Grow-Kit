@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from growkit_leesroute import fase_content
+from kern.growkit_leesroute import fase_content
 
 
 class TestLeesroute(unittest.TestCase):

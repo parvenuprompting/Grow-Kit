@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from growkit_poort import (
+from kern.growkit_poort import (
     WEIGERING_BUI,
     WEIGERING_TUINIER,
     beoordeel_invoer,

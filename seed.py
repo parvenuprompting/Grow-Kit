@@ -88,7 +88,7 @@ def verwerk_vrije_beschrijving(beschrijving: str) -> int:
     """Vrije beschrijving → eerst de Scope-poort; geen actie zonder scope (spec §11)."""
     import json as _json
 
-    import growkit_poort
+    from kern import growkit_poort
 
     invoer = {"type": "vrije_beschrijving", "tekst": beschrijving}
     # Eenvoudige veldextractie: wat expliciet genoemd is, wordt meegenomen;
@@ -142,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
             print("  Geen opdracht — geen actie. Tot ziens.")
             return 1
 
-    import growkit_motor
+    from kern import growkit_motor
     doel = Path(keuze["doel"]).expanduser().resolve()
     doel.mkdir(parents=True, exist_ok=True)
     logboek = doel / "logboek.json"

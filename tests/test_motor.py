@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from growkit_motor import voer_stap_uit, voer_uit
+from kern.growkit_motor import voer_stap_uit, voer_uit
 
 
 def maak_profiel():

@@ -8,7 +8,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from growkit_bewijs import controleer
+from kern.growkit_bewijs import controleer
 
 
 def _nu() -> str:

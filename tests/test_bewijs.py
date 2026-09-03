@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from growkit_bewijs import controleer
+from kern.growkit_bewijs import controleer
 
 
 class TestShellCheck(unittest.TestCase):

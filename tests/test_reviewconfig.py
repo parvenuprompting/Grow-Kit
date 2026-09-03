@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from growkit_review import laad_reviewconfig, valideer_reviewconfig
+from kern.growkit_review import laad_reviewconfig, valideer_reviewconfig
 
 
 class TestLaadReviewconfig(unittest.TestCase):

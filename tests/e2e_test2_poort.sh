@@ -69,7 +69,7 @@ echo "OK 2.3: complete invoer → concept wacht op mens; niets uitgevoerd, geen 
 import sys
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
-from growkit_poort import WEIGERING_BUI, WEIGERING_TUINIER
+from kern.growkit_poort import WEIGERING_BUI, WEIGERING_TUINIER
 assert "bui" in WEIGERING_BUI and "Dan plant ik" in WEIGERING_BUI, "2.5 FAIL: WEIGERING_BUI niet conform §11"
 assert "tuinier" in WEIGERING_TUINIER and "helderziende" in WEIGERING_TUINIER, "2.5 FAIL: WEIGERING_TUINIER niet conform §11"
 print("OK 2.5: weigeringsteksten zijn vaste constanten conform spec §11")
