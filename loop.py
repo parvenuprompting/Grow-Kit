@@ -50,7 +50,15 @@ def plant_profiel(invoer_fn=input) -> int:
     if not profielen:
         print("  Geen bewezen profielen gevonden in profielen/. Roep de mens.")
         return 1
-    naam = formuliervraag("Kies een boom:", [p["profiel"] for p in profielen], invoer_fn)
+    from kern import growkit_oerwoud
+    staat = growkit_oerwoud.laad_oerwoud_staat()
+    brein_extra = [f"{n} (uit je brein)" for n in growkit_oerwoud.brein_opties(staat["brein_pad"])] \
+        if staat["brein_pad"] and not staat["fout"] else []
+    naam = formuliervraag("Kies een boom:", [p["profiel"] for p in profielen] + brein_extra, invoer_fn)
+    if naam not in [p["profiel"] for p in profielen]:
+        print("  Dat is geen bewezen profiel — geen actie. Beschrijf een nieuwe boom "
+              "vrij via seed.py --vrij, of kies uit de lijst.")
+        return 1
     doel = invoer_fn("  Waar moet het groeien? (map, bijv. ~/mijn-brein): ").strip()
     ok, tekst, _ = growkit_poort.beoordeel_invoer({"profiel": naam, "doel": doel}, "kiemkeuze")
     print()

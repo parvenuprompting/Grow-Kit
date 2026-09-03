@@ -277,6 +277,16 @@ def log_gebeurtenis(logboek: Path, bewijstekst: str) -> None:
     logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def brein_opties(brein_pad: Path) -> list[str]:
+    """Alleen-lezen vliegwiel (§11.2): mapnamen uit projecten/ van het brein,
+    max. 5, alfabetisch. Geen brein of lege map → lege lijst. Opties zijn
+    advies voor de formulieren — nooit uitvoer."""
+    projecten = brein_pad / "projecten"
+    if not projecten.exists():
+        return []
+    return sorted(p.name for p in projecten.iterdir() if p.is_dir())[:5]
+
+
 def lees_register(pad: Path) -> list[dict]:
     """Lees het boom-register; afwezig is een leeg oerwoud."""
     if not pad.exists():
