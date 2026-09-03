@@ -1,7 +1,7 @@
 # Ontwerp — GrowKit
 
 Datum: 3 september 2026
-Status: goedgekeurd in brainstorm (Tiëndo + Mac Hermes); v2 na externe review (Claude) — model-switch, harnas-beslissing, groeifases-roadmap, keuze eerste profiel
+Status: goedgekeurd in brainstorm (Tiëndo + Mac Hermes); v2 na externe review (Claude) — model-switch, harnas-beslissing, groeifases-roadmap, keuze eerste profiel; v3 — spelling GrowKit, naamcollisie definitief, fase-1-naam, Scope-poort (§11)
 
 ## 1. Wat het is
 
@@ -150,15 +150,37 @@ Beslissing (optie A): het eerste profiel is een **generieke tweede-brein** — d
 
 De echte stappen van dit profiel worden in het implementatieplan uitgewerkt (open punt 2 uit §11).
 
-## 11. Open punten voor het implementatieplan
+## 11. De Scope-poort — geen actie zonder heldere scope
+
+Principe: **GrowKit voert niets uit zonder heldere scope.** De poort beoordeelt niet of een prompt "goed" of "dom" is — kwaliteitsbeoordeling is interpretatie en blijft bij de mens (§3-les). De poort controleert alleen of de **verplichte structuur** aanwezig is. Ontbreekt die, dan bestaat de opdracht als opdracht niet: het script weigert en doet niets.
+
+| Invoer | Verplicht aanwezig | Anders |
+|---|---|---|
+| Kiemkeuze | gekozen profiel + doel-locatie | script voert niets uit |
+| Vrije beschrijving (nieuwe boom) | einddoel + omgeving (lokaal/VPS) + slaag-criterium | weigering + concrete vragenlijst |
+| Taak in de groeilaag | bewijs-check per taak (§4-schema) | taak is ongeldig en bestaat niet |
+
+Weigeringstoon: vaste, droge maar nette weigeringsteksten (Nederlands) plus de concrete vragen die wél tot actie leiden. Voorbeelden:
+
+> "Dit is nog geen opdracht — dit is een bui. Noem: wat wil je laten groeien, waar, en wanneer is het geslaagd. Dan plant ik."
+
+> "Ik ga niet raden wat je bedoelt; ik ben een tuinier, geen helderziende. Drie vragen: doel, plek, slaag-criterium."
+
+Afdwingbaarheid per fase:
+
+- **Fase 1–3 (geleende agent):** de poort zit in het *formaat* — seed.py weigert invoer zonder verplichte velden; een taak zonder bewijs-check is schema-ongeldig. Dit is hard: zonder geldige invoer draait er niets. De toon-uitvoering (de weigeringstekst) gebeurt wel door de geleende agent en is dus om te praten — al bereikt de gebruiker dan nog steeds niets zonder geldig stappenplan.
+- **Fase 4 (eigen harnas):** pas dan is de poort volledig onomzeilbaar, want loop.py bepaalt wat uitgevoerd wordt — dezelfde reden als bij de leesroute (§5).
+
+## 12. Open punten voor het implementatieplan
 
 1. Implementatie van per-fase bestandsontsluiting (§5): directe content-injectie door seed.py (voorkeur) vs. kopiëren naar werkmap.
 2. De concrete stappen + bewijs-checks van het generieke tweede-brein-profiel — de échte commando's en checks, geen voorbeelden.
 3. ssh-configuratie voor een VPS-doel: vastleggen per profiel (herbruikbaar) vs. opvragen tijdens het planten.
 4. Meetbare slaag/faal-criteria voor Test 1 (tweede-brein op schone plek) en Test 2 (vrije beschrijving).
 5. Hoe de `reviewer`-rol praktisch wordt geconfigureerd (config-bestand? omgevingsvariabelen?) zonder leveranciers-binding.
+6. Exacte verplichte velden en weigeringsteksten van de Scope-poort (§11), en of de vragenlijst per invoertype (kiemkeuze / vrije beschrijving / taak) verschilt.
 
-## 12. Buiten scope (voor nu)
+## 13. Buiten scope (voor nu)
 
 - Eigen harnas vóór fase 2-bewijs (fase 4 is de roadmap).
 - Sandboxing, prompt-injectie-afweer van tool-output, harnas-resumability — reëel, maar pas relevant zodra het harnas gebouwd wordt.
