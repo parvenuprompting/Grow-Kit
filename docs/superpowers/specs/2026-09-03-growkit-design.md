@@ -31,10 +31,13 @@ Risico bij zelf-gerapporteerd bewijs: de agent die uitvoert is dezelfde die het 
 
 Oplossing: bewijs is waar mogelijk een expliciete check die **seed.py zelf uitvoert**, met een vaste set types en eigen verificatiefuncties:
 
-- `shell_check` — commando draait, output moet aan een voorwaarde voldoen (bevat / matcht)
-- `http_check` — URL reageert met verwachte status
-- `file_exists` — pad bestaat
-- `json_valid` — bestand is valide JSON (optioneel: tegen een schema)
+- `shell_check` — commando draait, output bevat een gecodeerde voorwaarde (`verwacht_substr`)
+- `http_check` — URL reageert met verwachte status (`verwacht_status`)
+- `file_exists` — pad bestaat (optioneel: `bevat`-tekst)
+- `json_valid` — valide JSON met gecodeerde voorwaarden (`top_level`, `exacte_lengte`, `verplicht_veld`)
+- `file_equals` — bestand is byte-voor-byte gelijk aan een sjabloon uit `profielen/<profiel>/sjablonen/`
+
+Twee harde regels: voorwaarden zijn altijd **gecodeerd** (vaste velden), nooit vrije tekst die een interpreter moet lezen. En bestandsinhoud wordt aangeleverd via **sjabloonbestanden** die met deterministische commando's worden gekopieerd — geen heredocs in JSON.
 
 Kan een stap niet machine-toetsbaar, dan is de stap expliciet gemarkeerd **mens_verificatie** en telt niet als automatisch bewijs; zo'n stap kan een reviewer-model als eerste blik krijgen (§9).
 
@@ -48,7 +51,7 @@ Kan een stap niet machine-toetsbaar, dan is de stap expliciet gemarkeerd **mens_
   "bewijs": {
     "type": "shell_check",
     "check": "docker ps --filter name=growkit-sync --format '{{.Status}}'",
-    "slaagt_als": "bevat 'Up'"
+    "verwacht_substr": "Up"
   },
   "mens_nodig": null,
   "bij_falen": {
@@ -148,7 +151,9 @@ Beslissing (optie A): het eerste profiel is een **generieke tweede-brein** — d
 - het profiel staat op zichzelf en is herbruikbaar voor elke gebruiker;
 - bij het schrijven wordt de inhoud van Agent-Brain niet geraakt — alleen de vorm, uit het hoofd en uit dit ontwerp, afgeleid.
 
-De echte stappen van dit profiel worden in het implementatieplan uitgewerkt (open punt 2 uit §11).
+De vaste kern van het profiel: `identiteit/`, `kennis/`, `projecten/`, `inbox/`, `logboek/` — vijf mappen. Alles daarbuiten (stem/, ideeën/, prompts/, configuraties/ …) is **optioneel** en duidelijk gemarkeerd; de twaalf-mappen-variant uit de review wordt niet overgenomen. Bestandsinhoud komt uit `profielen/tweede-brein/sjablonen/` en wordt gekopieerd met deterministische commando's; het bewijs is `file_equals`.
+
+De echte stappen van dit profiel worden in het implementatieplan uitgewerkt (open punt 2 uit §12).
 
 ## 11. De Scope-poort — geen actie zonder heldere scope
 
