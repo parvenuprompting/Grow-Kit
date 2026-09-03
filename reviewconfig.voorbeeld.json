@@ -1,0 +1,16 @@
+{
+  "_uitleg": [
+    "Voorbeeld-config voor GrowKit review-rollen (spec §9, §12.5).",
+    "Kopieer naar reviewconfig.json (die staat in .gitignore) en vul je eigen aanroep in.",
+    "HARD: géén velden 'model', 'provider' of 'leverancier' — GrowKit kent alleen rollen;",
+    "jij mapt een rol naar wat dan ook in je eigen configuratie/endpoint.",
+    "Antwoordformaat: exact een van \"geslaagd\", \"gefaald\", \"onduidelijk\" (http: JSON met veld 'oordeel').",
+    "Alles anders, crash of time-out = \"onduidelijk\" = de mens wordt geroepen."
+  ],
+  "rollen": {
+    "reviewer": {
+      "type": "cli",
+      "commando": "printf '%s' \"$(cat)\" | jouw-review-script"
+    }
+  }
+}

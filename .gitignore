@@ -2,5 +2,7 @@
 groei/logboek.json
 groei/takenlijst.md
 groei/slijper-logboek.json
+# Reviewconfig is per-machine (mag leveranciers-IDs bevatten, geen secrets)
+reviewconfig.json
 __pycache__/
 *.pyc
