@@ -1,0 +1,30 @@
+name: GrowKit
+options:
+  bundleIdPrefix: nl.growkit
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: VJ9D2C765N
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: 0.6.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: "5.10"
+targets:
+  GrowKit:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Fonts
+        buildPhase: resources
+    assets:
+      - path: Assets.xcassets
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: GrowKit
+        CFBundleShortVersionString: "0.6.0"
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "Editorial Monochrome — Fraunces & Inter (SIL OFL)"
