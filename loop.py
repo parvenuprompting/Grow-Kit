@@ -14,6 +14,7 @@ from seed import laad_profielen, vraag_mijlpaal_bevestiging, PROFILES_DIR
 from kern import growkit_motor, growkit_poort
 from kern import growkit_hervat
 from kern.growkit_review import laad_reviewconfig
+from kern.growkit_taken import laad_taken, log_taakgebeurtenis, valideer_taak
 
 REPO = Path(__file__).parent
 MODI = {
@@ -199,6 +200,55 @@ def _nu() -> str:
     return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 
 
+def voer_taak(doel: Path, invoer_fn=input) -> int:
+    """Taak-modus (§7): poort eerst, motor uit, append-only gebeurtenissen.
+
+    Een taak zonder bewijs bestaat niet: geweigerd, niets uitgevoerd.
+    Bij faal: mens — het motor-faalcontract staat, geen retries.
+    """
+    takenlijst = doel / "takenlijst.json"
+    taken = laad_taken(takenlijst)
+    if not taken:
+        print("  Geen taken in de groeilaag — niets te doen.")
+        return 0
+    print("  Taken in de groeilaag:")
+    for i, taak in enumerate(taken, start=1):
+        print(f"    {i}. {taak.get('id', 'onbekend')} — {taak.get('titel', '')}")
+    keuze = invoer_fn("  Welke taak? (nummer / q): ").strip().lower()
+    if keuze == "q":
+        print("  Geen actie.")
+        return 0
+    try:
+        taak = taken[int(keuze) - 1]
+    except (ValueError, IndexError):
+        print("  Onbekende taak — geen actie.")
+        return 1
+    taak_id = taak.get("id", "onbekend")
+    bevindingen = valideer_taak(taak)
+    if bevindingen:
+        print("  Deze taak bestaat niet: poort-weigering.")
+        for b in bevindingen:
+            print(f"    — {b}")
+        log_taakgebeurtenis(doel / "taken-logboek.json", taak_id, "geweigerd",
+                            "poort-weigering: " + "; ".join(bevindingen))
+        return 1
+    print(f"  Taak {taak_id} uitvoeren — taak: {taak.get('titel', '')}")
+    log_taakgebeurtenis(doel / "taken-logboek.json", taak_id, "bezig", "motor-start")
+    boom_logboek = doel / "logboek.json"
+    if not boom_logboek.exists():
+        boom_logboek.write_text("[]", encoding="utf-8")
+    reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    geslaagd = growkit_motor.voer_uit({"profiel": f"taak-{taak_id}", "stappen": [taak]},
+                                      doel, boom_logboek, None, reviewconfig=reviewconfig)
+    if geslaagd:
+        log_taakgebeurtenis(doel / "taken-logboek.json", taak_id, "geslaagd",
+                            "machine-bewijs (§3)")
+        return 0
+    log_taakgebeurtenis(doel / "taken-logboek.json", taak_id, "gefaald",
+                        "motor-faalcontract — roep de mens")
+    return 2
+
+
 def main(invoer_fn=input) -> int:
     print()
     print("  ────────────────────────────────────────")
@@ -216,6 +266,12 @@ def main(invoer_fn=input) -> int:
         return plant_profiel(invoer_fn)
     if keuze == "2":
         return hervat_boom(invoer_fn=invoer_fn)
+    if keuze == "3":
+        doel_invoer = invoer_fn("  Waar groeit de boom? (map): ").strip()
+        if not doel_invoer:
+            print("  Geen map — geen actie.")
+            return 1
+        return voer_taak(Path(doel_invoer).expanduser().resolve(), invoer_fn=invoer_fn)
     if keuze == "4":
         doel_invoer = invoer_fn("  Waar groeit de boom? (map): ").strip()
         if not doel_invoer:
