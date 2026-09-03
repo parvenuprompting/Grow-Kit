@@ -6,6 +6,7 @@ struct RatificeerView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
+    var metScroll: Bool = true
 
     @State private var boomPad = ""
     @State private var wachtend: [String] = []
@@ -16,19 +17,27 @@ struct RatificeerView: View {
     @State private var melding: String?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                kop
-                zoekrij
-                if let melding { tekstKaart("Melding", melding) }
-                if !wachtend.isEmpty { wachtendeKaart }
-                if !verwerkt.isEmpty { verwerktKaart }
-                if let fout { foutKaart(fout) }
-                Spacer()
-            }
-            .padding(28)
+        groep
+            .background(Thema.kleur(.papier))
+    }
+
+    // ImageRenderer rendert ScrollView leeg; het render-bewijs gebruikt
+    // dezelfde inhoud zonder scroll-container (metScroll: false).
+    @ViewBuilder private var groep: some View {
+        if metScroll { ScrollView { inhoudView } } else { inhoudView }
+    }
+
+    @ViewBuilder private var inhoudView: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            kop
+            zoekrij
+            if let melding { tekstKaart("Melding", melding) }
+            if !wachtend.isEmpty { wachtendeKaart }
+            if !verwerkt.isEmpty { verwerktKaart }
+            if let fout { foutKaart(fout) }
+            Spacer()
         }
-        .background(Thema.kleur(.papier))
+        .padding(28)
     }
 
     private var kop: some View {
@@ -121,7 +130,9 @@ struct RatificeerView: View {
                                                    commando: "ratificeer", invoer: ["doel": boomPad])
             await MainActor.run {
                 wachtend = resultaat?.data["stappen"] as? [String] ?? []
-                if wachtend.isEmpty { melding = "Geen ratificatie-moment — geen stappen wachten op de mens." }
+                if wachtend.isEmpty {
+                    melding = "Geen ratificatie-moment — geen stappen wachten op de mens."
+                }
             }
         }
     }

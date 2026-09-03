@@ -41,51 +41,62 @@ struct StatusView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
+    var metScroll: Bool = true
 
     @State private var boomPad = ""
     @State private var gegevens: StatusGegevens?
     @State private var fout: String?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                kop
-                zoekrij
-                if let fout { foutKaart(fout) }
-                if runner.bezig { Text("De adapter denkt na…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt)) }
-                if let gegevens {
-                    if let melding = gegevens.melding {
-                        Kaart(kop: "Melding") {
-                            Text(melding).font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
-                        }
+        groep
+            .background(Thema.kleur(.papier))
+    }
+
+    // ImageRenderer rendert ScrollView leeg; het render-bewijs gebruikt
+    // daarom dezelfde inhoud zonder scroll-container (metScroll: false).
+    @ViewBuilder private var groep: some View {
+        if metScroll { ScrollView { inhoudView } } else { inhoudView }
+    }
+
+    @ViewBuilder private var inhoudView: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            kop
+            zoekrij
+            if let fout { foutKaart(fout) }
+            if runner.bezig {
+                Text("De adapter denkt na…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+            }
+            if let gegevens {
+                if let melding = gegevens.melding {
+                    Kaart(kop: "Melding") {
+                        Text(melding).font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
                     }
-                    if !gegevens.voorFase5, let identiteit = gegevens.identiteit {
-                        identiteitsKaart(identiteit)
+                }
+                if !gegevens.voorFase5, let identiteit = gegevens.identiteit {
+                    identiteitsKaart(identiteit)
+                }
+                if gegevens.voorFase5 {
+                    Kaart(kop: "Migratie") {
+                        Text("Geboortebewijs is van vóór fase 5 (placeholders) — migreer via loop.py, modus 5.")
+                            .font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
                     }
-                    if gegevens.voorFase5 {
-                        Kaart(kop: "Migratie") {
-                            Text("Geboortebewijs is van vóór fase 5 (placeholders) — migreer via loop.py, modus 5.")
-                                .font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
-                        }
-                    }
-                    registerKaart(gegevens)
-                    tellerKaart(gegevens)
-                    if let laatste = gegevens.laatste {
-                        Kaart(kop: "Laatste mijlpaal / faal") {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("\(laatste["stap"] as? String ?? "?") — \(laatste["status"] as? String ?? "?")")
-                                    .font(Thema.tekst(13, gewicht: .medium))
-                                Text(laatste["tijdstip"] as? String ?? "")
-                                    .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
-                            }
+                }
+                registerKaart(gegevens)
+                tellerKaart(gegevens)
+                if let laatste = gegevens.laatste {
+                    Kaart(kop: "Laatste mijlpaal / faal") {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(laatste["stap"] as? String ?? "?") — \(laatste["status"] as? String ?? "?")")
+                                .font(Thema.tekst(13, gewicht: .medium))
+                            Text(laatste["tijdstip"] as? String ?? "")
+                                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
                         }
                     }
                 }
-                Spacer()
             }
-            .padding(28)
+            Spacer()
         }
-        .background(Thema.kleur(.papier))
+        .padding(28)
     }
 
     private var kop: some View {

@@ -40,3 +40,8 @@ de editorial-monochrome huisstijl uit de mockups).
    realpaths (les vastgelegd in het script).
 3. **Zelf-herkenning:** de shell-scan ving mijn eigen commentaar dat het woord
    "shell" bevatte — de scan werkt; het commentaar is herformuleerd.
+4. **ImageRenderer + ScrollView:** ImageRenderer rendert ScrollView-inhoud
+   leeg (bekende beperking) — de eerste renders waren identiek wit. De views
+   hebben daarom een `metScroll`-parameter: de app scrolt, het render-bewijs
+   gebruikt dezelfde inhoud in een vast frame. Les: controleer bewijs-beelden
+   op inhoud (md5/pixel-diversiteit), nooit alleen op aanwezigheid.

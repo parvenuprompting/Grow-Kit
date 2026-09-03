@@ -40,12 +40,12 @@ try? FileManager.default.createDirectory(at: uitvoerMap, withIntermediateDirecto
 
 render("status.png", StatusView(runner: runner,
                                 repoPad: .constant(Runner.standaardRepoPad),
-                                interpreter: .constant(Runner.standaardInterpreter)))
+                                interpreter: .constant(Runner.standaardInterpreter), metScroll: false))
 render("plant.png", PlantView(runner: runner,
                               repoPad: .constant(Runner.standaardRepoPad),
-                              interpreter: .constant(Runner.standaardInterpreter)))
+                              interpreter: .constant(Runner.standaardInterpreter), metScroll: false))
 render("ratificatie.png", RatificeerView(runner: runner,
                                          repoPad: .constant(Runner.standaardRepoPad),
-                                         interpreter: .constant(Runner.standaardInterpreter)))
+                                         interpreter: .constant(Runner.standaardInterpreter), metScroll: false))
 print("RENDER OK: drie schermen")
 }

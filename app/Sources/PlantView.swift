@@ -6,6 +6,7 @@ struct PlantView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
+    var metScroll: Bool = true
 
     @State private var profielen: [[String: Any]] = []
     @State private var breinOpties: [[String: Any]] = []
@@ -17,25 +18,32 @@ struct PlantView: View {
     @State private var stappen: [[String: Any]] = []
     @State private var geplant = false
     @State private var fout: String?
-    @State private var vraagBrein = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                kop
-                profielKeuze
-                doelVeld
-                breinKeuzeRij
-                acties
-                if let concept { conceptKaart(concept) }
-                if !stappen.isEmpty { stappenKaart }
-                if let fout { foutKaart(fout) }
-                Spacer()
-            }
-            .padding(28)
+        groep
+            .background(Thema.kleur(.papier))
+            .onAppear { laadProfielen() }
+    }
+
+    // ImageRenderer rendert ScrollView leeg; het render-bewijs gebruikt
+    // dezelfde inhoud zonder scroll-container (metScroll: false).
+    @ViewBuilder private var groep: some View {
+        if metScroll { ScrollView { inhoudView } } else { inhoudView }
+    }
+
+    @ViewBuilder private var inhoudView: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            kop
+            profielKeuze
+            doelVeld
+            breinKeuzeRij
+            acties
+            if let concept { conceptKaart(concept) }
+            if !stappen.isEmpty { stappenKaart }
+            if let fout { foutKaart(fout) }
+            Spacer()
         }
-        .background(Thema.kleur(.papier))
-        .onAppear { laadProfielen() }
+        .padding(28)
     }
 
     private var kop: some View {
@@ -119,7 +127,9 @@ struct PlantView: View {
         HStack(spacing: 12) {
             knop("Bekijk concept", gevuld: false) { startPlant(bevestig: false) }
             knop("Plant deze boom", gevuld: true) { startPlant(bevestig: true) }
-            if runner.bezig { Text("de motor draait…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt)) }
+            if runner.bezig {
+                Text("de motor draait…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+            }
         }
     }
 
