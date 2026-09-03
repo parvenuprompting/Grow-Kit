@@ -217,6 +217,66 @@ def volmaak_na_plant(doel: Path, logboek: Path) -> bool:
     return True
 
 
+def stuur_voorstellen(boom_doel: Path, brein_pad: Path) -> tuple[int, list[str]]:
+    """Stuur gemarkeerde VOORSTELLEN append-only naar de brein-inbox (§13).
+
+    Drift-guard: uitsluitend bestanden met de prefix `VOORSTEL-` reizen —
+    logboeken, geboortebewijzen en willekeurige bestanden blijven thuis.
+    Reeds verzonden bestanden (logboek-check) worden overgeslagen; een
+    naam-collisie in de brein-inbox wordt geweigerd, nooit overschreven.
+    """
+    boom_doel = boom_doel.resolve()
+    brein_pad = brein_pad.resolve()
+    if not brein_pad.exists() or not (brein_pad / "inbox").exists():
+        raise ValueError(f"brein {brein_pad} is onbereikbaar of heeft geen inbox — roep de mens")
+    inbox = boom_doel / "inbox"
+    if brein_pad == boom_doel:
+        return 0, []
+    if not inbox.exists():
+        return 0, []
+    bewijs_pad = boom_doel / "geboortebewijs.json"
+    bevindingen = controleer_geboortebewijs(bewijs_pad)
+    if bevindingen:
+        raise ValueError("geboortebewijs ongeldig — " + "; ".join(bevindingen))
+    boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8"))["boom_id"]
+
+    verzonden = set()
+    logboek = boom_doel / "logboek.json"
+    if logboek.exists():
+        for entry in json.loads(logboek.read_text(encoding="utf-8")):
+            if entry.get("type") == "doorstroom":
+                verzonden.add(entry.get("bewijs", "").split(" → ")[0])
+
+    namen = []
+    for bestand in sorted(inbox.iterdir()):
+        naam = bestand.name
+        if not naam.startswith("VOORSTEL-") or not bestand.is_file():
+            continue
+        if naam in verzonden:
+            continue
+        doel_naam = f"VOORSTEL-{boom_id}-{naam.removeprefix('VOORSTEL-')}"
+        doel_bestand = brein_pad / "inbox" / doel_naam
+        if doel_bestand.exists():
+            raise ValueError(f"collisie in de brein-inbox: {doel_naam} bestaat — nooit overschrijven")
+        doel_bestand.write_text(bestand.read_text(encoding="utf-8"), encoding="utf-8")
+        log_gebeurtenis(logboek, f"{naam} → {doel_bestand.name}")
+        namen.append(doel_bestand.name)
+    return len(namen), namen
+
+
+def log_gebeurtenis(logboek: Path, bewijstekst: str) -> None:
+    """Append-only gebeurtenis in het boom-logboek (doorstroom e.d.)."""
+    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries.append({
+        "type": "doorstroom",
+        "stap": "oerwoud",
+        "status": "geslaagd",
+        "bewijs": bewijstekst,
+        "tijdstip": _nu(),
+    })
+    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def lees_register(pad: Path) -> list[dict]:
     """Lees het boom-register; afwezig is een leeg oerwoud."""
     if not pad.exists():
