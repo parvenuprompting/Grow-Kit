@@ -145,7 +145,9 @@ class DriftGuard(KoppelBasis):
         # wat blijft lokaal: omgevingsstaat
         self.assertTrue(any("pad" in item.lower() or "sleutel" in item.lower() or "poort" in item.lower()
                             for item in data["blijft_lokaal"]))
-        self.assertEqual(data["brein_pad"], str(brein))
+        # macOS: tempfile levert /var/... maar resolve() geeft /private/var/... —
+        # vergelijk daarna pas.
+        self.assertEqual(data["brein_pad"], str(Path(str(brein)).expanduser().resolve()))
 
     def test_driftguard_telt_gekoppelde_bomen(self):
         brein = self._brein()
