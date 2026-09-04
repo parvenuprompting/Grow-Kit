@@ -61,7 +61,12 @@ def _log(logboek: Path, stap_id: str, status: str, bewijstekst: str,
     logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None) -> None:
+def vangnet_pad_voor(doel: Path) -> Path:
+    return doel / "vangnet"
+
+
+def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None,
+                       vangnet: Path | None = None) -> None:
     """Mens-stap: reviewer eerst (indien geconfigureerd), anders klassiek mens-moment."""
     instructie = stap["mens_nodig"].get("instructie", "")
     rol = stap.get("review")
@@ -69,6 +74,9 @@ def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None) -> 
     if rol and reviewconfig:
         from kern.growkit_review import roep_reviewer
         oordeel = roep_reviewer(rol, stap, instructie, reviewconfig)
+        if vangnet is not None:
+            from kern import growkit_vangnet
+            growkit_vangnet.vang_review(vangnet, rol, stap, instructie, oordeel or "")
     if oordeel == "geslaagd":
         extra = {"review_rol": rol, "review_oordeel": oordeel,
                  "noot": "latere stappen bouwen mogelijk op deze nog-te-ratificeren stap"}
@@ -85,15 +93,23 @@ def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None) -> 
 
 
 def voer_uit(profiel: dict, doel: Path, logboek: Path, sjablonen_map: Path | None,
-             reviewconfig: dict | None = None) -> bool:
-    """Volledige run. Mens-stappen pauzeren (wacht_op_mens), bewijs-stappen bewijzen."""
+             reviewconfig: dict | None = None, vangnet: Path | None = None) -> bool:
+    """Volledige run. Mens-stappen pauzeren (wacht_op_mens), bewijs-stappen bewijzen.
+
+    `vangnet` is optioneel (Vangnet-fase 1): gezet betekent het dat elke
+    stap-uitkomst en review-aanroep wordt vastgelegd. Faalt het vangnet,
+    dan merkt de loop er niets van (fail-open)."""
     alles_geslaagd = True
     for stap in profiel["stappen"]:
         if stap.get("mens_nodig"):
-            _behandel_mensstap(stap, logboek, reviewconfig)
+            _behandel_mensstap(stap, logboek, reviewconfig, vangnet)
             continue  # fase 1: mens-momenten tonen we, auto-hervatten komt later
         ok, bewijstekst = voer_stap_uit(stap, doel, sjablonen_map)
         _log(logboek, stap["id"], "geslaagd" if ok else "gefaald", bewijstekst)
+        if vangnet is not None:
+            from kern import growkit_vangnet
+            growkit_vangnet.vang_stap(vangnet, stap["id"],
+                                      "geslaagd" if ok else "gefaald", bewijstekst)
         print(f"  [{'OK' if ok else 'X'}] {stap['id']} — {bewijstekst}")
         if not ok:
             print(f"  Stap {stap['id']} faalde na alternatief. Roep de mens.")

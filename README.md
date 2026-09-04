@@ -69,6 +69,7 @@ De volledige uitleg — gewone mens én techneut — staat in **[`docs/HOE-HET-W
 | `kern/growkit_taken.py` | Takenlijst van de groeilaag: taken bestaan alleen mét bewijs. |
 | `kern/growkit_oerwoud.py` | Geboortebewijs, boom-register, VOORSTEL-doorstroom, brein-opties, status-data. |
 | `kern/growkit_ratificatie.py` | Bulk-ratificatie-logica — één bron voor loop.py en de adapter. |
+| `kern/growkit_vangnet.py` | Vangnet (fase 1): legt review-aanroepen en stap-uitkomsten vast in SQLite per boom (`<doel>/vangnet/`). Fail-open: faalt het vangnet, dan merkt de loop er niets van. Secrets worden gehasht vóór opslag. |
 | `adapter.py` | Machine-leesbare JSON-CLI over de kern — de brug voor de app. Bedienaar, geen machthebber. |
 | `app/` | De native macOS-app (SwiftUI via XcodeGen) in de editorial-monochrome huisstijl. |
 | `profielen/` | De bomen: JSON-stappenplannen met gecodeerd bewijs + sjablonen. |

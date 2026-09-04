@@ -70,7 +70,8 @@ def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None) -> tuple[bool, list
     if not boom_logboek.exists():
         boom_logboek.write_text("[]", encoding="utf-8")
     geslaagd = growkit_motor.voer_uit({"profiel": f"taak-{taak_id}", "stappen": [taak]},
-                                      doel, boom_logboek, None, reviewconfig=reviewconfig)
+                                      doel, boom_logboek, None, reviewconfig=reviewconfig,
+                                      vangnet=growkit_motor.vangnet_pad_voor(doel))
     if geslaagd:
         log_taakgebeurtenis(taken_logboek, taak_id, "geslaagd", "machine-bewijs (§3)")
     else:
