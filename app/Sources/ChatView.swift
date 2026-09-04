@@ -659,7 +659,8 @@ struct ChatView: View {
             let resultaat = await agentKoppeling.slijp(runner: runner,
                                                        repoPad: repoPad,
                                                        interpreter: interpreter,
-                                                       tekst: vraag)
+                                                       tekst: vraag,
+                                                       agent: geselecteerdeAgentId)
             await MainActor.run {
                 agentDenktNa = false
                 verwerk(resultaat, vraag: vraag)

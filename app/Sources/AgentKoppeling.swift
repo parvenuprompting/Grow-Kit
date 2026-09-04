@@ -22,10 +22,16 @@ final class AgentKoppeling: ObservableObject {
     /// Antwoorden uit het vragen-rondje gaan onveranderd mee in de invoer-JSON:
     /// de app interpreteert niets, de poort blijft de bewaker.
     func slijp(runner: Runner, repoPad: String, interpreter: String,
-               tekst: String, antwoorden: [String: String] = [:]) async -> SlijpResultaat {
+               tekst: String, antwoorden: [String: String] = [:],
+               agent: String? = nil) async -> SlijpResultaat {
         await MainActor.run { self.bezig = true; self.laatsteFout = nil }
         defer { Task { await MainActor.run { self.bezig = false } } }
         var invoer: [String: Any] = ["tekst": tekst]
+        // De gekozen agent reist mee als contextveld — de poort beslist wat
+        // hij ermee doet; de app voegt geen interpretatie toe.
+        if let agent, !agent.isEmpty, agent != "alle" {
+            invoer["agent"] = agent
+        }
         for (veld, antwoord) in antwoorden where !antwoord.trimmingCharacters(in: .whitespaces).isEmpty {
             invoer[veld] = antwoord.trimmingCharacters(in: .whitespaces)
         }

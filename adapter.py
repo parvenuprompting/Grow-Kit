@@ -573,6 +573,98 @@ def cmd_verbruik(invoer: dict) -> dict:
         raise AdapterFout(str(e))
     return {"ok": True, "data": data}
 
+def cmd_governor(invoer: dict) -> dict:
+    """Agent-governor via de adapter: status, aanmelden, afronden, controle,
+    subagent vormen, observer-melding. Bedienaar — de governor-kern beslist.
+
+    Register: <doel>/governor.json (of expliciet register_pad)."""
+    from kern import growkit_agents as ag
+
+    doel = _doel_uit(invoer)
+    pad = Path(str(invoer.get("register_pad", "")).strip() or doel / "governor.json")
+    actie = str(invoer.get("actie", "status")).strip()
+
+    if pad.exists():
+        try:
+            register = json.loads(pad.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            raise AdapterFout(f"governor-register {pad} is geen geldige JSON: {e}")
+    else:
+        register = ag.nieuw_register()
+
+    def bewaar(nieuw: dict) -> None:
+        pad.parent.mkdir(parents=True, exist_ok=True)
+        pad.write_text(json.dumps(nieuw, indent=2, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+
+    def _agents_weergave(reg: dict) -> list[dict]:
+        return [{"agent": naam, **{k: v for k, v in info.items()}}
+                for naam, info in reg["agents"].items()]
+
+    if actie == "status":
+        return {"ok": True, "data": {
+            "limieten": {"taken_per_agent": ag.MAX_TAKEN_PER_AGENT,
+                         "max_agents": ag.MAX_AGENTS,
+                         "max_taken_totaal": ag.MAX_TAKEN_TOTAAL},
+            "agents": _agents_weergave(register),
+            "taken": register["taken"],
+            "observer_meldingen": register.get("observer_meldingen", []),
+            "register_pad": str(pad)}}
+
+    if actie == "aanmelden":
+        agent = str(invoer.get("agent", "")).strip()
+        taak_id = str(invoer.get("taak_id", "")).strip()
+        if not agent or not taak_id:
+            raise AdapterFout("aanmelden vereist agent en taak_id")
+        nieuw, ok, reden = ag.meld_taak_aan(register, agent, taak_id)
+        if ok:
+            bewaar(nieuw)
+        return {"ok": True, "data": {"resultaat": {"ok": ok, "reden": reden}}}
+
+    if actie == "afronden":
+        agent = str(invoer.get("agent", "")).strip()
+        taak_id = str(invoer.get("taak_id", "")).strip()
+        if not agent or not taak_id:
+            raise AdapterFout("afronden vereist agent en taak_id")
+        nieuw, ok, reden = ag.taak_afgerond(register, agent, taak_id,
+                                            bewijs=str(invoer.get("bewijs", "")))
+        if ok:
+            bewaar(nieuw)
+        return {"ok": True, "data": {"resultaat": {"ok": ok, "reden": reden}}}
+
+    if actie == "controle":
+        taak_id = str(invoer.get("taak_id", "")).strip()
+        if not taak_id or not isinstance(invoer.get("goed"), bool):
+            raise AdapterFout("controle vereist taak_id en goed (true/false)")
+        nieuw, ok, reden = ag.keur_taak(register, taak_id, goed=invoer["goed"],
+                                        reden=str(invoer.get("reden", "") or "") or None)
+        if ok:
+            bewaar(nieuw)
+        return {"ok": True, "data": {"resultaat": {"ok": ok, "reden": reden}}}
+
+    if actie == "subagent":
+        ouder = str(invoer.get("agent", "")).strip()
+        if not ouder:
+            raise AdapterFout("subagent vereist agent (de ouder)")
+        nieuw, ok, reden = ag.vorm_subagent(register, ouder)
+        if ok:
+            bewaar(nieuw)
+        return {"ok": True, "data": {"resultaat": {"ok": ok, "reden": reden}}}
+
+    if actie == "melding":
+        tekst = str(invoer.get("tekst", "")).strip()
+        if not tekst:
+            raise AdapterFout("melding vereist tekst")
+        nieuw, ok, _ = ag.melding_van_observer(register, tekst)
+        if ok:
+            bewaar(nieuw)
+        return {"ok": True, "data": {"resultaat": {"ok": ok,
+                                                   "reden": "Bevinding genoteerd voor de gebruiker."}}}
+
+    raise AdapterFout("onbekende governor-actie — kies: status, aanmelden, "
+                      "afronden, controle, subagent, melding")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -581,6 +673,7 @@ COMMANDOS = {
     "hervat": cmd_hervat,
     "taak": cmd_taak,
     "slijp": cmd_slijp,
+    "governor": cmd_governor,
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,

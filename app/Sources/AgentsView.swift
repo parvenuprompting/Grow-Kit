@@ -1,0 +1,303 @@
+// AgentsView — het governor-scherm: wie draagt welke taken, wie wacht op
+// controle, wie is vrijgelaten, en wat de observer meldt.
+//
+// Bedienaar-principe: de app interpreteert niets. Alle regels (2 taken per
+// agent, subagent bij limiet, controle vóór vrijlating, observer zonder
+// uitvoer, max 8 agents) zitten in kern/growkit_agents.py; dit scherm leest
+// de status via adapter `governor` en stuurt jouw besluiten door.
+
+import SwiftUI
+
+// MARK: - Data (slecht-streng: wat de adapter zegt, zegt het scherm)
+
+final class GovernorStatus: ObservableObject {
+    @Published var geladen = false
+    @Published var fout: String?
+    @Published var limieten: [String: Any] = [:]
+    @Published var agents: [[String: Any]] = []
+    @Published var taken: [String: Any] = [:]
+    @Published var meldingen: [[String: Any]] = []
+    @Published var laatsteActie: String?
+
+    var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
+    var maxAgents: Int { limieten["max_agents"] as? Int ?? 8 }
+    var maxTaken: Int { limieten["max_taken_totaal"] as? Int ?? 16 }
+
+    static func leeg() -> GovernorStatus { GovernorStatus() }
+}
+
+// MARK: - View
+
+struct AgentsView: View {
+    @ObservedObject var runner: Runner
+    @Binding var repoPad: String
+    @Binding var interpreter: String
+    @StateObject private var status = GovernorStatus.leeg()
+    @State private var nieuwAgent = ""
+    @State private var nieuwTaak = ""
+    @State private var bezig = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                kop
+                limietenKaart
+                if let fout = status.fout {
+                    foutKaart(fout)
+                }
+                agentsKaart
+                takenKaart
+                observerKaart
+            }
+            .padding(24)
+        }
+        .background(Thema.kleur(.papier))
+        .onAppear { laadStatus() }
+    }
+
+    // MARK: Kop
+
+    private var kop: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Governor").font(Thema.display(30))
+            Text("Elke agent draagt maximaal \(status.takenPerAgent) taken. Bij meer vormt hij een tijdelijke subagent. Een taak is pas af na controle. De observer ziet alles en voert niets uit.")
+                .font(Thema.tekst(12))
+                .foregroundStyle(Thema.kleur(.zacht))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    // MARK: Limieten
+
+    private var limietenKaart: some View {
+        Kaart(kop: "Grenzen", rechterKop: "VAST — geen gretigheid") {
+            HStack(spacing: 24) {
+                limietCell(titel: "TAKEN PER AGENT", waarde: "\(status.takenPerAgent)")
+                limietCell(titel: "MAX AGENTS", waarde: "\(status.maxAgents)")
+                limietCell(titel: "MAX TAKEN", waarde: "\(status.maxTaken)")
+                Spacer()
+            }
+        }
+    }
+
+    private func limietCell(titel: String, waarde: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(waarde).font(Thema.display(34))
+            Text(titel).font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
+                .foregroundStyle(Thema.kleur(.gedempt))
+        }
+    }
+
+    private func foutKaart(_ tekst: String) -> some View {
+        Kaart(kop: "Let op", gestippeld: true) {
+            Text(tekst).font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.inkt))
+        }
+    }
+
+    // MARK: Agents
+
+    private var agentsKaart: some View {
+        Kaart(kop: "Agenten", rechterKop: "OBSERVER MAG NIETS") {
+            VStack(alignment: .leading, spacing: 14) {
+                if status.agents.isEmpty {
+                    Text("Nog geen agenten geregistreerd.").font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                ForEach(Array(status.agents.enumerated()), id: \.offset) { _, agent in
+                    agentRij(agent)
+                }
+                if let laatste = status.laatsteActie {
+                    Text(laatste)
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                }
+                nieuweTaakRij
+            }
+        }
+    }
+
+    private func agentRij(_ agent: [String: Any]) -> some View {
+        let naam = agent["agent"] as? String ?? "?"
+        let rol = agent["rol"] as? String ?? "hoofd"
+        let open = agent["open"] as? [String] ?? []
+        let afrondend = agent["afrondend"] as? [String] ?? []
+        let vrijgelaten = agent["vrijgelaten"] as? Bool ?? false
+
+        return HStack(alignment: .top, spacing: 14) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(naam).font(Thema.display(16))
+                Text(rolOpmerking(rol, vrijgelaten))
+                    .font(Thema.tekst(10)).tracking(0.5)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+            }
+            .frame(width: 170, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 6) {
+                if rol == "observer" {
+                    Text("ziet alles · voert niets uit · krijgt nooit taken")
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                } else if open.isEmpty && afrondend.isEmpty {
+                    Text("geen taken — \(vrijgelaten ? "vrijgelaten" : "beschikbaar")")
+                        .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
+                }
+                ForEach(open, id: \.self) { taak in
+                    taakChip(taak, stijl: .neutraal)
+                }
+                ForEach(afrondend, id: \.self) { taak in
+                    taakChip(taak, stijl: .mens)
+                }
+            }
+
+            Spacer()
+
+            if rol != "observer", open.count >= status.takenPerAgent {
+                PillKnop(titel: "Subagent vormen") { subagentVormen(ouder: naam) }
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func rolOpmerking(_ rol: String, _ vrijgelaten: Bool) -> String {
+        let basis: String
+        switch rol {
+        case "observer": basis = "OBSERVER"
+        case "subagent": basis = "SUBAGENT (TIJDELIJK)"
+        default: basis = "HOOFD-AGENT"
+        }
+        return vrijgelaten ? basis + " · VRIJGELATEN" : basis
+    }
+
+    private func taakChip(_ id: String, stijl: BadgeStijl) -> some View {
+        HStack(spacing: 8) {
+            StatusBadge(tekst: stijl == .mens ? "WACHT OP CONTROLE" : "OPEN", stijl: stijl)
+            Text(id).font(Thema.tekst(12))
+            if stijl == .mens {
+                PillKnop(titel: "Goedkeuren") { controleer(taak: id, goed: true) }
+                PillKnop(titel: "Afkeuren") { controleer(taak: id, goed: false) }
+            }
+        }
+    }
+
+    private var nieuweTaakRij: some View {
+        HStack(spacing: 10) {
+            TextField("Agent", text: $nieuwAgent)
+                .textFieldStyle(.plain)
+                .font(Thema.tekst(12))
+                .frame(width: 120)
+            TextField("Taak-id", text: $nieuwTaak)
+                .textFieldStyle(.plain)
+                .font(Thema.tekst(12))
+            PillKnop(titel: "Taak aanmelden", gevuld: true) {
+                meldTaak(agent: nieuwAgent, taak: nieuwTaak)
+            }
+        }
+        .padding(.top, 6)
+    }
+
+    // MARK: Taken
+
+    private var takenKaart: some View {
+        Kaart(kop: "Tellen", rechterKop: "\(status.taken.count) VAN \(status.maxTaken)") {
+            if status.taken.isEmpty {
+                Text("Nog geen taken aangemeld.").font(Thema.tekst(12))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+            } else {
+                Text("\(status.taken.count) taak/taken in het register — max \(status.maxTaken). Meer willen is gewoon gretig.")
+                    .font(Thema.tekst(12))
+            }
+        }
+    }
+
+    // MARK: Observer
+
+    private var observerKaart: some View {
+        Kaart(kop: "Observer-meldingen", rechterKop: "ALLEEN LEZEN") {
+            if status.meldingen.isEmpty {
+                Text("De observer heeft nog niets gemeld — dat is goed nieuws.")
+                    .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(Array(status.meldingen.enumerated().reversed()), id: \.offset) { _, m in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(m["tekst"] as? String ?? "")
+                                .font(Thema.tekst(12))
+                            Text(m["tijdstip"] as? String ?? "")
+                                .font(Thema.tekst(9)).tracking(1)
+                                .foregroundStyle(Thema.kleur(.gedempt))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: Acties (alles via de adapter — de app beslist niets)
+
+    private func laadStatus() {
+        bezig = true
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "governor",
+                                           invoer: ["doel": "~/growkit-governor"])
+            await MainActor.run {
+                bezig = false
+                vulStatus(r)
+            }
+        }
+    }
+
+    private func vulStatus(_ r: AdapterResultaat?) {
+        guard let r, r.ok else {
+            status.fout = r?.fout ?? "De adapter reageerde niet. Controleer repo-pad en interpreter in Instellingen."
+            status.geladen = true
+            return
+        }
+        status.fout = nil
+        status.limieten = r.data["limieten"] as? [String: Any] ?? [:]
+        status.agents = r.data["agents"] as? [[String: Any]] ?? []
+        status.taken = r.data["taken"] as? [String: Any] ?? [:]
+        status.meldingen = r.data["observer_meldingen"] as? [[String: Any]] ?? []
+        status.geladen = true
+    }
+
+    private func actie(_ invoer: [String: Any]) {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "governor", invoer: invoer)
+            await MainActor.run {
+                if let res = r?.data["resultaat"] as? [String: Any] {
+                    let ok = res["ok"] as? Bool ?? false
+                    let reden = res["reden"] as? String ?? ""
+                    status.laatsteActie = (ok ? "✓ " : "✕ ") + reden
+                }
+                vulStatus(r)
+            }
+        }
+    }
+
+    private func meldTaak(agent: String, taak: String) {
+        let a = agent.trimmingCharacters(in: .whitespaces)
+        let t = taak.trimmingCharacters(in: .whitespaces)
+        guard !a.isEmpty, !t.isEmpty else { status.laatsteActie = "Vul eerst agent en taak-id."; return }
+        actie(["doel": "~/growkit-governor", "actie": "aanmelden",
+               "agent": a, "taak_id": t])
+        nieuwAgent = ""
+        nieuwTaak = ""
+    }
+
+    private func controleer(taak: String, goed: Bool) {
+        actie(["doel": "~/growkit-governor", "actie": "controle",
+               "taak_id": taak, "goed": goed,
+               "reden": goed ? "" : "afgekeurd in de app"])
+    }
+
+    private func subagentVormen(ouder: String) {
+        actie(["doel": "~/growkit-governor", "actie": "subagent", "agent": ouder])
+    }
+}
+
+// Kleine hulp: Optional-UIT-check zonder de standaardwaarde te verbergen.
+extension Optional {
+    var isNil: Bool { self == nil }
+}
