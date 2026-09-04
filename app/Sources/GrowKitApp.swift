@@ -8,12 +8,23 @@ import SwiftUI
 @main
 struct GrowKitApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @State private var geselecteerd: ContentView.Modi = .home
+    @State private var toonInstellingen = false
+    @State private var toonOver = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(geselecteerd: $geselecteerd,
+                        toonInstellingen: $toonInstellingen,
+                        toonOver: $toonOver)
                 .frame(minWidth: 880, minHeight: 620)
                 .background(Thema.kleur(.papier))
+                .sheet(isPresented: $toonOver) { OverView() }
+        }
+        .commands {
+            AppMenu(geselecteerd: $geselecteerd,
+                    openInstellingen: { toonInstellingen = true },
+                    openOver: { toonOver = true })
         }
         .windowStyle(.automatic)
     }

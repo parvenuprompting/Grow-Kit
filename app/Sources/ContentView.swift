@@ -6,6 +6,9 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var runner = Runner()
     @StateObject private var koppelingen = KoppelingenStore()
+    @Binding var geselecteerd: ContentView.Modi
+    @Binding var toonInstellingen: Bool
+    @Binding var toonOver: Bool
     @AppStorage("growkitRepoPad") private var repoPad = Runner.standaardRepoPad
     @AppStorage("growkitInterpreter") private var interpreter = Runner.standaardInterpreter
 
@@ -52,9 +55,7 @@ struct ContentView: View {
         var actiefInV1: Bool { self != .hervatten && self != .taak }
     }
 
-    @State private var geselecteerd: Modi = .home
-    @State private var toonInstellingen = false
-    @State private var instellingenTab = 0
+    @State private var toonInstellingenTab = 0
     @State private var hoverModus: Modi? = nil
 
     var body: some View {
@@ -79,7 +80,25 @@ struct ContentView: View {
 
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
-            ForEach(Modi.allCases) { modus in
+            // WERK — de dagelijkse modi
+            zijbalkSectie("WERK")
+            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten]) { modus in
+                modusRij(modus)
+            }
+
+            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
+            // SYSTEEM — herstel en taken
+            zijbalkSectie("SYSTEEM")
+            ForEach([Modi.hervatten, .taak]) { modus in
+                modusRij(modus)
+            }
+
+            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
+            // LEREN — rondleiding en uitleg
+            zijbalkSectie("LEREN")
+            ForEach([Modi.rondleiding, .uitleg]) { modus in
                 modusRij(modus)
             }
 
@@ -87,11 +106,49 @@ struct ContentView: View {
 
             Spacer()
 
+            statusRegels
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+
+            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
             voet
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
         }
         .background(Thema.kleur(.papier))
+    }
+
+    private func zijbalkSectie(_ titel: String) -> some View {
+        Text(titel)
+            .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+            .foregroundStyle(Thema.kleur(.gedempt))
+            .padding(.horizontal, 20)
+            .padding(.top, 14)
+            .padding(.bottom, 6)
+    }
+
+    // Levende statusregels onderin de zijbalk — het enterprise-gevoel:
+    // de zijbalk vertelt altijd waar je staat.
+    private var statusRegels: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            statusRegel("HARNAS", tekst: "zero-trust · adapter-gebonden")
+            statusRegel("GRENZEN", tekst: "2 taken/agent · 8 agents · 16 taken")
+            statusRegel("VERSIE", tekst: "0.8.0 (bouw 3)")
+        }
+    }
+
+    private func statusRegel(_ label: String, tekst: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(label)
+                .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
+                .foregroundStyle(Thema.kleur(.gedempt))
+                .frame(width: 52, alignment: .leading)
+            Text(tekst)
+                .font(Thema.tekst(10))
+                .foregroundStyle(Thema.kleur(.zacht))
+                .lineLimit(1)
+        }
     }
 
     private var merk: some View {
@@ -228,7 +285,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 0.7.0")
+                Text("© Parvenu GrowKit 0.8.0")
                 Text("·").foregroundStyle(Thema.kleur(.lijn))
                 Text("Zero-Trust Harnas")
             }
@@ -251,7 +308,7 @@ struct ContentView: View {
                 Spacer()
                 PillKnop(titel: "Sluit", gevuld: true, compact: true) { toonInstellingen = false }
             }
-            Picker("", selection: $instellingenTab) {
+            Picker("", selection: $toonInstellingenTab) {
                 Text("Algemeen").tag(0)
                 Text("AI-providers").tag(1)
                 Text("Breinen").tag(2)
@@ -260,9 +317,9 @@ struct ContentView: View {
             .font(Thema.tekst(12))
 
             Group {
-                if instellingenTab == 0 { algemeenPaneel }
-                if instellingenTab == 1 { providersPaneel }
-                if instellingenTab == 2 { breinenPaneel }
+                if toonInstellingenTab == 0 { algemeenPaneel }
+                if toonInstellingenTab == 1 { providersPaneel }
+                if toonInstellingenTab == 2 { breinenPaneel }
             }
             Spacer()
         }
