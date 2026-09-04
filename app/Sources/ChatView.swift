@@ -67,7 +67,6 @@ struct ChatView: View {
     @State private var geselecteerdeAgentId: String = "alle"
     @State private var bijlagen: [URL] = []
     @State private var toonBestandskiezer = false
-    @State private var neemtOp = false
     @State private var invoerTekst: String = ""
     @StateObject private var agentKoppeling = AgentKoppeling()
     // Slice 1: het welkom is de enige vaste tekst — het verdere gesprek is echt
@@ -87,6 +86,7 @@ struct ChatView: View {
     @State private var plantDoel: String = ""
     @State private var plantBezig: Bool = false
     @State private var wachtMijlpaal: Bool = false
+    @StateObject private var spraak = SpraakMemo()
 
     var body: some View {
         groep
@@ -512,7 +512,7 @@ struct ChatView: View {
     private var invoerBalk: some View {
         VStack(alignment: .leading, spacing: 10) {
             if !bijlagen.isEmpty { bijlagenRij }
-            if neemtOp { opnameRij }
+            if spraak.fout != nil || spraak.neemtOp { opnameRij }
             HStack(spacing: 10) {
                 providerMenu
                 HStack {
@@ -532,8 +532,8 @@ struct ChatView: View {
                 .background(Thema.kleur(.papierZacht))
 
                 balkKnop("paperclip", toegankelijk: "Bijlage toevoegen") { toonBestandskiezer = true }
-                balkKnop(neemtOp ? "stop.circle" : "mic",
-                         toegankelijk: neemtOp ? "Opname stoppen" : "Spraakmemo opnemen") {
+                balkKnop(spraak.neemtOp ? "stop.circle" : "mic",
+                         toegankelijk: spraak.neemtOp ? "Opname stoppen en transcript plaatsen" : "Spraakmemo opnemen") {
                     wisselOpname()
                 }
                 PillKnop(titel: "Verstuur", gevuld: true) { verzendBericht() }
@@ -591,14 +591,21 @@ struct ChatView: View {
 
     private var opnameRij: some View {
         HStack(spacing: 8) {
-            Circle().fill(Thema.kleur(.inkt)).frame(width: 8, height: 8)
-            Text("Spraakmemo — opname (demo; spraak-na-tekst volgt in een latere fase)")
-                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.zacht))
+            Circle().fill(Thema.kleur(spraak.fout != nil ? .zacht : .inkt)).frame(width: 8, height: 8)
+            Text(spraak.fout ?? (spraak.transcript.isEmpty
+                 ? "Spraakmemo — luisteren… spreek je opdracht uit"
+                 : spraak.transcript))
+                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(spraak.fout != nil ? .zacht : .zacht))
+                .lineLimit(3)
             Spacer()
+            if spraak.fout == nil {
+                Text("lokaal · audio verlaat de machine niet")
+                    .font(Thema.tekst(9)).foregroundStyle(Thema.kleur(.gedempt))
+            }
         }
         .padding(10)
         .background(Thema.kleur(.papierZacht))
-        .overlay(alignment: .leading) { Rectangle().fill(Thema.kleur(.inkt)).frame(width: 2) }
+        .overlay(alignment: .leading) { Rectangle().fill(Thema.kleur(spraak.fout != nil ? .zacht : .inkt)).frame(width: 2) }
     }
 
     private func balkKnop(_ symbool: String, toegankelijk: String,
@@ -615,7 +622,12 @@ struct ChatView: View {
     }
 
     private func wisselOpname() {
-        neemtOp.toggle()
+        if spraak.neemtOp {
+            let tekst = spraak.stop()
+            if !tekst.isEmpty { invoerTekst = tekst }
+        } else {
+            spraak.wisselOpname()
+        }
     }
 
     private func verzendBericht() {
