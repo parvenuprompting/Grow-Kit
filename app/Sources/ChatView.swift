@@ -407,16 +407,25 @@ struct ChatView: View {
             return
         }
         if !r.stappen.isEmpty {
-            let regels = r.stappen.map { s -> String in
+            let bewijsRegels = r.stappen.map { s -> String in
                 let id = (s["id"] as? String) ?? "?"
                 let status = (s["status"] as? String) ?? "?"
                 let bewijs = (s["bewijs"] as? String) ?? ""
-                return "• \(status == "geslaagd" ? "[OK]" : "[✗]") \(id) — \(bewijs)"
+                return "• \(status == "geslaagd" ? "[OK]" : (status == "wacht_op_mens" ? "[MENS]" : "[✗]")) \(id) — \(bewijs)"
             }.joined(separator: "\n")
             berichten.append(ChatBericht(
                 afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
-                tekst: "De boom is geplant. Bewijs per stap:\n\n\(regels)\n\nRegistratie: \(r.registratie ?? "—")",
+                tekst: "De boom is geplant. Bewijs per stap:\n\n\(bewijsRegels)\n\nRegistratie: \(r.registratie ?? "—")",
                 bewijsRef: "logboek.json (append-only)", isVoorstel: false))
+            // Slice 6 — de reviewer in beeld: stappen mét review-oordeel als eigen berichten.
+            let tijd = tijd
+            for s in r.stappen where (s["review_rol"] as? String) != nil {
+                let oordeel = (s["review_oordeel"] as? String) ?? "onduidelijk"
+                berichten.append(ChatBericht(
+                    afzender: "Reviewer", rol: .reviewer, tijdstip: tijd,
+                    tekst: "Stap \(s["id"] as? String ?? "?"): rol '\(s["review_rol"] as? String ?? "reviewer")' oordeelde '\(oordeel)'. \(oordeel == "geslaagd" ? "De motor ging door; ratificatie door jou volgt nog." : "De motor is gestopt — jij beslist.")",
+                    bewijsRef: "reviewconfig-rol", isVoorstel: false))
+            }
             wachtMijlpaal = false
             plantBezig = false
             return

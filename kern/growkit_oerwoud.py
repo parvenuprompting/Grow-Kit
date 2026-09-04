@@ -319,9 +319,11 @@ def status_data(doel: Path) -> dict:
                                              "tijdstip": entry.get("tijdstip", "?")}
             break
     # Slice 4: de volledige append-only tijdlijn — elke stap-entry in volgorde.
+    # Slice 6: review-velden gaan mee zodat de app de reviewer zichtbaar kan maken.
     data["tijdlijn"] = [
         {"stap": e.get("stap", "?"), "status": e.get("status", "?"),
-         "bewijs": e.get("bewijs", ""), "tijdstip": e.get("tijdstip", "?")}
+         "bewijs": e.get("bewijs", ""), "tijdstip": e.get("tijdstip", "?"),
+         "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
         for e in entries if e.get("stap", "").startswith(("stap-", "taak-"))
     ]
 

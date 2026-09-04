@@ -216,11 +216,16 @@ struct StatusView: View {
                 } else {
                     ForEach(Array(gegevens.tijdlijn.enumerated()), id: \.offset) { index, entry in
                         let status = (entry["status"] as? String) ?? "?"
+                        let reviewRol = entry["review_rol"] as? String
+                        let detailBasis = "bewijs: \((entry["bewijs"] as? String) ?? "—")"
+                        let detail = reviewRol != nil
+                            ? detailBasis + " · review \(reviewRol!): \((entry["review_oordeel"] as? String) ?? "onduidelijk")"
+                            : detailBasis
                         TijdlijnRij(tijdstip: formatteerTijd(entry["tijdstip"] as? String),
                                     titel: "\(entry["stap"] as? String ?? "?")",
-                                    detail: "bewijs: \((entry["bewijs"] as? String) ?? "—")",
+                                    detail: detail,
                                     statusTekst: status,
-                                    stijl: status == "geslaagd" ? .bewezen : (status == "wacht_op_mens" ? .mens : .neutraal),
+                                    stijl: status == "geslaagd" ? .bewezen : (status == "wacht_op_mens" || status == "review_ok_wacht_ratificatie" ? .mens : .neutraal),
                                     isEerste: index == 0,
                                     isLaatste: index == gegevens.tijdlijn.count - 1)
                     }

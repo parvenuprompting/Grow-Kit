@@ -92,7 +92,8 @@ def cmd_hervat(invoer: dict) -> dict:
                                           reviewconfig=reviewconfig)
         if geslaagd:
             growkit_oerwoud.volmaak_na_plant(doel, logboek)
-    stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"]}
+    stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"],
+                "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
     if not geslaagd:
@@ -230,7 +231,8 @@ def cmd_plant(invoer: dict) -> dict:
                                                   doel / "geboortebewijs.json")
                 except ValueError as e:
                     registratie = f"mislukt: {e}"
-    stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"]}
+    stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"],
+                "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
     if not geslaagd:
