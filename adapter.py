@@ -310,6 +310,22 @@ def cmd_levensignaal(invoer: dict) -> dict:
 
 
 
+
+def cmd_acties(invoer: dict) -> dict:
+    """Actie-menu voor de app (Slice 3): wat mag er, en waar wordt de mens
+    nodig geacht? Puur lezend — de uitvoerende commando's bewaken hun eigen
+    poort; dit overzicht is nooit een machtsbron."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    try:
+        data = growkit_oerwoud.acties_overzicht(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -319,7 +335,10 @@ COMMANDOS = {
     "taak": cmd_taak,
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
+    "acties": cmd_acties,
 }
+
+
 
 
 

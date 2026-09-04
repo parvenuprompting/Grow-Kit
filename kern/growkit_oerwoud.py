@@ -578,3 +578,35 @@ def log_run_latch(logboek: Path, status: str) -> None:
     entries.append(entry)
     logboek.parent.mkdir(parents=True, exist_ok=True)
     logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def acties_overzicht(doel: Path) -> dict:
+    """Actie-menu voor de app (Slice 3) — puur lezend, geen uitvoering.
+
+    mogelijk: de modi die voor deze boom zinvol zijn. mens_momenten: wat de
+    app als expliciet mens-moment moet tonen (ratificatie-wachters). De app
+    toont alleen wat hier staat — de uitvoerende commando's bewaken hun eigen
+    poort, dit overzicht is nooit een machtsbron."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    if not bewijs_pad.exists():
+        return {"mogelijk": ["planten"], "mensch_momenten": [],
+                "melding": "geen geplante boom in deze map — alleen planten is mogelijk"}
+
+    mogelijk = ["status", "taak", "ratificatie", "hervat"]
+    mens_momenten: list[dict] = []
+
+    logboek = doel / "logboek.json"
+    if logboek.exists():
+        try:
+            entries = json.loads(logboek.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            raise ValueError(
+                f"boom-logboek {logboek} is corrupt — roep de mens, nooit auto-repareren: {e}") from e
+        wacht = [e for e in entries
+                 if e.get("status") == "review_ok_wacht_ratificatie"]
+        for e in wacht:
+            mens_momenten.append({"soort": "ratificatie", "stap": e.get("stap", "?"),
+                                  "tijdstip": e.get("tijdstip", "?")})
+
+    return {"mogelijk": mogelijk, "mensch_momenten": mens_momenten, "melding": None}
