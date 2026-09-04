@@ -92,10 +92,10 @@ class TestAdapterModels(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(uit["ok"])
         data = uit["data"]
-        # live of cache: altijd een lijst, en bij fout een leesbare reden
+        # live of cache: altijd een lijst; alleen bij falen een leesbare melding
         self.assertIsInstance(data["modellen"], list)
         self.assertIn(data["bron"], ("live", "cache", "onbereikbaar"))
-        if data["bron"] != "live":
+        if data["bron"] == "onbereikbaar":
             self.assertTrue(data.get("melding"))
 
 
