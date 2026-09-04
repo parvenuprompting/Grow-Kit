@@ -720,3 +720,71 @@ def curate_items(brein_pad: Path | None, items: list[dict]) -> list[dict]:
                            encoding="utf-8")
         resultaten.append({"naam": naam, "status": status, "detail": detail})
     return resultaten
+
+
+# ---------------------------------------------------------------------------
+# Slice 5 — breinkoppeling: registratie bij het brein vanuit de app + het
+# drift-guard-rapport. De guards zelf staan in de bestaande functies
+# (meld_geboorte, stuur_voorstellen); dit zijn de app-ingangen.
+# ---------------------------------------------------------------------------
+
+_DRIFT_REIST = [
+    "VOORSTEL-bestanden (prefix VOORSTEL-, per boom ontdubbeld via het logboek)",
+]
+_DRIFT_LOKAAL = [
+    "boom-logboek, geboortebewijs en takenlijst (boom-staat)",
+    "omgevingspaden, poorten en ssh-doeleinden",
+    "sleutels en secrets (nooit in het brein, nooit in de chat)",
+    "willekeurige bestanden zonder VOORSTEL-prefix",
+]
+
+
+def koppel_boom(doel: Path, brein_pad: Path | None) -> dict:
+    """Registreer een boom bij het gedeelde brein (Slice 5) — app-ingang voor
+    meld_geboorte + sla_brein_pad. Weigeringen van meld_geboorte (dubbele
+    geboorte, ongeldig bewijs) en onbereikbare breinen komen als nette fout
+    terug; bij succes staat de oerwoud-staat op dit brein."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    if not bewijs_pad.exists():
+        raise ValueError(
+            f"geen geboortebewijs in {doel} — koppeling werkt alleen op een geplante boom")
+    bevindingen = controleer_geboortebewijs(bewijs_pad)
+    if bevindingen:
+        raise ValueError("geboortebewijs ongeldig — " + "; ".join(bevindingen))
+    if brein_pad is None:
+        brein_pad = laad_oerwoud_staat()["brein_pad"]
+        if brein_pad is None:
+            raise ValueError("geen brein bekend — geef brein_pad of koppel eerst het brein")
+    brein_pad = brein_pad.resolve()
+    if not brein_pad.exists():
+        raise ValueError(
+            f"het brein op {brein_pad} is niet bereikbaar — roep de mens: pad corrigeren")
+    entry = meld_geboorte(brein_pad / "register" / "bomen.json", bewijs_pad)
+    sla_brein_pad(brein_pad)
+    return {"boom_id": entry["boom_id"], "brein_pad": str(brein_pad),
+            "status": entry["type"]}
+
+
+def driftguard_rapport(brein_pad: Path) -> dict:
+    """Drift-guard-rapport (Slice 5) — puur lezend. Maakt de §13-regels
+    zichtbaar: wat reist tussen bomen en brein, wat blijft per boom lokaal.
+    De guards staan hard in stuur_voorstellen en de curatie-laag."""
+    brein_pad = brein_pad.resolve()
+    if not brein_pad.exists():
+        raise ValueError(f"het brein op {brein_pad} is niet bereikbaar — roep de mens")
+    register = lees_register(brein_pad / "register" / "bomen.json")
+    laatste: dict[str, str] = {}
+    for entry in register:
+        boom_id = entry.get("boom_id")
+        if not boom_id:
+            continue
+        type_ = entry.get("type")
+        if type_ == "geboorte" or type_ == "registratie":
+            laatste[boom_id] = "actief"
+        elif type_ == "deregistratie" and boom_id not in laatste:
+            laatste[boom_id] = "inactief"
+    return {"reist_mee": list(_DRIFT_REIST),
+            "blijft_lokaal": list(_DRIFT_LOKAAL),
+            "bomen": sum(1 for s in laatste.values() if s == "actief"),
+            "brein_pad": str(brein_pad)}

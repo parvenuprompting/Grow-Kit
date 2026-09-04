@@ -352,6 +352,58 @@ def cmd_curate(invoer: dict) -> dict:
         raise AdapterFout(str(e))
     return {"ok": True, "data": {"resultaten": resultaten}}
 
+
+def cmd_koppel(invoer: dict) -> dict:
+    """Registreer een boom bij het gedeelde brein (Slice 5) — app-ingang voor
+    meld_geboorte + sla_brein_pad. Weigeringen → nette fout (mens)."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    brein_pad = invoer.get("brein_pad")
+    try:
+        data = growkit_oerwoud.koppel_boom(
+            doel, Path(brein_pad).expanduser().resolve() if brein_pad else None)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_driftguard(invoer: dict) -> dict:
+    """Drift-guard-rapport (Slice 5) — wat reist tussen bomen en brein,
+    wat blijft per boom lokaal. Puur lezend."""
+    brein_pad = invoer.get("brein_pad")
+    try:
+        if brein_pad:
+            pad = Path(brein_pad).expanduser().resolve()
+        else:
+            pad = growkit_oerwoud._brein_pad_van(invoer)
+            if pad is None:
+                raise AdapterFout("geen brein gekoppeld — geef brein_pad of koppel eerst")
+        data = growkit_oerwoud.driftguard_rapport(pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_stuur(invoer: dict) -> dict:
+    """Stuur gemarkeerde VOORSTELLEN van een boom naar de brein-inbox (§13)
+    — app-ingang voor stuur_voorstellen, drift-guard staat in de kern."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    brein_pad = invoer.get("brein_pad")
+    try:
+        if brein_pad:
+            pad = Path(brein_pad).expanduser().resolve()
+        else:
+            pad = growkit_oerwoud._brein_pad_van(invoer)
+            if pad is None:
+                raise AdapterFout("geen brein gekoppeld — koppel eerst een brein")
+        aantal, namen = growkit_oerwoud.stuur_voorstellen(doel, pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"verzonden": aantal, "namen": namen}}
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -364,6 +416,9 @@ COMMANDOS = {
     "acties": cmd_acties,
     "inbox": cmd_inbox,
     "curate": cmd_curate,
+    "koppel": cmd_koppel,
+    "driftguard": cmd_driftguard,
+    "stuur": cmd_stuur,
 }
 
 def main(argv: list[str]) -> int:
