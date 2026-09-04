@@ -326,6 +326,32 @@ def cmd_acties(invoer: dict) -> dict:
 
 
 
+
+def cmd_inbox(invoer: dict) -> dict:
+    """VOORSTEL-items in de brein-inbox (Slice 4) — puur lezend."""
+    try:
+        brein_pad = growkit_oerwoud._brein_pad_van(invoer)
+        data = growkit_oerwoud.inbox_items(brein_pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
+
+
+def cmd_curate(invoer: dict) -> dict:
+    """Besluiten over VOORSTEL-items (Slice 4) — append-only, nooit overschrijven."""
+    items = invoer.get("items")
+    if not isinstance(items, list) or not items:
+        raise AdapterFout("verplicht veld ontbreekt: items (lijst met besluiten)")
+    try:
+        brein_pad = growkit_oerwoud._brein_pad_van(invoer)
+        resultaten = growkit_oerwoud.curate_items(brein_pad, items)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"resultaten": resultaten}}
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -336,14 +362,9 @@ COMMANDOS = {
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,
+    "inbox": cmd_inbox,
+    "curate": cmd_curate,
 }
-
-
-
-
-
-
-
 
 def main(argv: list[str]) -> int:
     try:

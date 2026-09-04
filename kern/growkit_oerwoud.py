@@ -610,3 +610,113 @@ def acties_overzicht(doel: Path) -> dict:
                                   "tijdstip": e.get("tijdstip", "?")})
 
     return {"mogelijk": mogelijk, "mensch_momenten": mens_momenten, "melding": None}
+
+
+# ---------------------------------------------------------------------------
+# Slice 4 — inbox-curatiescherm: VOORSTEL-items tonen en besluiten.
+# Curatiebeleid (3 sept 2026): chat-goedkeuring IS curatie — een besluit
+# boekt direct definitief. Append-only: niets wordt overschreven of gewist.
+# ---------------------------------------------------------------------------
+
+_CURATIE_BESLUITEN = ("goedgekeurd", "afgewezen")
+
+
+def _brein_pad_van(invoer: dict) -> Path | None:
+    """Brein-pad uit expliciete invoer of de per-machine oerwoud-staat."""
+    pad = invoer.get("brein_pad")
+    if pad:
+        return Path(pad).expanduser().resolve()
+    staat = laad_oerwoud_staat()
+    if staat["fout"] == "brein_onbereikbaar":
+        raise ValueError(
+            f"het brein op {staat['brein_pad']} is niet bereikbaar — roep de mens: pad corrigeren")
+    return staat["brein_pad"]
+
+
+def inbox_items(brein_pad: Path | None) -> dict:
+    """VOORSTEL-items in de brein-inbox (Slice 4) — puur lezend.
+
+    Alleen bestanden met de VOORSTEL-prefix (drift-guard §13); nog niet
+    besloten items (zonder .geboekt/.afgewezen-suffix)."""
+    if brein_pad is None:
+        return {"items": [], "melding": "geen brein gekoppeld — koppel een brein in Instellingen"}
+    inbox = brein_pad / "inbox"
+    items = []
+    if inbox.exists():
+        for pad in sorted(inbox.iterdir()):
+            naam = pad.name
+            if not naam.startswith("VOORSTEL-") or not pad.is_file():
+                continue
+            if naam.endswith((".geboekt", ".afgewezen")):
+                continue
+            try:
+                inhoud = pad.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as e:
+                raise ValueError(
+                    f"VOORSTEL-bestand {naam} is onleesbaar — roep de mens, "
+                    "nooit auto-repareren: " + str(e)) from e
+            items.append({"naam": naam, "inhoud": inhoud})
+    return {"items": items, "melding": None}
+
+
+def curate_items(brein_pad: Path | None, items: list[dict]) -> list[dict]:
+    """Besluiten over VOORSTEL-items (Slice 4) — append-only, nooit overschrijven.
+
+    goedgekeurd  → kopie naar brein/<bestemming> (standaard kennis/goedgekeurd),
+                   inbox-bestand hernoemd naar <naam>.geboekt.
+    afgewezen    → inbox-bestand hernoemd naar <naam>.afgewezen; reden append-
+                   only gelogd in kennis/afwijzingen.md.
+    Elke besluit wordt gelogd in het brein-logboek (type 'curatie')."""
+    if brein_pad is None:
+        raise ValueError("geen brein gekoppeld — curatie is niet mogelijk")
+    namen = [str(i.get("naam", "")) for i in items]
+    if len(set(namen)) != len(namen):
+        raise ValueError("dubbele besluiten over hetzelfde item — één besluit per VOORSTEL")
+    if not items:
+        return []
+
+    inbox = brein_pad / "inbox"
+    logboek = brein_pad / "logboek.json"
+    resultaten = []
+    for item in items:
+        naam = str(item.get("naam", "")).strip()
+        besluit = str(item.get("besluit", "")).strip().lower()
+        if besluit not in _CURATIE_BESLUITEN:
+            raise ValueError(
+                f"onbekend besluit '{besluit}' — kies uit: {', '.join(_CURATIE_BESLUITEN)}")
+        if not naam.startswith("VOORSTEL-"):
+            raise ValueError(f"'{naam}' is geen VOORSTEL — alleen VOORSTEL-items worden besloten")
+        bron = inbox / naam
+        if not bron.exists():
+            raise ValueError(f"VOORSTEL '{naam}' bestaat niet (meer) in de inbox — ververs eerst")
+        if besluit == "goedgekeurd":
+            bestemming = str(item.get("bestemming", "kennis/goedgekeurd")).strip("/")
+            doel_map = brein_pad / bestemming
+            doel_bestand = doel_map / naam
+            if doel_bestand.exists():
+                raise ValueError(
+                    f"bestemmingsbestand {doel_bestand} bestaat — nooit overschrijven")
+            inhoud = bron.read_text(encoding="utf-8")
+            doel_map.mkdir(parents=True, exist_ok=True)
+            doel_bestand.write_text(inhoud, encoding="utf-8")
+            bron.rename(inbox / (naam + ".geboekt"))
+            status = "goedgekeurd"
+            detail = str(doel_bestand)
+        else:
+            reden = str(item.get("reden", "")).strip()
+            if not reden:
+                raise ValueError("afwijzing vereist een reden — zonder reden bestaat de afkeur niet")
+            bron.rename(inbox / (naam + ".afgewezen"))
+            afwijzingen = brein_pad / "kennis" / "afwijzingen.md"
+            afwijzingen.parent.mkdir(parents=True, exist_ok=True)
+            with open(afwijzingen, "a", encoding="utf-8") as f:
+                f.write(f"- {naam}: {reden}\n")
+            status = "afgewezen"
+            detail = reden
+        entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+        entries.append({"type": "curatie", "item": naam, "status": status,
+                        "bewijs": detail, "tijdstip": _nu()})
+        logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
+                           encoding="utf-8")
+        resultaten.append({"naam": naam, "status": status, "detail": detail})
+    return resultaten
