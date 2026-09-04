@@ -424,3 +424,42 @@ def recentste_status(register: list[dict], boom_id: str) -> str | None:
     if laatste == "deregistratie":
         return "gederegistreerd"
     return None
+
+
+def bomen_overzicht(register_pad: Path) -> dict:
+    """Boom-lijst voor de app (Slice 1): per boom de recentste register-status.
+
+    Append-only bron — dit overzicht muteert niets. Deregistreerde bomen
+    blijven zichtbaar, gelabeld 'inactief'. Corrupt register → ValueError
+    (de beller vertaalt die naar een nette fout voor de mens)."""
+    register = lees_register(register_pad)
+    laatste: dict[str, dict] = {}
+    volgorde: list[str] = []
+    for entry in register:
+        boom_id = entry.get("boom_id")
+        if not boom_id:
+            continue
+        if boom_id not in laatste:
+            volgorde.append(boom_id)
+        laatste[boom_id] = entry
+    bomen = []
+    for boom_id in volgorde:
+        entry = laatste[boom_id]
+        type_ = entry.get("type")
+        inactief = type_ == "deregistratie"
+        boom = {
+            "boom_id": boom_id,
+            "profiel": entry.get("profiel"),
+            "machine": entry.get("machine"),
+            "locatie": entry.get("locatie"),
+            "geplant_op": entry.get("geplant_op"),
+            "status": type_,
+            "status_tijdstip": entry.get("tijdstip"),
+            "inactief": inactief,
+        }
+        if entry.get("is_brein"):
+            boom["is_brein"] = True
+        if inactief:
+            boom["inactief_label"] = "inactief (gederegistreerd)"
+        bomen.append(boom)
+    return {"bomen": bomen}

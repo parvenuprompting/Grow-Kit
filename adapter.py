@@ -262,6 +262,34 @@ def cmd_ratificeer(invoer: dict) -> dict:
                                               for e in geschreven]}}
 
 
+
+def cmd_bomen(invoer: dict) -> dict:
+    """Boom-lijst (Slice 1): recentste register-status per boom.
+
+    register_pad expliciet → dat register. Anders de per-machine oerwoud-
+    staat: geen bekend brein → ok met een lege lijst + melding; onbereikbaar
+    brein → nette fout (mens)."""
+    pad = invoer.get("register_pad")
+    if pad:
+        register_pad = Path(pad).expanduser().resolve()
+    else:
+        staat = growkit_oerwoud.laad_oerwoud_staat()
+        if staat["fout"] == "brein_onbereikbaar":
+            raise AdapterFout(
+                f"het brein op {staat['brein_pad']} is niet bereikbaar — "
+                "roep de mens: pad corrigeren in Instellingen")
+        if staat["brein_pad"] is None:
+            return {"ok": True, "data": {"bomen": [],
+                    "melding": "geen brein gekoppeld — koppel een brein in Instellingen"}}
+        register_pad = staat["brein_pad"] / "register" / "bomen.json"
+    try:
+        data = growkit_oerwoud.bomen_overzicht(register_pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -269,7 +297,10 @@ COMMANDOS = {
     "ratificeer": cmd_ratificeer,
     "hervat": cmd_hervat,
     "taak": cmd_taak,
+    "bomen": cmd_bomen,
 }
+
+
 
 
 def main(argv: list[str]) -> int:
