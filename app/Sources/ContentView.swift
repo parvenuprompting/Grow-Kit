@@ -52,7 +52,7 @@ struct ContentView: View {
             case .taak: return "Taken uit de groeilaag uitvoeren"
             }
         }
-        var actiefInV1: Bool { self != .hervatten && self != .taak }
+        var actiefInV1: Bool { true }
     }
 
     @State private var toonInstellingenTab = 0
@@ -272,9 +272,10 @@ struct ContentView: View {
                     RondleidingView()
                 case .uitleg:
                     UitlegView()
-                case .hervatten, .taak:
-                    PlaceholderView(titel: geselecteerd.naam,
-                                    tekst: "Deze modus volgt in fase 6.1 — gebruik voor nu loop.py in de terminal.")
+                case .hervatten:
+                    HervatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .taak:
+                    TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 }
             }
             .frame(maxHeight: .infinity)
