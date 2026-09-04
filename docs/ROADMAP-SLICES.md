@@ -2,7 +2,24 @@
 
 > Vastgelegd 4 september 2026 door VPS-Hermes (KairOS), opdracht Tiëndo.
 > Volgorde is bewust: elke slice bouwt op het bewijs van de vorige.
-> Slices 1–4 zijn puur Mac-lokaal (geen netwerk). Elke slice: commit op main + groene tests als afsluiting.
+> Elke slice: commit op main + groene tests als afsluiting.
+
+## STATUS: ALLE ZES SLICES COMPLEET (4 sept 2026)
+
+| Slice | Commit | Tests | E2E |
+|---|---|---|---|
+| 1 — Boom-kiezer | 42335c7 | 9 | 5 criteria |
+| 2 — Live status (levensignaal + run-latch) | 3fdcba1 | 12 | 7 criteria |
+| 3 — Acties met poortjes | c2929ca | 13 | 7 criteria |
+| 4 — Inbox-curatiescherm | 255b7e8 | 13 | 7 criteria |
+| 5 — Breinkoppeling | 8fc1c36 | 9 | 6 criteria |
+| 6 — Nachtfabriek-modus | 460e26c | 11 | 7 criteria |
+
+Volledige suite: 287 unit-tests groen. Adapter-commando's nu: status, profielen,
+plant, ratificeer, hervat, taak, bomen, levensignaal, acties, inbox, curate,
+koppel, driftguard, stuur, nachtplan, nachtronde, nachtstatus.
+Wat resteert: de SwiftUI-kant (boom-lijst, statusblok, actieknoppen, curatie-
+scherm, nachtfabriek-paneel) bouwt op deze bewezen contracten.
 
 ## Uitgangspunt (bewezen stand, 4 sept 2026)
 
