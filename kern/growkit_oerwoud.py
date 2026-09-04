@@ -463,3 +463,118 @@ def bomen_overzicht(register_pad: Path) -> dict:
             boom["inactief_label"] = "inactief (gederegistreerd)"
         bomen.append(boom)
     return {"bomen": bomen}
+
+
+def _pid_leeft(pid: int) -> bool:
+    """Crude maar betrouwbare liveness-check (POSIX): kill -0. Pid 0/1 en
+    negatieve waarden nooit als levend behandelen."""
+    if pid is None or pid <= 1:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except (ProcessLookupError, PermissionError):
+        return False
+    except OSError:
+        return False
+
+
+def levensignaal(doel: Path) -> dict:
+    """Levende status van één boom (Slice 2) — puur uit groei/logboek.json.
+
+    Geen zelf-rapportage: het faalcontract en de run-latch komen uitsluitend
+    uit append-only entries. Corrupt logboek → ValueError (mens). Geen
+    logboek → 'rust' (lege boom is geen crash)."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    logboek = doel / "logboek.json"
+    if not bewijs_pad.exists():
+        raise ValueError(
+            f"geen geboortebewijs in {doel} — levensignaal werkt alleen op een geplante boom")
+
+    boom_id = None
+    if not is_voor_fase5(bewijs_pad):
+        boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8")).get("boom_id")
+
+    if not logboek.exists():
+        return {"boom_id": boom_id, "taak_actief": False, "faalcontract": "rust",
+                "laatste_bewijs_tijdstip": None, "laatste_stap": None,
+                "laatste_mijlpaal_faal": None, "melding": None}
+    try:
+        entries = json.loads(logboek.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise ValueError(
+            f"boom-logboek {logboek} is corrupt — roep de mens, nooit auto-repareren: {e}") from e
+
+    laatste_stap = None
+    laatste_bewijs_tijdstip = None
+    laatste_mijlpaal_faal = None
+    laatste_faal_tijdstip = None
+    laatste_ok_tijdstip = None
+    laatste_run = None
+
+    for entry in entries:
+        tijdstip = entry.get("tijdstip")
+        type_ = entry.get("type")
+        if type_ == "run":
+            laatste_run = entry
+            continue
+        if type_ == "geboorte":
+            continue
+        status = entry.get("status")
+        if type_ == "taak":
+            stap = {"stap": entry.get("taak", "?"), "status": status,
+                    "tijdstip": tijdstip}
+        else:
+            stap = {"stap": entry.get("stap", "?"), "status": status,
+                    "tijdstip": tijdstip}
+        laatste_stap = stap
+        laatste_bewijs_tijdstip = tijdstip
+        if status == "mijlpaal" or status == "gefaald":
+            laatste_mijlpaal_faal = {"stap": stap["stap"], "status": status,
+                                     "tijdstip": tijdstip}
+        if status in ("gefaald", "onduidelijk"):
+            laatste_faal_tijdstip = tijdstip
+        elif status in ("geslaagd", "geratificeerd", "review_ok_wacht_ratificatie", "mijlpaal"):
+            laatste_ok_tijdstip = tijdstip
+
+    # Faalcontract: 'gestopt' (crash-latch) wint — een stilgevallen run is het
+    # nieuws; anders rood bij een onopgevolgde faal; anders groen als er
+    # bewijs is; anders rust.
+    if laatste_run and laatste_run.get("status") == "gestart":
+        if not _pid_leeft(laatste_run.get("pid")):
+            faalcontract = "gestopt"
+            taak_actief = False
+        else:
+            faalcontract = "groen" if laatste_faal_tijdstip is None else "rood"
+            taak_actief = True
+    elif laatste_faal_tijdstip and (laatste_ok_tijdstip is None
+                                    or laatste_faal_tijdstip > laatste_ok_tijdstip):
+        faalcontract = "rood"
+        taak_actief = False
+    elif laatste_bewijs_tijdstip:
+        faalcontract = "groen"
+        taak_actief = False
+    else:
+        faalcontract = "rust"
+        taak_actief = False
+
+    return {"boom_id": boom_id, "taak_actief": taak_actief, "faalcontract": faalcontract,
+            "laatste_bewijs_tijdstip": laatste_bewijs_tijdstip,
+            "laatste_stap": laatste_stap, "laatste_mijlpaal_faal": laatste_mijlpaal_faal,
+            "melding": None}
+
+
+def log_run_latch(logboek: Path, status: str) -> None:
+    """Run-latch (Slice 2): append-only run-marker voor crash-detectie.
+
+    Bij aanvang van een loop-run: {"type": "run", "status": "gestart",
+    "pid": os.getpid()}; bij normaal einde: status "beeindigd". Lees via
+    levensignaal() — 'gestart' zonder levend pid = gestopt (crash)."""
+    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entry = {"type": "run", "status": status, "tijdstip": _nu()}
+    if status == "gestart":
+        entry["pid"] = os.getpid()
+    entries.append(entry)
+    logboek.parent.mkdir(parents=True, exist_ok=True)
+    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

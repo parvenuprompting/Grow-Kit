@@ -122,8 +122,10 @@ def cmd_taak(invoer: dict) -> dict:
 
     from kern.growkit_review import laad_reviewconfig
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "gestart")
     with contextlib.redirect_stdout(sys.stderr):
         geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "beeindigd")
     if bevindingen:
         raise AdapterFout("deze taak bestaat niet: " + "; ".join(bevindingen))
     if not geslaagd:
@@ -290,6 +292,24 @@ def cmd_bomen(invoer: dict) -> dict:
 
 
 
+
+def cmd_levensignaal(invoer: dict) -> dict:
+    """Levende status van één boom (Slice 2) uit groei/logboek.json.
+
+    Geen zelf-rapportage: faalcontract en run-latch komen uit append-only
+    entries. Ontbrekend of fout doel → nette fout; corrupt logboek → nette
+    fout (mens)."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet — levensignaal werkt alleen op een geplante boom")
+    try:
+        data = growkit_oerwoud.levensignaal(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"levensignaal": data}}
+
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -298,7 +318,10 @@ COMMANDOS = {
     "hervat": cmd_hervat,
     "taak": cmd_taak,
     "bomen": cmd_bomen,
+    "levensignaal": cmd_levensignaal,
 }
+
+
 
 
 
