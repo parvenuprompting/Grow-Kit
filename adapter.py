@@ -262,6 +262,46 @@ def cmd_ratificeer(invoer: dict) -> dict:
                                               for e in geschreven]}}
 
 
+def cmd_slijp(invoer: dict) -> dict:
+    """Slice 1: Dialoog-basics — vage prompt → Scope-poort → slijp-concept.
+
+    Bedienaar, geen machthebber: alle interpretatie blijft in de poort
+    (growkit_poort.beoordeel_invoer); de adapter voegt niets toe.
+    De slijper-schuring wordt append-only gelogd (§11.1).
+    """
+    from kern import growkit_poort
+
+    tekst = str(invoer.get("tekst", "")).strip()
+    if not tekst:
+        raise AdapterFout("verplicht veld ontbreekt: tekst")
+
+    omgeving = invoer.get("omgeving")
+    formulier = {"einddoel": tekst, "tekst": tekst}
+    for veld in ("omgeving", "slaag_criterium"):
+        waarde = invoer.get(veld)
+        if isinstance(waarde, str) and waarde.strip():
+            formulier[veld] = waarde.strip()
+    ok, tekst_uit, vragen = growkit_poort.beoordeel_invoer(formulier, "vrije_beschrijving")
+
+    # Append-only slijper-logboek (§11.1), zelfs bij een weigering.
+    try:
+        from seed import _log_slijper
+        _log_slijper(tekst, tekst_uit, "geaccepteerd_concept" if ok else "geweigerd")
+    except Exception:
+        pass  # logboek mag de chat nooit breken; de poort-uitspraak is leidend
+
+    if not ok:
+        return {"ok": True, "data": {"geaccepteerd": False,
+                                     "weigering": tekst_uit,
+                                     "vragen": vragen}}
+    try:
+        concept = json.loads(tekst_uit)
+    except json.JSONDecodeError:
+        concept = {"concept": tekst_uit}
+    return {"ok": True, "data": {"geaccepteerd": True, "concept": concept,
+                                 "vragen": vragen}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -269,6 +309,7 @@ COMMANDOS = {
     "ratificeer": cmd_ratificeer,
     "hervat": cmd_hervat,
     "taak": cmd_taak,
+    "slijp": cmd_slijp,
 }
 
 

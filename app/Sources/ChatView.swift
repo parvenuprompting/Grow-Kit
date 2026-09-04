@@ -69,15 +69,13 @@ struct ChatView: View {
     @State private var toonBestandskiezer = false
     @State private var neemtOp = false
     @State private var invoerTekst: String = ""
-    // DEMO: deze berichten zijn een ontwerpschets — de echte agent-koppeling
-    // komt in een volgende fase en loopt via adapter.py, nooit om de poort heen.
+    @StateObject private var agentKoppeling = AgentKoppeling()
+    // Slice 1: het welkom is de enige vaste tekst — het verdere gesprek is echt
+    // en loopt via de adapter (commando `slijp`) door de Scope-poort.
     @State private var berichten: [ChatBericht] = [
-        ChatBericht(afzender: "Tuinier", rol: .tuinier, tijdstip: "15:40:02",
-                    tekst: "Welkom in het GrowKit-dialoogvenster. Ik ben je tuinier. Ik kan stappen voorstellen, prompts slijpen en het logboek inspecteren. Ik beslis nooit zelf: elke mutatie vereist jouw bekrachtiging.",
-                    bewijsRef: "SEED.md §1", isVoorstel: false),
-        ChatBericht(afzender: "Reviewer", rol: .reviewer, tijdstip: "15:40:08",
-                    tekst: "Reviewer online. Ik bewaak reviewconfig.json en toets alle machine-controles (shell_check, file_equals, json_valid). Wat niet bewezen is, telt niet als waarheid.",
-                    bewijsRef: "faalcontract §7", isVoorstel: false)
+        ChatBericht(afzender: "Tuinier", rol: .tuinier, tijdstip: "—",
+                    tekst: "Welkom in het GrowKit-dialoogvenster. Typ een opdracht en ik slijp hem door de Scope-poort: doel, plek en slaag-criterium komen als keurbaar concept terug. Ik beslis nooit zelf — elke mutatie vereist jouw bekrachtiging.",
+                    bewijsRef: "SEED.md §1", isVoorstel: false)
     ]
     @State private var agentDenktNa: Bool = false
 
@@ -114,7 +112,7 @@ struct ChatView: View {
                 .padding(.horizontal, 8).padding(.vertical, 4)
                 .overlay(Capsule().stroke(Thema.kleur(.zacht), style: StrokeStyle(lineWidth: 1, dash: [3])))
                 .foregroundStyle(Thema.kleur(.zacht))
-            Text("Dit dialoog is een ontwerpschets: de berichten zijn voorbeelden. De echte agent-koppeling komt in een volgende fase en loopt via adapter.py — nooit om de poort heen.")
+            Text("Dit dialoog loopt écht via adapter.py: elke opdracht gaat door de Scope-poort — nooit om de poort heen. Spraakmemo en bijlagen zijn nog schets.")
                 .font(Thema.tekst(11))
                 .foregroundStyle(Thema.kleur(.zacht))
         }
@@ -249,7 +247,7 @@ struct ChatView: View {
 
     private var snelleVragen: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("VEELGESTELDE VRAGEN & ACTIES")
+            Text("SNELLE OPGAVEN — GAAN ECHT DOOR DE POORT")
                 .font(Thema.tekst(9, gewicht: .semibold))
                 .tracking(1.5)
                 .foregroundStyle(Thema.kleur(.gedempt))
@@ -257,16 +255,10 @@ struct ChatView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     snelleKnop("Slijp mijn prompt voor een dev-omgeving") {
-                        stuurVraag("Kun je mijn prompt 'ik wil een schone python repo met tests' slijpen volgens de scope-poort?")
+                        stuurVraag("ik wil een schone python repo met tests")
                     }
-                    snelleKnop("Waarom faalde de laatste bewijs-check?") {
-                        stuurVraag("Leg uit waarom de bewijs-check van de laatste stap oordeelt zoals hij deed.")
-                    }
-                    snelleKnop("Stel curatie-regels voor inbox/REGELS.md voor") {
-                        stuurVraag("Stel drie concrete curatie-regels voor die de agent als alleen-lezen begrenzen.")
-                    }
-                    snelleKnop("Controleer register-integriteit") {
-                        stuurVraag("Controleer of het oerwoud-brein register synchroon loopt met het geboortebewijs.")
+                    snelleKnop("Tweede brein op deze machine") {
+                        stuurVraag("een tweede brein voor mijn notities, lokaal op deze machine")
                     }
                 }
             }
@@ -412,42 +404,52 @@ struct ChatView: View {
         berichten.append(gebruikersBericht)
 
         agentDenktNa = true
+        let repoPad = repoPad
+        let interpreter = interpreter
         Task {
-            try? await Task.sleep(nanoseconds: 600_000_000) // 0.6s voor rustige overgang
+            let resultaat = await agentKoppeling.slijp(runner: runner,
+                                                       repoPad: repoPad,
+                                                       interpreter: interpreter,
+                                                       tekst: vraag)
             await MainActor.run {
                 agentDenktNa = false
-                beantwoord(vraag: vraag)
+                verwerk(resultaat, vraag: vraag)
             }
         }
     }
 
-    private func beantwoord(vraag: String) {
+    private func verwerk(_ r: SlijpResultaat, vraag: String) {
         let tijd = actueleTijd()
-        let q = vraag.lowercased()
-
-        if q.contains("slijp") || q.contains("prompt") {
+        if let fout = r.fout {
             berichten.append(ChatBericht(
                 afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
-                tekst: "Hier is het geschuurde voorstel conform de Scope-poort:\n\n• Doel: Gecontroleerde ontwikkelomgeving met geautomatiseerde teststraat.\n• Plek: ~/Documents/Code/nieuw-project (lokaal).\n• Slaag wanneer: pytest draait zonder fouten, ruff linting slaagt, geboortebewijs is gevalideerd.\n• Open vraag: Moet er een virtuele omgeving (.venv) automatisch worden aangemaakt?",
-                bewijsRef: "poort.concept §2", isVoorstel: true))
-        } else if q.contains("waarom") || q.contains("faal") || q.contains("check") {
-            berichten.append(ChatBericht(
-                afzender: "Reviewer", rol: .reviewer, tijdstip: tijd,
-                tekst: "De bewijscontrole 'file_equals' berekent de SHA256-hash van het doelbestand en vergelijkt die met het sjabloon. Als er ook maar één whitespace verschilt, oordeelt de motor 'gefaald'. De motor probeert precies één alternatief commando. Faalt dat ook, dan stopt de motor en wordt de mens geroepen. Geen oneindige loops.",
-                bewijsRef: "growkit_bewijs.py §4", isVoorstel: false))
-        } else if q.contains("curatie") || q.contains("regel") || q.contains("inbox") {
-            berichten.append(ChatBericht(
-                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
-                tekst: "Voorstel voor inbox/REGELS.md:\n\n1. De agent plaatst nieuwe documenten uitsluitend als concept in inbox/ met de tag 'VOORSTEL'.\n2. Alleen de mens verplaatst documenten van inbox/ naar kennis/ of projecten/.\n3. Het logboek registreert elke curatiestap append-only.",
-                bewijsRef: "inbox/REGELS.md", isVoorstel: true))
-        } else {
-            berichten.append(ChatBericht(
-                afzender: geselecteerdeAgentId == "reviewer" ? "Reviewer" : "Tuinier",
-                rol: geselecteerdeAgentId == "reviewer" ? .reviewer : .tuinier,
-                tijdstip: tijd,
-                tekst: "Ik heb je bericht ontvangen. Volgens de zero-trust filosofie kan ik opdrachten voorbereiden en analyseren, maar zal ik nooit acties uitvoeren zonder expliciete bevestiging via de Scope-poort en ratificatie via de adapter.",
-                bewijsRef: "growkit_poort.py", isVoorstel: false))
+                tekst: "De koppeling met de kern lukte niet: \(fout)\n\nControleer het repo-pad en de python-interpreter in Instellingen — het gesprek loopt via adapter.py en kan nooit om de poort heen.",
+                bewijsRef: "adapter.py", isVoorstel: false))
+            return
         }
+        if !r.geaccepteerd, let weigering = r.weigering {
+            var tekst = weigering
+            if !r.vragen.isEmpty {
+                let lijst = r.vragen.compactMap { $0["vraag"] as? String }
+                    .map { "• \($0)" }.joined(separator: "\n")
+                tekst += "\n\nAanvullende vragen van de poort:\n\(lijst)"
+            }
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: tekst, bewijsRef: "growkit_poort.py", isVoorstel: false))
+            return
+        }
+        if r.geaccepteerd, let concept = r.conceptJSON {
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: "Hier is het geschuurde concept uit de Scope-poort:\n\n\(concept)",
+                bewijsRef: "poort.concept §11.1", isVoorstel: true))
+            return
+        }
+        berichten.append(ChatBericht(
+            afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+            tekst: "Ik heb je bericht ontvangen maar kon er geen poort-uitspraak uit lezen. Roep de mens — dit hoort niet te gebeuren.",
+            bewijsRef: "adapter.py", isVoorstel: false))
     }
 
     private func actueleTijd() -> String {

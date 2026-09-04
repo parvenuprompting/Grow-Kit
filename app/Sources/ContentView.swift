@@ -48,7 +48,6 @@ struct ContentView: View {
             }
         }
         var actiefInV1: Bool { self != .hervatten && self != .taak }
-        var demo: Bool { self == .dialoog }
     }
 
     @State private var geselecteerd: Modi = .home
@@ -130,12 +129,6 @@ struct ContentView: View {
 
                 Spacer()
 
-                if modus.demo {
-                    Text("DEMO").font(Thema.tekst(9, gewicht: .semibold)).tracking(1)
-                        .padding(.horizontal, 7).padding(.vertical, 3)
-                        .overlay(Capsule().stroke(Thema.kleur(.zacht), style: StrokeStyle(lineWidth: 1, dash: [3])))
-                        .foregroundStyle(Thema.kleur(.zacht))
-                }
                 if !modus.actiefInV1 {
                     Text("6.1")
                         .font(Thema.tekst(9, gewicht: .semibold))

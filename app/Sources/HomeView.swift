@@ -76,7 +76,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Dialoog").font(Thema.display(20))
-                Text("· demo — de echte agent-koppeling volgt in een latere fase")
+                Text("· de dialoog loopt nu écht via de adapter; spraakmemo en bijlagen zijn nog schets")
                     .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
                 Spacer()
                 Button("Volledig scherm") { onNavigeer(.dialoog) }

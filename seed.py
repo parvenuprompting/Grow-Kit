@@ -9,6 +9,7 @@ Gebruik:
 import argparse
 import datetime
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -18,9 +19,14 @@ VERSIE = "0.1.0"
 
 
 def _log_slijper(ruwe_invoer: str, geschuurd: str, beslissing: str) -> None:
-    """Append-only log van elke slijper-beurt: ruw + geschuurd + beslissing (§11.1)."""
-    SLIJPER_LOG.parent.mkdir(parents=True, exist_ok=True)
-    entries = json.loads(SLIJPER_LOG.read_text(encoding="utf-8")) if SLIJPER_LOG.exists() else []
+    """Append-only log van elke slijper-beurt: ruw + geschuurd + beslissing (§11.1).
+
+    Het pad is omleidbaar via GROWKIT_SLIJPER_LOG (tests schrijven nooit
+    in het echte logboek — zelfde patroon als GROWKIT_OERWOUD_STAAT).
+    """
+    pad = Path(os.environ.get("GROWKIT_SLIJPER_LOG", str(SLIJPER_LOG)))
+    pad.parent.mkdir(parents=True, exist_ok=True)
+    entries = json.loads(pad.read_text(encoding="utf-8")) if pad.exists() else []
     entries.append({
         "type": "slijper",
         "ruw": ruwe_invoer,
@@ -28,7 +34,7 @@ def _log_slijper(ruwe_invoer: str, geschuurd: str, beslissing: str) -> None:
         "beslissing": beslissing,
         "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     })
-    SLIJPER_LOG.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def mijlpaal_blok(profiel: dict, doel: Path, logboek: Path) -> str:

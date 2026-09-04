@@ -1,10 +1,10 @@
 # GrowKit 🌱
 
 [![Visibility](https://img.shields.io/badge/visibility-private-red)]()
-[![Status](https://img.shields.io/badge/status-fase_1_–_5_bewezen-brightgreen?style=flat-square)]()
+[![Status](https://img.shields.io/badge/status-fase_1_–_6_bewezen-brightgreen?style=flat-square)]()
 [![Taal](https://img.shields.io/badge/inhoud-Nederlands-blue?style=flat-square)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-geen_(stdlib_only)-success?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-206_unit_+_7_E2E_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-220_unit_+_7_E2E_groen-success?style=flat-square)]()
 
 > **Het eerste zaadje dat jij controleert — niet de agent.**
 > Een repo die na installatie vanzelf ontkiemt: jouw AI-agent leest de geboortebrief, jij kiest de boom, de agent plant mét machine-geverifieerd bewijs, en daarna groeit het door — met een eigen harnas dat zonder AI-agent draait, en een oerwoud van bomen onder één gedeeld brein.
@@ -99,7 +99,7 @@ growkit/
 │   ├── autonome-fabriek/    ← in ontwikkeling (de "nachtfabriek")
 │   └── dev-werkplaats/      ← in ontwikkeling
 ├── groei/                   ← groeilaag-instructie (SETUP.md)
-├── tests/                   ← 171 unit-tests + 6 E2E-scripts
+├── tests/                   ← 220 unit-tests + 7 E2E-scripts
 ├── reviewconfig.voorbeeld.json  ← rollen zonder leveranciers (§12.5)
 ├── docs/
 │   ├── HOE-HET-WERKT.md     ← de complete, correcte uitleg
@@ -130,7 +130,7 @@ Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-H
 
 ## Tests en bewijs
 
-- **206 unit-tests** (unittest, stdlib) + **7 end-to-end-scripts** — allemaal groen.
+- **220 unit-tests** (unittest, stdlib, python3.13) + **7 end-to-end-scripts** — allemaal groen.
 - Bewijs per fase, letterlijk vastgelegd: `docs/superpowers/bewijs/` (fase-2-test1/2, fase-3-test3, fase-4-test4, fase-5-test5 + zelfreviews).
 - Test 4 bewijst de agent-onafhankelijkheid: het harnas plant, crasht (`kill -9`), hervat uit het logboek en ratificeert — met alleen python3 en gepijpte antwoorden.
 - Test 5 bewijst het oerwoud: register, doorstroom, drift-guard en corrupt-register-afhandeling op een schone plek.
@@ -142,5 +142,6 @@ Het idee bleek ouder dan deze repo: het leefde al in notities en concept-documen
 ## Status
 
 - **Fase 1-6 bewezen** (3-4 september 2026). Zelfreviews met letterlijke evidence: `docs/superpowers/bewijs/fase-4-zelfreview.md`, `fase-5-zelfreview.md` en `fase-6-zelfreview.md`.
-- **Volgende stappen** (voorstellen, nog niet afgesproken): fase 5.1 (cross-machine sync via git — eigen bewijsronde), de nachtfabriek (autonome-fabriek-profiel binnen de bewezen kaders), of de eerste echte gebruiker (distributie-beslissing: git-kloon vs. PyPI — naamcheck §2 herhalen bij een PyPI-release).
+- **Waar de app nu staat**: de schermen zijn compleet en de vaste knoppen (status, planten, ratificatie, hervatten) praten via de adapter met de echte kern. Wat nog *demo* is: het Dialoog-scherm (voorbeeldberichten, geen echte agent-koppeling), de spraakmemo en de demotijdlijn in Status vóór de eerste echte lading.
+- **Volgende stappen** (voorstellen, nog niet afgesproken): het Dialoog-scherm functioneel maken via adapter + provider, fase 5.1 (cross-machine sync via git — eigen bewijsronde), de nachtfabriek (autonome-fabriek-profiel binnen de bewezen kaders), of de eerste echte gebruiker (distributie-beslissing: git-kloon vs. PyPI — naamcheck §2 herhalen bij een PyPI-release).
 - Repo privé opzettelijk (ontwerpfase); openbaarmeming wordt een bewuste beslissing.
