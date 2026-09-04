@@ -507,6 +507,29 @@ def cmd_nachtstatus(invoer: dict) -> dict:
     return {"ok": True, "data": {"plan": plan, "rondes": rondes,
                                  "levensignaal": signaal}}
 
+
+def cmd_saldo(invoer: dict) -> dict:
+    """Actueel OpenRouter-saldo (Slice A1). Sleutel via sleutel_pad,
+    ~/.growkit/openrouter_key of omgeving — waarde lekt nooit."""
+    from kern import growkit_openrouter
+    try:
+        sleutel = growkit_openrouter.los_sleutel_op(invoer.get("sleutel_pad"))
+        data = growkit_openrouter.saldo(sleutel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_verbruik(invoer: dict) -> dict:
+    """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
+    from kern import growkit_openrouter
+    try:
+        sleutel = growkit_openrouter.los_sleutel_op(invoer.get("sleutel_pad"))
+        data = growkit_openrouter.verbruik(sleutel, invoer.get("dagen"))
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -525,6 +548,8 @@ COMMANDOS = {
     "nachtplan": cmd_nachtplan,
     "nachtronde": cmd_nachtronde,
     "nachtstatus": cmd_nachtstatus,
+    "saldo": cmd_saldo,
+    "verbruik": cmd_verbruik,
 }
 
 def main(argv: list[str]) -> int:
