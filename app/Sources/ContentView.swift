@@ -10,12 +10,22 @@ struct ContentView: View {
     @AppStorage("growkitInterpreter") private var interpreter = Runner.standaardInterpreter
 
     enum Modi: Int, CaseIterable, Identifiable {
-        case status, planten, ratificatie, dialoog, hervatten, taak
+        case home = -1, status, planten, ratificatie, dialoog, hervatten, taak, rondleiding, uitleg
 
         var id: Int { rawValue }
-        var nummer: String { String(format: "%02d", rawValue + 1) }
+        var nummer: String {
+            switch self {
+            case .home: return "00"
+            case .rondleiding: return "07"
+            case .uitleg: return "08"
+            default: return String(format: "%02d", rawValue + 1)
+            }
+        }
         var naam: String {
             switch self {
+            case .home: return "Thuis"
+            case .rondleiding: return "Rondleiding"
+            case .uitleg: return "Uitleg"
             case .status: return "Status"
             case .planten: return "Planten"
             case .ratificatie: return "Ratificatie"
@@ -26,6 +36,9 @@ struct ContentView: View {
         }
         var beschrijving: String {
             switch self {
+            case .home: return "Startpunten en de dialoog binnen handbereik"
+            case .rondleiding: return "De vijf schermen van het ontwerp"
+            case .uitleg: return "Zes regels · de engine room"
             case .status: return "Identiteit, register, tellers, logboek"
             case .planten: return "Concept → bevestiging → motor met bewijs"
             case .ratificatie: return "Mens-momenten in bulk goedkeuren of afkeuren"
@@ -38,7 +51,7 @@ struct ContentView: View {
         var demo: Bool { self == .dialoog }
     }
 
-    @State private var geselecteerd: Modi = .status
+    @State private var geselecteerd: Modi = .home
     @State private var toonInstellingen = false
     @State private var instellingenTab = 0
     @State private var hoverModus: Modi? = nil
@@ -196,6 +209,15 @@ struct ContentView: View {
                 case .dialoog:
                     ChatView(runner: runner, koppelingen: koppelingen,
                              repoPad: $repoPad, interpreter: $interpreter)
+                case .home:
+                    HomeView(runner: runner, koppelingen: koppelingen,
+                             repoPad: $repoPad, interpreter: $interpreter) { modus in
+                        geselecteerd = modus
+                    }
+                case .rondleiding:
+                    RondleidingView()
+                case .uitleg:
+                    UitlegView()
                 case .hervatten, .taak:
                     PlaceholderView(titel: geselecteerd.naam,
                                     tekst: "Deze modus volgt in fase 6.1 — gebruik voor nu loop.py in de terminal.")

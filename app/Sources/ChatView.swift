@@ -50,6 +50,7 @@ struct ChatView: View {
     @Binding var repoPad: String
     @Binding var interpreter: String
     var metScroll: Bool = true
+    var compact: Bool = false
 
     // Geïnstalleerde agents conform de GrowKit-architectuur
     private let geinstalleerdeAgents: [AIAgentInfo] = [
@@ -91,8 +92,10 @@ struct ChatView: View {
 
     @ViewBuilder private var inhoudView: some View {
         VStack(alignment: .leading, spacing: 20) {
-            kop
-            demoBanner
+            if !compact {
+                kop
+                demoBanner
+            }
             StappenStreep(stappen: ["Agentkeuze", "Prompt-slijper", "Voorstel", "Curatie"], actieveIndex: 1)
             agentKiezer
             gespreksPaneel
