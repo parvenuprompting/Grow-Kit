@@ -13,7 +13,7 @@ struct ContentView: View {
     @AppStorage("growkitInterpreter") private var interpreter = Runner.standaardInterpreter
 
     enum Modi: Int, CaseIterable, Identifiable {
-        case home = -1, status, planten, ratificatie, dialoog, agenten, hervatten, taak, rondleiding, uitleg
+        case home = -1, status, planten, ratificatie, dialoog, agenten, vangnet, hervatten, taak, rondleiding, uitleg
 
         var id: Int { rawValue }
         var nummer: String {
@@ -34,6 +34,7 @@ struct ContentView: View {
             case .ratificatie: return "Ratificatie"
             case .dialoog: return "Dialoog"
             case .agenten: return "Agenten"
+            case .vangnet: return "Vangnet"
             case .hervatten: return "Hervatten"
             case .taak: return "Taak"
             }
@@ -48,6 +49,7 @@ struct ContentView: View {
             case .ratificatie: return "Mens-momenten in bulk goedkeuren of afkeuren"
             case .dialoog: return "Gesprek met geïnstalleerde AI-agenten"
             case .agenten: return "Governor: taken, controle, observer"
+            case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .taak: return "Taken uit de groeilaag uitvoeren"
             }
@@ -82,7 +84,7 @@ struct ContentView: View {
 
             // WERK — de dagelijkse modi
             zijbalkSectie("WERK")
-            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten]) { modus in
+            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet]) { modus in
                 modusRij(modus)
             }
 
@@ -263,6 +265,8 @@ struct ContentView: View {
                              repoPad: $repoPad, interpreter: $interpreter)
                 case .agenten:
                     AgentsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .vangnet:
+                    VangnetView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .home:
                     HomeView(runner: runner, koppelingen: koppelingen,
                              repoPad: $repoPad, interpreter: $interpreter) { modus in

@@ -12,6 +12,7 @@ Contract:
 - Stateless: geen sessie-staat tussen aanroepen.
 """
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -690,6 +691,29 @@ def cmd_models(invoer: dict) -> dict:
                                                 "typ de model-id handmatig of probeer Vernieuw later"}}
 
 
+def cmd_vangnet(invoer: dict) -> dict:
+    """Vangnet-status voor de app: totaal, tellingen per bron en de
+    recentste vangsten. Alleen lezen — het vangnet vangt vanzelf."""
+    doel = _doel_uit(invoer)
+    db = doel / "vangnet" / "vangnet.db"
+    if not db.exists():
+        return {"ok": True, "data": {"bestaat": False, "totaal": 0,
+                                     "per_bron": [], "recente": []}}
+    con = sqlite3.connect(db, timeout=5)
+    try:
+        totaal = con.execute("SELECT COUNT(*) FROM vangsten").fetchone()[0]
+        per_bron = [{"bron": b, "aantal": n} for b, n in con.execute(
+            "SELECT bron, COUNT(*) FROM vangsten GROUP BY bron ORDER BY COUNT(*) DESC")]
+        recente = [{"ts": ts, "bron": bron, "taak": taak, "oordeel": oordeel}
+                   for ts, bron, taak, oordeel in con.execute(
+                       "SELECT ts, bron, taak, oordeel FROM vangsten "
+                       "ORDER BY id DESC LIMIT 20")]
+    finally:
+        con.close()
+    return {"ok": True, "data": {"bestaat": True, "totaal": totaal,
+                                 "per_bron": per_bron, "recente": recente}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -700,6 +724,7 @@ COMMANDOS = {
     "slijp": cmd_slijp,
     "governor": cmd_governor,
     "models": cmd_models,
+    "vangnet": cmd_vangnet,
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,
