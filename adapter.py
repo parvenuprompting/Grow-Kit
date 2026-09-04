@@ -404,6 +404,109 @@ def cmd_stuur(invoer: dict) -> dict:
         raise AdapterFout(str(e))
     return {"ok": True, "data": {"verzonden": aantal, "namen": namen}}
 
+
+def cmd_nachtplan(invoer: dict) -> dict:
+    """Nachtplan samenstellen (Slice 6). Zonder bevestiging: concept. Met
+    bevestiging: append-only weggeschreven; bestaand plan → geweigerd."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    taken_ids = invoer.get("taken")
+    if not isinstance(taken_ids, list) or not taken_ids:
+        raise AdapterFout("verplicht veld ontbreekt: taken (lijst met taak-ids)")
+    from kern.growkit_taken import laad_taken, valideer_taak
+    taken = {t.get("id"): t for t in laad_taken(doel / "takenlijst.json")}
+    ontbrekend = [tid for tid in taken_ids if tid not in taken]
+    if ontbrekend:
+        raise AdapterFout(f"taak(s) bestaan niet in de takenlijst: {', '.join(ontbrekend)}")
+    ongeldig = [taken[tid]["id"] for tid in taken_ids if valideer_taak(taken[tid])]
+    if ongeldig:
+        raise AdapterFout(
+            f"taak(s) zonder bewijs bestaan niet en kunnen niet in het plan: {', '.join(ongeldig)}")
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {
+            "concept": f"nachtronde voor {doel.name} met {len(taken_ids)} taak/taken",
+            "bevestiging_vereist": True,
+            "plan": {"taken": taken_ids}}}
+    try:
+        plan = growkit_oerwoud.nachtplan_wegschrijven(doel, taken_ids)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan}}
+
+
+def cmd_nachtronde(invoer: dict) -> dict:
+    """Voer één geplande nachtronde uit (Slice 6). Poort eerst per taak;
+    append-only rondverslag; faalcontract: eerste faal eindigt de ronde
+    (exit 2), geen retries."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    plan = growkit_oerwoud.nachtplan_lezen(doel)
+    if plan is None:
+        raise AdapterFout("geen nachtplan — stel er eerst een samen (nachtplan)")
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {"bevestiging_vereist": True,
+                                     "plan": plan}}
+    from kern.growkit_review import laad_reviewconfig
+    from kern.growkit_taken import laad_taken, valideer_taak, voer_taak_uit
+    import contextlib
+
+    taken = {t.get("id"): t for t in laad_taken(doel / "takenlijst.json")}
+    reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    logboek = doel / "logboek.json"
+    groei_oerwoud = growkit_oerwoud
+    groei_oerwoud.log_run_latch(logboek, "gestart")
+    verslag_taken = []
+    ronde_geslaagd = True
+    try:
+        for tid in plan["taken"]:
+            taak = taken.get(tid)
+            if taak is None:
+                verslag_taken.append({"taak": tid, "status": "gefaald",
+                                      "bewijs": "taak verdwenen uit de takenlijst"})
+                ronde_geslaagd = False
+                break
+            if valideer_taak(taak):
+                verslag_taken.append({"taak": tid, "status": "gefaald",
+                                      "bewijs": "poort-weigering: taak zonder bewijs bestaat niet"})
+                ronde_geslaagd = False
+                break
+            with contextlib.redirect_stdout(sys.stderr):
+                geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+            status = "geslaagd" if geslaagd else "gefaald"
+            verslag_taken.append({"taak": tid, "status": status,
+                                  "bewijs": "; ".join(bevindingen) or "bewijs gecontroleerd"})
+            if not geslaagd:
+                ronde_geslaagd = False
+                break
+    finally:
+        groei_oerwoud.log_run_latch(logboek, "beeindigd")
+    groei_oerwoud.nachtronde_verslag(doel, ronde_geslaagd, verslag_taken)
+    resultaat = {"geslaagd": ronde_geslaagd, "taken": verslag_taken}
+    if not ronde_geslaagd:
+        raise AdapterFaal("nachtronde gestopt door het faalcontract — roep de mens", [resultaat])
+    return {"ok": True, "data": resultaat}
+
+
+def cmd_nachtstatus(invoer: dict) -> dict:
+    """Plan + rondgeschiedenis + levensignaal (Slice 6) — puur lezend,
+    één bron met Slices 2 en het plan-bestand."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    try:
+        plan = growkit_oerwoud.nachtplan_lezen(doel)
+        rondes_pad = doel / "nachtrondes.json"
+        rondes = None
+        if rondes_pad.exists():
+            rondes = json.loads(rondes_pad.read_text(encoding="utf-8"))
+        signaal = growkit_oerwoud.levensignaal(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan, "rondes": rondes,
+                                 "levensignaal": signaal}}
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -419,6 +522,9 @@ COMMANDOS = {
     "koppel": cmd_koppel,
     "driftguard": cmd_driftguard,
     "stuur": cmd_stuur,
+    "nachtplan": cmd_nachtplan,
+    "nachtronde": cmd_nachtronde,
+    "nachtstatus": cmd_nachtstatus,
 }
 
 def main(argv: list[str]) -> int:

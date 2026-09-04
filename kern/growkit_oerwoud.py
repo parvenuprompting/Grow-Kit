@@ -788,3 +788,47 @@ def driftguard_rapport(brein_pad: Path) -> dict:
             "blijft_lokaal": list(_DRIFT_LOKAAL),
             "bomen": sum(1 for s in laatste.values() if s == "actief"),
             "brein_pad": str(brein_pad)}
+
+
+# ---------------------------------------------------------------------------
+# Slice 6 — nachtfabriek-modus: de app stelt de nachtronde samen (met
+# bevestiging), het harnas voert één ronde uit onder het bestaande
+# faalcontract. Append-only: plan en rondverslagen worden nooit overschreven.
+# ---------------------------------------------------------------------------
+
+def nachtplan_wegschrijven(doel: Path, taken: list[str]) -> dict:
+    """Schrijf het nachtplan (Slice 6) — append-only: een bestaand plan wordt
+    geweigerd, nooit overschreven; nieuw plan = nieuw bestand na verwijdering
+    is niet aan de orde, de mens curateert handmatig."""
+    doel = doel.resolve()
+    plan_pad = doel / "nachtplan.json"
+    if plan_pad.exists():
+        raise ValueError(
+            f"nachtplan {plan_pad} bestaat al — nooit overschrijven; "
+            "verwijder het plan handmatig als de ronde is verwerkt")
+    plan = {"taken": taken, "aangemaakt": _nu(), "boom": doel.name}
+    plan_pad.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8")
+    return plan
+
+
+def nachtplan_lezen(doel: Path) -> dict | None:
+    plan_pad = doel.resolve() / "nachtplan.json"
+    if not plan_pad.exists():
+        return None
+    try:
+        return json.loads(plan_pad.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise ValueError(f"nachtplan {plan_pad} is corrupt — roep de mens: {e}") from e
+
+
+def nachtronde_verslag(doel: Path, geslaagd: bool, taken: list[dict]) -> dict:
+    """Append-only rondverslag in groei/nachtrondes.json (Slice 6)."""
+    doel = doel.resolve()
+    verslag_pad = doel / "nachtrondes.json"
+    entries = json.loads(verslag_pad.read_text(encoding="utf-8")) if verslag_pad.exists() else []
+    entry = {"start": _nu(), "geslaagd": geslaagd, "taken": taken}
+    entries.append(entry)
+    verslag_pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
+                           encoding="utf-8")
+    return entry
