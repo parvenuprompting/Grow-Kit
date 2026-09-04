@@ -125,3 +125,76 @@ def verbruik_activity(sleutel: str, datum: str, dagen: int) -> dict:
     totaal = round(sum(m["kosten"] for m in modellen), 6)
     return {"periode_dagen": dagen, "vanaf": datum, "modellen": modellen,
             "totaal_kosten": totaal, "bron": "openrouter", "opgevraagd": _nu()}
+
+
+# ---------------------------------------------------------------- modellen
+# Actuele modellenlijst voor de dropdown in de app. De /models-endpoint
+# van OpenRouter vereist géén sleutel. Antwoorden worden 15 minuten
+# lokaal gecached (~/.growkit/modellen-cache.json) zodat de dropdown
+# snel opent en de API niet bij elke keer opnieuw wordt geraakt.
+
+_CACHE_PAD = Path.home() / ".growkit" / "modellen-cache.json"
+_CACHE_MINUTEN = 15
+
+
+def verwerk_modellen(ruw: dict) -> list[dict]:
+    """Ruw /models-antwoord → schone lijst {id, naam, context, prijs_prompt}."""
+    modellen = []
+    for rij in ruw.get("data") or []:
+        if not isinstance(rij, dict) or not rij.get("id"):
+            continue
+        pricing = rij.get("pricing") or {}
+        try:
+            prijs = float(pricing.get("prompt") or 0) * 1_000_000  # per 1M tokens
+        except (TypeError, ValueError):
+            prijs = 0.0
+        modellen.append({
+            "id": str(rij["id"]),
+            "naam": str(rij.get("name") or rij["id"]),
+            "context": int(rij.get("context_length") or 0),
+            "prijs_prompt": round(prijs, 2),
+        })
+    return modellen
+
+
+def sla_cache_op(modellen: list[dict], pad: Path | None = None) -> None:
+    """Bewaar de lijst met tijdstip; faalt stil (cache is een optimalisatie)."""
+    try:
+        pad = Path(pad or _CACHE_PAD)
+        pad.parent.mkdir(parents=True, exist_ok=True)
+        pad.write_text(json.dumps(
+            {"opgehaald": _nu(), "modellen": modellen}, ensure_ascii=False),
+            encoding="utf-8")
+    except Exception:
+        pass
+
+
+def lees_cache(pad: Path | None = None,
+               max_leeftijd_minuten: int = _CACHE_MINUTEN) -> list[dict] | None:
+    """Gelezen cache of None (verlopen/corrupt/ontbreekt). Faalt stil."""
+    try:
+        pad = Path(pad or _CACHE_PAD)
+        if not pad.exists():
+            return None
+        doc = json.loads(pad.read_text(encoding="utf-8"))
+        opgehaald = datetime.datetime.fromisoformat(doc["opgehaald"])
+        leeftijd = datetime.datetime.now(datetime.timezone.utc) - opgehaald
+        if leeftijd > datetime.timedelta(minutes=max_leeftijd_minuten):
+            return None
+        return doc.get("modellen") or []
+    except Exception:
+        return None
+
+
+def haal_modellen_op(sleutel: str | None = None) -> dict:
+    """Live ophalen; zonder sleutel anoniem (OpenRouter staat dit toe).
+    Retourneert {"modellen": [...], "bron": "live"} of ValueError tekst."""
+    url = f"{basis_url()}/models"
+    verzoek = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(verzoek, timeout=10) as r:
+        if r.status != 200:
+            raise ValueError(f"models-endpoint gaf status {r.status}")
+        ruw = json.loads(r.read().decode("utf-8"))
+    modellen = verwerk_modellen(ruw)
+    sla_cache_op(modellen)
+    return {"modellen": modellen, "bron": "live"}

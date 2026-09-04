@@ -665,6 +665,31 @@ def cmd_governor(invoer: dict) -> dict:
                       "afronden, controle, subagent, melding")
 
 
+def cmd_models(invoer: dict) -> dict:
+    """Actuele modellen voor de dropdown (OpenRouter /models, geen sleutel
+    nodig). Live met 15-minuten cache; bij netwerkfalen valt hij terug op
+    een verlopen cache en anders een nette melding — de instellingen-open
+    mag nooit crashen."""
+    from kern import growkit_openrouter as gom
+    forceer = bool(invoer.get("vernieuw"))
+    if not forceer:
+        cache = gom.lees_cache()
+        if cache:
+            return {"ok": True, "data": {"modellen": cache, "bron": "cache"}}
+    try:
+        resultaat = gom.haal_modellen_op()
+        return {"ok": True, "data": resultaat}
+    except Exception as e:
+        # fail-open: verlopen cache is beter dan niets
+        oude = gom.lees_cache(max_leeftijd_minuten=10_000)
+        if oude:
+            return {"ok": True, "data": {"modellen": oude, "bron": "cache",
+                                         "melding": f"live ophalen faalde ({e}) — verlopen lijst getoond"}}
+        return {"ok": True, "data": {"modellen": [], "bron": "onbereikbaar",
+                                     "melding": f"modellen niet bereikbaar: {e} — "
+                                                "typ de model-id handmatig of probeer Vernieuw later"}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -674,6 +699,7 @@ COMMANDOS = {
     "taak": cmd_taak,
     "slijp": cmd_slijp,
     "governor": cmd_governor,
+    "models": cmd_models,
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,

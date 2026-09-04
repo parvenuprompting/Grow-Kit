@@ -285,7 +285,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 0.8.0")
+                Text("© Parvenu GrowKit 0.9.0")
                 Text("·").foregroundStyle(Thema.kleur(.lijn))
                 Text("Zero-Trust Harnas")
             }
@@ -372,8 +372,10 @@ struct ContentView: View {
                             labeledVeld("NAAM", text: $provider.naam)
                             labeledVeld("ENDPOINT", text: $provider.endpoint,
                                         placeholder: "https://…/v1/chat")
-                            labeledVeld("MODEL", text: $provider.model,
-                                        placeholder: "bijv. een rolnaam — géén leveranciers-binding in de kern")
+                            ModelDropdown(model: $provider.model,
+                                          runner: runner,
+                                          repoPad: repoPad,
+                                          interpreter: interpreter)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("API-SLEUTEL (uitsluitend op deze machine)")
                                     .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
