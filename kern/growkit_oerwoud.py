@@ -318,6 +318,12 @@ def status_data(doel: Path) -> dict:
                                              "status": entry.get("status", "?"),
                                              "tijdstip": entry.get("tijdstip", "?")}
             break
+    # Slice 4: de volledige append-only tijdlijn — elke stap-entry in volgorde.
+    data["tijdlijn"] = [
+        {"stap": e.get("stap", "?"), "status": e.get("status", "?"),
+         "bewijs": e.get("bewijs", ""), "tijdstip": e.get("tijdstip", "?")}
+        for e in entries if e.get("stap", "").startswith(("stap-", "taak-"))
+    ]
 
     try:
         staat = laad_oerwoud_staat()

@@ -13,6 +13,7 @@ struct StatusGegevens {
     let wachtend: Int
     let verzonden: Int
     let laatste: [String: Any]?
+    let tijdlijn: [[String: Any]]
 
     init(_ data: [String: Any]) {
         identiteit = data["identiteit"] as? [String: Any]
@@ -35,6 +36,7 @@ struct StatusGegevens {
             verzonden = 0
         }
         laatste = data["laatste_mijlpaal_faal"] as? [String: Any]
+        tijdlijn = (data["tijdlijn"] as? [[String: Any]]) ?? []
     }
 }
 
@@ -47,7 +49,6 @@ struct StatusView: View {
     @State private var boomPad = ""
     @State private var gegevens: StatusGegevens?
     @State private var fout: String?
-    @State private var toonVoorbeeldTijdlijn: Bool = true
 
     var body: some View {
         groep
@@ -95,10 +96,7 @@ struct StatusView: View {
                           regels: ["de identiteit komt rechtstreeks uit het geboortebewijs.json van de boom",
                                    "het register toont of de boom verbonden is met een oerwoud-brein",
                                    "de tellers tonen VOORSTELLEN: wachtend op ratificatie of reeds verzonden",
-                                   "de tijdlijn hieronder toont de append-only historie conform het faalcontract"])
-
-                // DEMO: Voorbeeld append-only tijdlijn conform faalcontract
-                demoTijdlijnKaart
+                                   "de tijdlijn toont de append-only historie zodra een boom is geladen"])
             }
             Spacer(minLength: 16)
         }
@@ -209,62 +207,29 @@ struct StatusView: View {
     }
 
     private func logboekKaart(gegevens: StatusGegevens) -> some View {
-        Kaart(kop: "Logboek (append-only)", rechterKop: "Laatste Mijlpaal") {
-            VStack(alignment: .leading, spacing: 12) {
-                if let laatste = gegevens.laatste {
-                    TijdlijnRij(tijdstip: formatteerTijd(laatste["tijdstip"] as? String),
-                                titel: laatste["stap"] as? String ?? "Mijlpaal",
-                                detail: "Status: \(laatste["status"] as? String ?? "?") — geregistreerd in logboek.json",
-                                statusTekst: laatste["status"] as? String ?? "geslaagd",
-                                stijl: (laatste["status"] as? String == "geslaagd") ? .bewezen : .mens,
-                                isEerste: true, isLaatste: true)
-                } else {
+        Kaart(kop: "Logboek (append-only)", rechterKop: "\(gegevens.tijdlijn.count) stappen") {
+            VStack(alignment: .leading, spacing: 0) {
+                if gegevens.tijdlijn.isEmpty {
                     Text("Nog geen append-only logboekregels geregistreerd.")
                         .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                        .padding(.bottom, 12)
+                } else {
+                    ForEach(Array(gegevens.tijdlijn.enumerated()), id: \.offset) { index, entry in
+                        let status = (entry["status"] as? String) ?? "?"
+                        TijdlijnRij(tijdstip: formatteerTijd(entry["tijdstip"] as? String),
+                                    titel: "\(entry["stap"] as? String ?? "?")",
+                                    detail: "bewijs: \((entry["bewijs"] as? String) ?? "—")",
+                                    statusTekst: status,
+                                    stijl: status == "geslaagd" ? .bewezen : (status == "wacht_op_mens" ? .mens : .neutraal),
+                                    isEerste: index == 0,
+                                    isLaatste: index == gegevens.tijdlijn.count - 1)
+                    }
                 }
             }
         }
     }
 
-    // DEMO: Getrouwe tijdlijn conform het faalcontract voor weergave vóór laden
-    private var demoTijdlijnKaart: some View {
-        Kaart(kop: "Logboek (append-only)", rechterKop: "Voorbeeld · Faalcontract") {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("VOORBEELD VAN EEN BEWEZEN BOOM-HISTORIE (APPEND-ONLY):")
-                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
-                    .foregroundStyle(Thema.kleur(.gedempt))
-                    .padding(.bottom, 14)
-
-                TijdlijnRij(tijdstip: "15:40:12",
-                            titel: "stap-001: Mappen aanmaken (kern)",
-                            detail: "bewijs: shell_check — 'alle kernmappen bestaan' → OK",
-                            statusTekst: "✓ Bewezen",
-                            stijl: .bewezen,
-                            isEerste: true, isLaatste: false)
-
-                TijdlijnRij(tijdstip: "15:40:14",
-                            titel: "stap-002: Sjabloon INDEX.md kopiëren",
-                            detail: "bewijs: file_equals — identiek aan sjabloon (SHA256) → OK",
-                            statusTekst: "✓ Bewezen",
-                            stijl: .bewezen,
-                            isEerste: false, isLaatste: false)
-
-                TijdlijnRij(tijdstip: "15:40:17",
-                            titel: "stap-005: Logboek initialiseren",
-                            detail: "bewijs: json_valid — top-level array gevalideerd → OK",
-                            statusTekst: "✓ Bewezen",
-                            stijl: .bewezen,
-                            isEerste: false, isLaatste: false)
-
-                TijdlijnRij(tijdstip: "15:41:02",
-                            titel: "stap-008: Structuur tonen aan de mens",
-                            detail: "bewijs: mens_verificatie — wacht op curatie door mens",
-                            statusTekst: "Mens-moment",
-                            stijl: .mens,
-                            isEerste: false, isLaatste: true)
-            }
-        }
-    }
+    // DEMO-kaart verwijderd (slice 4): alles wat Status toont komt uit het echte logboek.
 
     private func foutKaart(_ tekst: String) -> some View {
         Kaart(kop: "Fout", rechterKop: "Faalcontract §7") {
