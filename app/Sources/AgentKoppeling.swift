@@ -79,4 +79,50 @@ final class AgentKoppeling: ObservableObject {
         regels.append("• Status: wacht op jouw bekrachtiging (de app voert nooit zelf uit)")
         return regels.joined(separator: "\n")
     }
+
+    /// Slice 3 — plant-aanroep: eerst voorbeeld (bevestiging_vereist), daarna echt.
+    struct PlantResultaat {
+        let conceptTekst: String?
+        let mijlpaalBlok: String?
+        let vragen: [[String: Any]]
+        let stappen: [[String: Any]]
+        let registratie: String?
+        let uitgevoerd: Bool
+        let fout: String?
+        let faalStappen: [[String: Any]]
+    }
+
+    func plant(runner: Runner, repoPad: String, interpreter: String,
+               profiel: String, doel: String, brein: String,
+               bevestig: Bool, mijlpaalBevestigd: Bool = false) async -> PlantResultaat {
+        var invoer: [String: Any] = ["profiel": profiel, "doel": doel]
+        if bevestig { invoer["bevestig"] = true }
+        if mijlpaalBevestigd { invoer["mijlpaal_bevestigd"] = true }
+        if brein == "geen" || brein == "auto" || brein == "pad" { invoer["brein"] = brein }
+        do {
+            let r = try await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                          commando: "plant", invoer: invoer, timeOut: 300)
+            if r.fout != nil, !r.ok {
+                return PlantResultaat(conceptTekst: nil, mijlpaalBlok: nil, vragen: [],
+                                      stappen: [], registratie: nil, uitgevoerd: false,
+                                      fout: r.fout, faalStappen: r.stappen)
+            }
+            let d = r.data
+            var conceptTekst: String?
+            if let concept = d["concept"] as? String { conceptTekst = concept }
+            if let blok = d["mijlpaal_blok"] as? String { conceptTekst = blok }
+            return PlantResultaat(
+                conceptTekst: conceptTekst,
+                mijlpaalBlok: d["mijlpaal_blok"] as? String,
+                vragen: (d["vragen"] as? [[String: Any]]) ?? [],
+                stappen: (d["stappen"] as? [[String: Any]]) ?? [],
+                registratie: d["registratie"] as? String,
+                uitgevoerd: (d["uitgevoerd"] as? Bool) ?? bevestig && (d["mijlpaal_blok"] == nil),
+                fout: r.fout, faalStappen: r.stappen)
+        } catch {
+            return PlantResultaat(conceptTekst: nil, mijlpaalBlok: nil, vragen: [],
+                                  stappen: [], registratie: nil, uitgevoerd: false,
+                                  fout: error.localizedDescription, faalStappen: [])
+        }
+    }
 }

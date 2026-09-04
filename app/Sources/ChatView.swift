@@ -82,6 +82,11 @@ struct ChatView: View {
     @State private var openVragen: [[String: Any]] = []
     @State private var vraagAntwoorden: [String: String] = [:]
     @State private var vraagTekst: String = ""   // de ruwe invoer van de geweigerde beurt
+    // Slice 3 — planten vanuit de dialoog: concept-akkoord → voorbeeld → echte plant.
+    @State private var plantProfiel: String = "tweede-brein"
+    @State private var plantDoel: String = ""
+    @State private var plantBezig: Bool = false
+    @State private var wachtMijlpaal: Bool = false
 
     var body: some View {
         groep
@@ -102,6 +107,7 @@ struct ChatView: View {
             agentKiezer
             gespreksPaneel
             if !openVragen.isEmpty { vragenKaart }
+            if heeftVoorstel { plantKaart }
             snelleVragen
             invoerBalk
             Spacer(minLength: 16)
@@ -282,6 +288,140 @@ struct ChatView: View {
                 .foregroundStyle(Thema.kleur(.inkt))
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Planten vanuit de dialoog (slice 3)
+
+    /// Er ligt een geaccepteerd concept: de curator mag planten.
+    private var heeftVoorstel: Bool {
+        berichten.last?.isVoorstel == true
+    }
+
+    private var plantKaart: some View {
+        Kaart(kop: "Dit concept planten", rechterKop: "jouw bekrachtiging, stap voor stap") {
+            VStack(alignment: .leading, spacing: 10) {
+                labeledPoortVeld("PROFIEL (kiem)", text: $plantProfiel,
+                                 placeholder: "tweede-brein · autonome-fabriek · dev-werkplaats")
+                labeledPoortVeld("DOEL (waar de boom groeit)", text: $plantDoel,
+                                 placeholder: "~/Projects/mijn-nieuwe-brein")
+                HStack {
+                    if wachtMijlpaal {
+                        PillKnop(titel: "Mijlpaal bekrachtigd — plant nu", gevuld: true) {
+                            plantNu(mijlpaalBevestigd: true)
+                        }
+                    } else {
+                        PillKnop(titel: "1 · Bekijk concept", gevuld: false) { plantVoorbeeld() }
+                        PillKnop(titel: "2 · Plant deze boom", gevuld: true) { plantNu(mijlpaalBevestigd: false) }
+                    }
+                    Spacer()
+                    if plantBezig { ProgressView().controlSize(.small) }
+                }
+                Text("De app plaatst niets zelf: stap 1 vraagt een voorbeeld aan de adapter, stap 2 stuurt jouw bevestiging door. Een faal na alternatief stopt de plant — dan roep jij, de mens.")
+                    .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.zacht)).lineSpacing(2)
+            }
+        }
+    }
+
+    private func labeledPoortVeld(_ label: String, text: Binding<String>, placeholder: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            TextField(placeholder, text: text,
+                      prompt: Text(placeholder).font(Thema.tekst(12)).foregroundColor(Thema.kleur(.zacht)))
+                .textFieldStyle(.plain).font(Thema.tekst(12)).padding(8)
+                .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                .background(Thema.kleur(.papierZacht))
+                .foregroundStyle(Thema.kleur(.inkt))
+        }
+    }
+
+    private func plantVoorbeeld() {
+        let doel = plantDoel.trimmingCharacters(in: .whitespaces)
+        guard !doel.isEmpty else {
+            berichten.append(ChatBericht(afzender: "Tuinier", rol: .tuinier, tijdstip: actueleTijd(),
+                tekst: "Vul eerst de doelmap in — waar moet de boom groeien?",
+                bewijsRef: nil, isVoorstel: false))
+            return
+        }
+        startPlant(bevestig: false, mijlpaalBevestigd: false)
+    }
+
+    private func plantNu(mijlpaalBevestigd: Bool) {
+        startPlant(bevestig: true, mijlpaalBevestigd: mijlpaalBevestigd)
+    }
+
+    private func startPlant(bevestig: Bool, mijlpaalBevestigd: Bool) {
+        let doel = plantDoel.trimmingCharacters(in: .whitespaces)
+        let profiel = plantProfiel.trimmingCharacters(in: .whitespaces)
+        guard !doel.isEmpty, !profiel.isEmpty else { return }
+        plantBezig = true
+        let tijd = actueleTijd()
+        berichten.append(ChatBericht(
+            afzender: "Mens", rol: .mens, tijdstip: tijd,
+            tekst: bevestig
+                ? "Ik bekrachtig: plant profiel '\(profiel)' in \(doel)\(mijlpaalBevestigd ? " (mijlpaal bevestigd)" : "")."
+                : "Bekijk eerst het voorbeeld voor '\(profiel)' in \(doel).",
+            bewijsRef: nil, isVoorstel: false))
+        let repoPad = repoPad
+        let interpreter = interpreter
+        Task {
+            let resultaat = await agentKoppeling.plant(runner: runner, repoPad: repoPad,
+                                                       interpreter: interpreter,
+                                                       profiel: profiel, doel: doel,
+                                                       brein: "geen",
+                                                       bevestig: bevestig,
+                                                       mijlpaalBevestigd: mijlpaalBevestigd)
+            await MainActor.run {
+                plantBezig = false
+                verwerkPlant(resultaat, bevestig: bevestig)
+            }
+        }
+    }
+
+    private func verwerkPlant(_ r: AgentKoppeling.PlantResultaat, bevestig: Bool) {
+        let tijd = actueleTijd()
+        if let fout = r.fout {
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: "Planten kon niet: \(fout)",
+                bewijsRef: "adapter.py", isVoorstel: false))
+            plantBezig = false
+            wachtMijlpaal = false
+            return
+        }
+        if let blok = r.mijlpaalBlok, !bevestig || bevestig && r.vragen.isEmpty {
+            wachtMijlpaal = true
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: "Grote plant — dit raakt de mijlpaal-drempel. Niks is uitgevoerd. Lees dit blok en bevestig hieronder:\n\n\(blok)",
+                bewijsRef: "§11.4 mijlpaal", isVoorstel: true))
+            plantBezig = false
+            return
+        }
+        if let concept = r.conceptTekst, !r.uitgevoerd {
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: "Voorbeeld van de plant (niets uitgevoerd):\n\n\(concept)\n\nKlik '2 · Plant nu' om te bekrachtigen.",
+                bewijsRef: "adapter.py plant", isVoorstel: true))
+            plantBezig = false
+            return
+        }
+        if !r.stappen.isEmpty {
+            let regels = r.stappen.map { s -> String in
+                let id = (s["id"] as? String) ?? "?"
+                let status = (s["status"] as? String) ?? "?"
+                let bewijs = (s["bewijs"] as? String) ?? ""
+                return "• \(status == "geslaagd" ? "[OK]" : "[✗]") \(id) — \(bewijs)"
+            }.joined(separator: "\n")
+            berichten.append(ChatBericht(
+                afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,
+                tekst: "De boom is geplant. Bewijs per stap:\n\n\(regels)\n\nRegistratie: \(r.registratie ?? "—")",
+                bewijsRef: "logboek.json (append-only)", isVoorstel: false))
+            wachtMijlpaal = false
+            plantBezig = false
+            return
+        }
+        plantBezig = false
     }
 
     // MARK: - Vragen-rondje (slice 2)
