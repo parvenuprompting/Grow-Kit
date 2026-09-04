@@ -123,8 +123,10 @@ def cmd_taak(invoer: dict) -> dict:
 
     from kern.growkit_review import laad_reviewconfig
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "gestart")
     with contextlib.redirect_stdout(sys.stderr):
         geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "beeindigd")
     if bevindingen:
         raise AdapterFout("deze taak bestaat niet: " + "; ".join(bevindingen))
     if not geslaagd:
@@ -304,6 +306,273 @@ def cmd_slijp(invoer: dict) -> dict:
                                  "vragen": vragen}}
 
 
+
+
+def cmd_bomen(invoer: dict) -> dict:
+    """Boom-lijst (Slice 1): recentste register-status per boom.
+
+    register_pad expliciet → dat register. Anders de per-machine oerwoud-
+    staat: geen bekend brein → ok met een lege lijst + melding; onbereikbaar
+    brein → nette fout (mens)."""
+    pad = invoer.get("register_pad")
+    if pad:
+        register_pad = Path(pad).expanduser().resolve()
+    else:
+        staat = growkit_oerwoud.laad_oerwoud_staat()
+        if staat["fout"] == "brein_onbereikbaar":
+            raise AdapterFout(
+                f"het brein op {staat['brein_pad']} is niet bereikbaar — "
+                "roep de mens: pad corrigeren in Instellingen")
+        if staat["brein_pad"] is None:
+            return {"ok": True, "data": {"bomen": [],
+                    "melding": "geen brein gekoppeld — koppel een brein in Instellingen"}}
+        register_pad = staat["brein_pad"] / "register" / "bomen.json"
+    try:
+        data = growkit_oerwoud.bomen_overzicht(register_pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
+
+def cmd_levensignaal(invoer: dict) -> dict:
+    """Levende status van één boom (Slice 2) uit groei/logboek.json.
+
+    Geen zelf-rapportage: faalcontract en run-latch komen uit append-only
+    entries. Ontbrekend of fout doel → nette fout; corrupt logboek → nette
+    fout (mens)."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet — levensignaal werkt alleen op een geplante boom")
+    try:
+        data = growkit_oerwoud.levensignaal(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"levensignaal": data}}
+
+
+
+
+def cmd_acties(invoer: dict) -> dict:
+    """Actie-menu voor de app (Slice 3): wat mag er, en waar wordt de mens
+    nodig geacht? Puur lezend — de uitvoerende commando's bewaken hun eigen
+    poort; dit overzicht is nooit een machtsbron."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    try:
+        data = growkit_oerwoud.acties_overzicht(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
+
+def cmd_inbox(invoer: dict) -> dict:
+    """VOORSTEL-items in de brein-inbox (Slice 4) — puur lezend."""
+    try:
+        brein_pad = growkit_oerwoud._brein_pad_van(invoer)
+        data = growkit_oerwoud.inbox_items(brein_pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+
+
+
+def cmd_curate(invoer: dict) -> dict:
+    """Besluiten over VOORSTEL-items (Slice 4) — append-only, nooit overschrijven."""
+    items = invoer.get("items")
+    if not isinstance(items, list) or not items:
+        raise AdapterFout("verplicht veld ontbreekt: items (lijst met besluiten)")
+    try:
+        brein_pad = growkit_oerwoud._brein_pad_van(invoer)
+        resultaten = growkit_oerwoud.curate_items(brein_pad, items)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"resultaten": resultaten}}
+
+
+def cmd_koppel(invoer: dict) -> dict:
+    """Registreer een boom bij het gedeelde brein (Slice 5) — app-ingang voor
+    meld_geboorte + sla_brein_pad. Weigeringen → nette fout (mens)."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    brein_pad = invoer.get("brein_pad")
+    try:
+        data = growkit_oerwoud.koppel_boom(
+            doel, Path(brein_pad).expanduser().resolve() if brein_pad else None)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_driftguard(invoer: dict) -> dict:
+    """Drift-guard-rapport (Slice 5) — wat reist tussen bomen en brein,
+    wat blijft per boom lokaal. Puur lezend."""
+    brein_pad = invoer.get("brein_pad")
+    try:
+        if brein_pad:
+            pad = Path(brein_pad).expanduser().resolve()
+        else:
+            pad = growkit_oerwoud._brein_pad_van(invoer)
+            if pad is None:
+                raise AdapterFout("geen brein gekoppeld — geef brein_pad of koppel eerst")
+        data = growkit_oerwoud.driftguard_rapport(pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_stuur(invoer: dict) -> dict:
+    """Stuur gemarkeerde VOORSTELLEN van een boom naar de brein-inbox (§13)
+    — app-ingang voor stuur_voorstellen, drift-guard staat in de kern."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    brein_pad = invoer.get("brein_pad")
+    try:
+        if brein_pad:
+            pad = Path(brein_pad).expanduser().resolve()
+        else:
+            pad = growkit_oerwoud._brein_pad_van(invoer)
+            if pad is None:
+                raise AdapterFout("geen brein gekoppeld — koppel eerst een brein")
+        aantal, namen = growkit_oerwoud.stuur_voorstellen(doel, pad)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"verzonden": aantal, "namen": namen}}
+
+
+def cmd_nachtplan(invoer: dict) -> dict:
+    """Nachtplan samenstellen (Slice 6). Zonder bevestiging: concept. Met
+    bevestiging: append-only weggeschreven; bestaand plan → geweigerd."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    taken_ids = invoer.get("taken")
+    if not isinstance(taken_ids, list) or not taken_ids:
+        raise AdapterFout("verplicht veld ontbreekt: taken (lijst met taak-ids)")
+    from kern.growkit_taken import laad_taken, valideer_taak
+    taken = {t.get("id"): t for t in laad_taken(doel / "takenlijst.json")}
+    ontbrekend = [tid for tid in taken_ids if tid not in taken]
+    if ontbrekend:
+        raise AdapterFout(f"taak(s) bestaan niet in de takenlijst: {', '.join(ontbrekend)}")
+    ongeldig = [taken[tid]["id"] for tid in taken_ids if valideer_taak(taken[tid])]
+    if ongeldig:
+        raise AdapterFout(
+            f"taak(s) zonder bewijs bestaan niet en kunnen niet in het plan: {', '.join(ongeldig)}")
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {
+            "concept": f"nachtronde voor {doel.name} met {len(taken_ids)} taak/taken",
+            "bevestiging_vereist": True,
+            "plan": {"taken": taken_ids}}}
+    try:
+        plan = growkit_oerwoud.nachtplan_wegschrijven(doel, taken_ids)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan}}
+
+
+def cmd_nachtronde(invoer: dict) -> dict:
+    """Voer één geplande nachtronde uit (Slice 6). Poort eerst per taak;
+    append-only rondverslag; faalcontract: eerste faal eindigt de ronde
+    (exit 2), geen retries."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    plan = growkit_oerwoud.nachtplan_lezen(doel)
+    if plan is None:
+        raise AdapterFout("geen nachtplan — stel er eerst een samen (nachtplan)")
+    if not invoer.get("bevestig"):
+        return {"ok": True, "data": {"bevestiging_vereist": True,
+                                     "plan": plan}}
+    from kern.growkit_review import laad_reviewconfig
+    from kern.growkit_taken import laad_taken, valideer_taak, voer_taak_uit
+    import contextlib
+
+    taken = {t.get("id"): t for t in laad_taken(doel / "takenlijst.json")}
+    reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    logboek = doel / "logboek.json"
+    groei_oerwoud = growkit_oerwoud
+    groei_oerwoud.log_run_latch(logboek, "gestart")
+    verslag_taken = []
+    ronde_geslaagd = True
+    try:
+        for tid in plan["taken"]:
+            taak = taken.get(tid)
+            if taak is None:
+                verslag_taken.append({"taak": tid, "status": "gefaald",
+                                      "bewijs": "taak verdwenen uit de takenlijst"})
+                ronde_geslaagd = False
+                break
+            if valideer_taak(taak):
+                verslag_taken.append({"taak": tid, "status": "gefaald",
+                                      "bewijs": "poort-weigering: taak zonder bewijs bestaat niet"})
+                ronde_geslaagd = False
+                break
+            with contextlib.redirect_stdout(sys.stderr):
+                geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+            status = "geslaagd" if geslaagd else "gefaald"
+            verslag_taken.append({"taak": tid, "status": status,
+                                  "bewijs": "; ".join(bevindingen) or "bewijs gecontroleerd"})
+            if not geslaagd:
+                ronde_geslaagd = False
+                break
+    finally:
+        groei_oerwoud.log_run_latch(logboek, "beeindigd")
+    groei_oerwoud.nachtronde_verslag(doel, ronde_geslaagd, verslag_taken)
+    resultaat = {"geslaagd": ronde_geslaagd, "taken": verslag_taken}
+    if not ronde_geslaagd:
+        raise AdapterFaal("nachtronde gestopt door het faalcontract — roep de mens", [resultaat])
+    return {"ok": True, "data": resultaat}
+
+
+def cmd_nachtstatus(invoer: dict) -> dict:
+    """Plan + rondgeschiedenis + levensignaal (Slice 6) — puur lezend,
+    één bron met Slices 2 en het plan-bestand."""
+    doel = _doel_uit(invoer)
+    if not doel.exists():
+        raise AdapterFout(f"boom {doel} bestaat niet")
+    try:
+        plan = growkit_oerwoud.nachtplan_lezen(doel)
+        rondes_pad = doel / "nachtrondes.json"
+        rondes = None
+        if rondes_pad.exists():
+            rondes = json.loads(rondes_pad.read_text(encoding="utf-8"))
+        signaal = growkit_oerwoud.levensignaal(doel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan, "rondes": rondes,
+                                 "levensignaal": signaal}}
+
+
+def cmd_saldo(invoer: dict) -> dict:
+    """Actueel OpenRouter-saldo (Slice A1). Sleutel via sleutel_pad,
+    ~/.growkit/openrouter_key of omgeving — waarde lekt nooit."""
+    from kern import growkit_openrouter
+    try:
+        sleutel = growkit_openrouter.los_sleutel_op(invoer.get("sleutel_pad"))
+        data = growkit_openrouter.saldo(sleutel)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
+
+def cmd_verbruik(invoer: dict) -> dict:
+    """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
+    from kern import growkit_openrouter
+    try:
+        sleutel = growkit_openrouter.los_sleutel_op(invoer.get("sleutel_pad"))
+        data = growkit_openrouter.verbruik(sleutel, invoer.get("dagen"))
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": data}
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -312,8 +581,20 @@ COMMANDOS = {
     "hervat": cmd_hervat,
     "taak": cmd_taak,
     "slijp": cmd_slijp,
+    "bomen": cmd_bomen,
+    "levensignaal": cmd_levensignaal,
+    "acties": cmd_acties,
+    "inbox": cmd_inbox,
+    "curate": cmd_curate,
+    "koppel": cmd_koppel,
+    "driftguard": cmd_driftguard,
+    "stuur": cmd_stuur,
+    "nachtplan": cmd_nachtplan,
+    "nachtronde": cmd_nachtronde,
+    "nachtstatus": cmd_nachtstatus,
+    "saldo": cmd_saldo,
+    "verbruik": cmd_verbruik,
 }
-
 
 def main(argv: list[str]) -> int:
     try:

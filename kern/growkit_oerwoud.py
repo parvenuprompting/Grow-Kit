@@ -432,3 +432,411 @@ def recentste_status(register: list[dict], boom_id: str) -> str | None:
     if laatste == "deregistratie":
         return "gederegistreerd"
     return None
+
+
+def bomen_overzicht(register_pad: Path) -> dict:
+    """Boom-lijst voor de app (Slice 1): per boom de recentste register-status.
+
+    Append-only bron — dit overzicht muteert niets. Deregistreerde bomen
+    blijven zichtbaar, gelabeld 'inactief'. Corrupt register → ValueError
+    (de beller vertaalt die naar een nette fout voor de mens)."""
+    register = lees_register(register_pad)
+    laatste: dict[str, dict] = {}
+    volgorde: list[str] = []
+    for entry in register:
+        boom_id = entry.get("boom_id")
+        if not boom_id:
+            continue
+        if boom_id not in laatste:
+            volgorde.append(boom_id)
+        laatste[boom_id] = entry
+    bomen = []
+    for boom_id in volgorde:
+        entry = laatste[boom_id]
+        type_ = entry.get("type")
+        inactief = type_ == "deregistratie"
+        boom = {
+            "boom_id": boom_id,
+            "profiel": entry.get("profiel"),
+            "machine": entry.get("machine"),
+            "locatie": entry.get("locatie"),
+            "geplant_op": entry.get("geplant_op"),
+            "status": type_,
+            "status_tijdstip": entry.get("tijdstip"),
+            "inactief": inactief,
+        }
+        if entry.get("is_brein"):
+            boom["is_brein"] = True
+        if inactief:
+            boom["inactief_label"] = "inactief (gederegistreerd)"
+        bomen.append(boom)
+    return {"bomen": bomen}
+
+
+def _pid_leeft(pid: int) -> bool:
+    """Crude maar betrouwbare liveness-check (POSIX): kill -0. Pid 0/1 en
+    negatieve waarden nooit als levend behandelen."""
+    if pid is None or pid <= 1:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except (ProcessLookupError, PermissionError):
+        return False
+    except OSError:
+        return False
+
+
+def levensignaal(doel: Path) -> dict:
+    """Levende status van één boom (Slice 2) — puur uit groei/logboek.json.
+
+    Geen zelf-rapportage: het faalcontract en de run-latch komen uitsluitend
+    uit append-only entries. Corrupt logboek → ValueError (mens). Geen
+    logboek → 'rust' (lege boom is geen crash)."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    logboek = doel / "logboek.json"
+    if not bewijs_pad.exists():
+        raise ValueError(
+            f"geen geboortebewijs in {doel} — levensignaal werkt alleen op een geplante boom")
+
+    boom_id = None
+    if not is_voor_fase5(bewijs_pad):
+        boom_id = json.loads(bewijs_pad.read_text(encoding="utf-8")).get("boom_id")
+
+    if not logboek.exists():
+        return {"boom_id": boom_id, "taak_actief": False, "faalcontract": "rust",
+                "laatste_bewijs_tijdstip": None, "laatste_stap": None,
+                "laatste_mijlpaal_faal": None, "melding": None}
+    try:
+        entries = json.loads(logboek.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise ValueError(
+            f"boom-logboek {logboek} is corrupt — roep de mens, nooit auto-repareren: {e}") from e
+
+    laatste_stap = None
+    laatste_bewijs_tijdstip = None
+    laatste_mijlpaal_faal = None
+    laatste_faal_tijdstip = None
+    laatste_ok_tijdstip = None
+    laatste_run = None
+
+    for entry in entries:
+        tijdstip = entry.get("tijdstip")
+        type_ = entry.get("type")
+        if type_ == "run":
+            laatste_run = entry
+            continue
+        if type_ == "geboorte":
+            continue
+        status = entry.get("status")
+        if type_ == "taak":
+            stap = {"stap": entry.get("taak", "?"), "status": status,
+                    "tijdstip": tijdstip}
+        else:
+            stap = {"stap": entry.get("stap", "?"), "status": status,
+                    "tijdstip": tijdstip}
+        laatste_stap = stap
+        laatste_bewijs_tijdstip = tijdstip
+        if status == "mijlpaal" or status == "gefaald":
+            laatste_mijlpaal_faal = {"stap": stap["stap"], "status": status,
+                                     "tijdstip": tijdstip}
+        if status in ("gefaald", "onduidelijk"):
+            laatste_faal_tijdstip = tijdstip
+        elif status in ("geslaagd", "geratificeerd", "review_ok_wacht_ratificatie", "mijlpaal"):
+            laatste_ok_tijdstip = tijdstip
+
+    # Faalcontract: 'gestopt' (crash-latch) wint — een stilgevallen run is het
+    # nieuws; anders rood bij een onopgevolgde faal; anders groen als er
+    # bewijs is; anders rust.
+    if laatste_run and laatste_run.get("status") == "gestart":
+        if not _pid_leeft(laatste_run.get("pid")):
+            faalcontract = "gestopt"
+            taak_actief = False
+        else:
+            faalcontract = "groen" if laatste_faal_tijdstip is None else "rood"
+            taak_actief = True
+    elif laatste_faal_tijdstip and (laatste_ok_tijdstip is None
+                                    or laatste_faal_tijdstip > laatste_ok_tijdstip):
+        faalcontract = "rood"
+        taak_actief = False
+    elif laatste_bewijs_tijdstip:
+        faalcontract = "groen"
+        taak_actief = False
+    else:
+        faalcontract = "rust"
+        taak_actief = False
+
+    return {"boom_id": boom_id, "taak_actief": taak_actief, "faalcontract": faalcontract,
+            "laatste_bewijs_tijdstip": laatste_bewijs_tijdstip,
+            "laatste_stap": laatste_stap, "laatste_mijlpaal_faal": laatste_mijlpaal_faal,
+            "melding": None}
+
+
+def log_run_latch(logboek: Path, status: str) -> None:
+    """Run-latch (Slice 2): append-only run-marker voor crash-detectie.
+
+    Bij aanvang van een loop-run: {"type": "run", "status": "gestart",
+    "pid": os.getpid()}; bij normaal einde: status "beeindigd". Lees via
+    levensignaal() — 'gestart' zonder levend pid = gestopt (crash)."""
+    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entry = {"type": "run", "status": status, "tijdstip": _nu()}
+    if status == "gestart":
+        entry["pid"] = os.getpid()
+    entries.append(entry)
+    logboek.parent.mkdir(parents=True, exist_ok=True)
+    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def acties_overzicht(doel: Path) -> dict:
+    """Actie-menu voor de app (Slice 3) — puur lezend, geen uitvoering.
+
+    mogelijk: de modi die voor deze boom zinvol zijn. mens_momenten: wat de
+    app als expliciet mens-moment moet tonen (ratificatie-wachters). De app
+    toont alleen wat hier staat — de uitvoerende commando's bewaken hun eigen
+    poort, dit overzicht is nooit een machtsbron."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    if not bewijs_pad.exists():
+        return {"mogelijk": ["planten"], "mensch_momenten": [],
+                "melding": "geen geplante boom in deze map — alleen planten is mogelijk"}
+
+    mogelijk = ["status", "taak", "ratificatie", "hervat"]
+    mens_momenten: list[dict] = []
+
+    logboek = doel / "logboek.json"
+    if logboek.exists():
+        try:
+            entries = json.loads(logboek.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            raise ValueError(
+                f"boom-logboek {logboek} is corrupt — roep de mens, nooit auto-repareren: {e}") from e
+        wacht = [e for e in entries
+                 if e.get("status") == "review_ok_wacht_ratificatie"]
+        for e in wacht:
+            mens_momenten.append({"soort": "ratificatie", "stap": e.get("stap", "?"),
+                                  "tijdstip": e.get("tijdstip", "?")})
+
+    return {"mogelijk": mogelijk, "mensch_momenten": mens_momenten, "melding": None}
+
+
+# ---------------------------------------------------------------------------
+# Slice 4 — inbox-curatiescherm: VOORSTEL-items tonen en besluiten.
+# Curatiebeleid (3 sept 2026): chat-goedkeuring IS curatie — een besluit
+# boekt direct definitief. Append-only: niets wordt overschreven of gewist.
+# ---------------------------------------------------------------------------
+
+_CURATIE_BESLUITEN = ("goedgekeurd", "afgewezen")
+
+
+def _brein_pad_van(invoer: dict) -> Path | None:
+    """Brein-pad uit expliciete invoer of de per-machine oerwoud-staat."""
+    pad = invoer.get("brein_pad")
+    if pad:
+        return Path(pad).expanduser().resolve()
+    staat = laad_oerwoud_staat()
+    if staat["fout"] == "brein_onbereikbaar":
+        raise ValueError(
+            f"het brein op {staat['brein_pad']} is niet bereikbaar — roep de mens: pad corrigeren")
+    return staat["brein_pad"]
+
+
+def inbox_items(brein_pad: Path | None) -> dict:
+    """VOORSTEL-items in de brein-inbox (Slice 4) — puur lezend.
+
+    Alleen bestanden met de VOORSTEL-prefix (drift-guard §13); nog niet
+    besloten items (zonder .geboekt/.afgewezen-suffix)."""
+    if brein_pad is None:
+        return {"items": [], "melding": "geen brein gekoppeld — koppel een brein in Instellingen"}
+    inbox = brein_pad / "inbox"
+    items = []
+    if inbox.exists():
+        for pad in sorted(inbox.iterdir()):
+            naam = pad.name
+            if not naam.startswith("VOORSTEL-") or not pad.is_file():
+                continue
+            if naam.endswith((".geboekt", ".afgewezen")):
+                continue
+            try:
+                inhoud = pad.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as e:
+                raise ValueError(
+                    f"VOORSTEL-bestand {naam} is onleesbaar — roep de mens, "
+                    "nooit auto-repareren: " + str(e)) from e
+            items.append({"naam": naam, "inhoud": inhoud})
+    return {"items": items, "melding": None}
+
+
+def curate_items(brein_pad: Path | None, items: list[dict]) -> list[dict]:
+    """Besluiten over VOORSTEL-items (Slice 4) — append-only, nooit overschrijven.
+
+    goedgekeurd  → kopie naar brein/<bestemming> (standaard kennis/goedgekeurd),
+                   inbox-bestand hernoemd naar <naam>.geboekt.
+    afgewezen    → inbox-bestand hernoemd naar <naam>.afgewezen; reden append-
+                   only gelogd in kennis/afwijzingen.md.
+    Elke besluit wordt gelogd in het brein-logboek (type 'curatie')."""
+    if brein_pad is None:
+        raise ValueError("geen brein gekoppeld — curatie is niet mogelijk")
+    namen = [str(i.get("naam", "")) for i in items]
+    if len(set(namen)) != len(namen):
+        raise ValueError("dubbele besluiten over hetzelfde item — één besluit per VOORSTEL")
+    if not items:
+        return []
+
+    inbox = brein_pad / "inbox"
+    logboek = brein_pad / "logboek.json"
+    resultaten = []
+    for item in items:
+        naam = str(item.get("naam", "")).strip()
+        besluit = str(item.get("besluit", "")).strip().lower()
+        if besluit not in _CURATIE_BESLUITEN:
+            raise ValueError(
+                f"onbekend besluit '{besluit}' — kies uit: {', '.join(_CURATIE_BESLUITEN)}")
+        if not naam.startswith("VOORSTEL-"):
+            raise ValueError(f"'{naam}' is geen VOORSTEL — alleen VOORSTEL-items worden besloten")
+        bron = inbox / naam
+        if not bron.exists():
+            raise ValueError(f"VOORSTEL '{naam}' bestaat niet (meer) in de inbox — ververs eerst")
+        if besluit == "goedgekeurd":
+            bestemming = str(item.get("bestemming", "kennis/goedgekeurd")).strip("/")
+            doel_map = brein_pad / bestemming
+            doel_bestand = doel_map / naam
+            if doel_bestand.exists():
+                raise ValueError(
+                    f"bestemmingsbestand {doel_bestand} bestaat — nooit overschrijven")
+            inhoud = bron.read_text(encoding="utf-8")
+            doel_map.mkdir(parents=True, exist_ok=True)
+            doel_bestand.write_text(inhoud, encoding="utf-8")
+            bron.rename(inbox / (naam + ".geboekt"))
+            status = "goedgekeurd"
+            detail = str(doel_bestand)
+        else:
+            reden = str(item.get("reden", "")).strip()
+            if not reden:
+                raise ValueError("afwijzing vereist een reden — zonder reden bestaat de afkeur niet")
+            bron.rename(inbox / (naam + ".afgewezen"))
+            afwijzingen = brein_pad / "kennis" / "afwijzingen.md"
+            afwijzingen.parent.mkdir(parents=True, exist_ok=True)
+            with open(afwijzingen, "a", encoding="utf-8") as f:
+                f.write(f"- {naam}: {reden}\n")
+            status = "afgewezen"
+            detail = reden
+        entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+        entries.append({"type": "curatie", "item": naam, "status": status,
+                        "bewijs": detail, "tijdstip": _nu()})
+        logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
+                           encoding="utf-8")
+        resultaten.append({"naam": naam, "status": status, "detail": detail})
+    return resultaten
+
+
+# ---------------------------------------------------------------------------
+# Slice 5 — breinkoppeling: registratie bij het brein vanuit de app + het
+# drift-guard-rapport. De guards zelf staan in de bestaande functies
+# (meld_geboorte, stuur_voorstellen); dit zijn de app-ingangen.
+# ---------------------------------------------------------------------------
+
+_DRIFT_REIST = [
+    "VOORSTEL-bestanden (prefix VOORSTEL-, per boom ontdubbeld via het logboek)",
+]
+_DRIFT_LOKAAL = [
+    "boom-logboek, geboortebewijs en takenlijst (boom-staat)",
+    "omgevingspaden, poorten en ssh-doeleinden",
+    "sleutels en secrets (nooit in het brein, nooit in de chat)",
+    "willekeurige bestanden zonder VOORSTEL-prefix",
+]
+
+
+def koppel_boom(doel: Path, brein_pad: Path | None) -> dict:
+    """Registreer een boom bij het gedeelde brein (Slice 5) — app-ingang voor
+    meld_geboorte + sla_brein_pad. Weigeringen van meld_geboorte (dubbele
+    geboorte, ongeldig bewijs) en onbereikbare breinen komen als nette fout
+    terug; bij succes staat de oerwoud-staat op dit brein."""
+    doel = doel.resolve()
+    bewijs_pad = doel / "geboortebewijs.json"
+    if not bewijs_pad.exists():
+        raise ValueError(
+            f"geen geboortebewijs in {doel} — koppeling werkt alleen op een geplante boom")
+    bevindingen = controleer_geboortebewijs(bewijs_pad)
+    if bevindingen:
+        raise ValueError("geboortebewijs ongeldig — " + "; ".join(bevindingen))
+    if brein_pad is None:
+        brein_pad = laad_oerwoud_staat()["brein_pad"]
+        if brein_pad is None:
+            raise ValueError("geen brein bekend — geef brein_pad of koppel eerst het brein")
+    brein_pad = brein_pad.resolve()
+    if not brein_pad.exists():
+        raise ValueError(
+            f"het brein op {brein_pad} is niet bereikbaar — roep de mens: pad corrigeren")
+    entry = meld_geboorte(brein_pad / "register" / "bomen.json", bewijs_pad)
+    sla_brein_pad(brein_pad)
+    return {"boom_id": entry["boom_id"], "brein_pad": str(brein_pad),
+            "status": entry["type"]}
+
+
+def driftguard_rapport(brein_pad: Path) -> dict:
+    """Drift-guard-rapport (Slice 5) — puur lezend. Maakt de §13-regels
+    zichtbaar: wat reist tussen bomen en brein, wat blijft per boom lokaal.
+    De guards staan hard in stuur_voorstellen en de curatie-laag."""
+    brein_pad = brein_pad.resolve()
+    if not brein_pad.exists():
+        raise ValueError(f"het brein op {brein_pad} is niet bereikbaar — roep de mens")
+    register = lees_register(brein_pad / "register" / "bomen.json")
+    laatste: dict[str, str] = {}
+    for entry in register:
+        boom_id = entry.get("boom_id")
+        if not boom_id:
+            continue
+        type_ = entry.get("type")
+        if type_ == "geboorte" or type_ == "registratie":
+            laatste[boom_id] = "actief"
+        elif type_ == "deregistratie" and boom_id not in laatste:
+            laatste[boom_id] = "inactief"
+    return {"reist_mee": list(_DRIFT_REIST),
+            "blijft_lokaal": list(_DRIFT_LOKAAL),
+            "bomen": sum(1 for s in laatste.values() if s == "actief"),
+            "brein_pad": str(brein_pad)}
+
+
+# ---------------------------------------------------------------------------
+# Slice 6 — nachtfabriek-modus: de app stelt de nachtronde samen (met
+# bevestiging), het harnas voert één ronde uit onder het bestaande
+# faalcontract. Append-only: plan en rondverslagen worden nooit overschreven.
+# ---------------------------------------------------------------------------
+
+def nachtplan_wegschrijven(doel: Path, taken: list[str]) -> dict:
+    """Schrijf het nachtplan (Slice 6) — append-only: een bestaand plan wordt
+    geweigerd, nooit overschreven; nieuw plan = nieuw bestand na verwijdering
+    is niet aan de orde, de mens curateert handmatig."""
+    doel = doel.resolve()
+    plan_pad = doel / "nachtplan.json"
+    if plan_pad.exists():
+        raise ValueError(
+            f"nachtplan {plan_pad} bestaat al — nooit overschrijven; "
+            "verwijder het plan handmatig als de ronde is verwerkt")
+    plan = {"taken": taken, "aangemaakt": _nu(), "boom": doel.name}
+    plan_pad.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8")
+    return plan
+
+
+def nachtplan_lezen(doel: Path) -> dict | None:
+    plan_pad = doel.resolve() / "nachtplan.json"
+    if not plan_pad.exists():
+        return None
+    try:
+        return json.loads(plan_pad.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise ValueError(f"nachtplan {plan_pad} is corrupt — roep de mens: {e}") from e
+
+
+def nachtronde_verslag(doel: Path, geslaagd: bool, taken: list[dict]) -> dict:
+    """Append-only rondverslag in groei/nachtrondes.json (Slice 6)."""
+    doel = doel.resolve()
+    verslag_pad = doel / "nachtrondes.json"
+    entries = json.loads(verslag_pad.read_text(encoding="utf-8")) if verslag_pad.exists() else []
+    entry = {"start": _nu(), "geslaagd": geslaagd, "taken": taken}
+    entries.append(entry)
+    verslag_pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
+                           encoding="utf-8")
+    return entry

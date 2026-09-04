@@ -57,7 +57,7 @@ class TestTaakUitvoering(unittest.TestCase):
         gebeurtenissen = json.loads((self.doel / "taken-logboek.json").read_text(encoding="utf-8"))
         self.assertEqual(gebeurtenissen[-1]["taak"], "taak-001")
         self.assertEqual(gebeurtenissen[-1]["status"], "geslaagd")
-        boom_logboek = json.loads((self.doel / "logboek.json").read_text(encoding="utf-8"))
+        boom_logboek = [e for e in json.loads((self.doel / "logboek.json").read_text(encoding="utf-8")) if "stap" in e]
         self.assertEqual(boom_logboek[0]["stap"], "taak-001")
         self.assertEqual(boom_logboek[0]["status"], "geslaagd")
 

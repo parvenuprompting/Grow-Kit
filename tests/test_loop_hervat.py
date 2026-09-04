@@ -77,7 +77,7 @@ class TestHervatModus(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("nooit herdraaien", uit)          # niet-idempotent overslaan bewijst zich
         self.assertIn("stap-003, stap-004", uit)
-        entries = json.loads(self.logboek.read_text(encoding="utf-8"))
+        entries = [e for e in json.loads(self.logboek.read_text(encoding="utf-8")) if "stap" in e]
         self.assertEqual(len([e for e in entries if e["stap"] == "stap-002"]), 1)  # geen herdraai
         laatste_003 = [e for e in entries if e["stap"] == "stap-003"][-1]
         self.assertEqual(laatste_003["status"], "geslaagd")

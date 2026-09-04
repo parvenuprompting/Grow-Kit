@@ -148,12 +148,14 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
     if invoer_fn("  Restdraai uitvoeren? (ja / pas aan): ").strip().lower() != "ja":
         print("  Geen bevestiging — geen actie.")
         return 1
+    from kern import growkit_oerwoud
+    growkit_oerwoud.log_run_latch(logboek, "gestart")
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
     geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
                                       PROFILES_DIR / profiel["profiel"] / "sjablonen",
                                       reviewconfig=reviewconfig)
+    growkit_oerwoud.log_run_latch(logboek, "beeindigd")
     if geslaagd:
-        from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel, logboek)
     return 0 if geslaagd else 2
 
@@ -231,7 +233,10 @@ def voer_taak(doel: Path, invoer_fn=input) -> int:
         return 1
     print(f"  Taak {taak_id} uitvoeren — taak: {taak.get('titel', '')}")
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    from kern import growkit_oerwoud
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "gestart")
     geslaagd, _ = growkit_taken.voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+    growkit_oerwoud.log_run_latch(doel / "logboek.json", "beeindigd")
     return 0 if geslaagd else 2
 
 
