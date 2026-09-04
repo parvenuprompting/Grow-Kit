@@ -2,6 +2,7 @@
 // Filosofie: de agent is de tuinier en adviseur; de mens blijft de enige curator.
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ChatBericht: Identifiable {
     let id = UUID()
@@ -45,6 +46,7 @@ struct AIAgentInfo: Identifiable {
 
 struct ChatView: View {
     @ObservedObject var runner: Runner
+    @ObservedObject var koppelingen: KoppelingenStore
     @Binding var repoPad: String
     @Binding var interpreter: String
     var metScroll: Bool = true
@@ -62,6 +64,9 @@ struct ChatView: View {
     ]
 
     @State private var geselecteerdeAgentId: String = "alle"
+    @State private var bijlagen: [URL] = []
+    @State private var toonBestandskiezer = false
+    @State private var neemtOp = false
     @State private var invoerTekst: String = ""
     // DEMO: deze berichten zijn een ontwerpschets — de echte agent-koppeling
     // komt in een volgende fase en loopt via adapter.py, nooit om de poort heen.
@@ -282,25 +287,112 @@ struct ChatView: View {
     // MARK: - Invoerbalk
 
     private var invoerBalk: some View {
-        HStack(spacing: 12) {
-            HStack {
-                Image(systemName: "bubble.left.and.bubble.right")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("Stel een vraag of geef een opdracht aan de geselecteerde agent…", text: $invoerTekst,
-                          prompt: Text("Stel een vraag of geef een opdracht aan de geselecteerde agent…")
-                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
-                    .textFieldStyle(.plain)
-                    .font(Thema.tekst(13))
-                    .foregroundStyle(Thema.kleur(.inkt))
-                    .onSubmit { verzendBericht() }
-            }
-            .padding(10)
-            .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))
-            .background(Thema.kleur(.papierZacht))
+        VStack(alignment: .leading, spacing: 10) {
+            if !bijlagen.isEmpty { bijlagenRij }
+            if neemtOp { opnameRij }
+            HStack(spacing: 10) {
+                providerMenu
+                HStack {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    TextField("Stel een vraag of geef een opdracht aan de geselecteerde agent…", text: $invoerTekst,
+                              prompt: Text("Stel een vraag of geef een opdracht aan de geselecteerde agent…")
+                                  .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
+                        .textFieldStyle(.plain)
+                        .font(Thema.tekst(13))
+                        .foregroundStyle(Thema.kleur(.inkt))
+                        .onSubmit { verzendBericht() }
+                }
+                .padding(10)
+                .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))
+                .background(Thema.kleur(.papierZacht))
 
-            PillKnop(titel: "Verstuur", gevuld: true) { verzendBericht() }
+                balkKnop("paperclip", toegankelijk: "Bijlage toevoegen") { toonBestandskiezer = true }
+                balkKnop(neemtOp ? "stop.circle" : "mic",
+                         toegankelijk: neemtOp ? "Opname stoppen" : "Spraakmemo opnemen") {
+                    wisselOpname()
+                }
+                PillKnop(titel: "Verstuur", gevuld: true) { verzendBericht() }
+            }
         }
+        .fileImporter(isPresented: $toonBestandskiezer,
+                      allowedContentTypes: [.item], allowsMultipleSelection: true) { resultaat in
+            if case .success(let urls) = resultaat {
+                bijlagen.append(contentsOf: urls.filter { !bijlagen.contains($0) })
+            }
+        }
+    }
+
+    private var providerMenu: some View {
+        Menu {
+            ForEach(koppelingen.providerKeuzes, id: \.self) { keuze in
+                Button(keuze) { koppelingen.actieveProvider = keuze }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "cpu").font(.system(size: 12))
+                Text(koppelingen.actieveProvider)
+                    .lineLimit(1)
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: 9))
+            }
+            .font(Thema.tekst(11, gewicht: .medium))
+            .padding(.horizontal, 12).padding(.vertical, 9)
+            .overlay(Capsule().stroke(Thema.kleur(.lijn)))
+            .background(Thema.kleur(.papierZacht))
+            .foregroundStyle(Thema.kleur(.zacht))
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+    }
+
+    private var bijlagenRij: some View {
+        HStack(spacing: 8) {
+            ForEach(bijlagen, id: \.self) { url in
+                HStack(spacing: 6) {
+                    Image(systemName: "doc").font(.system(size: 10))
+                    Text(url.lastPathComponent).lineLimit(1)
+                    Button(action: { bijlagen.removeAll { $0 == url } }) {
+                        Image(systemName: "xmark").font(.system(size: 8))
+                    }.buttonStyle(.plain)
+                }
+                .font(Thema.tekst(11))
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .overlay(Capsule().stroke(Thema.kleur(.lijn)))
+                .background(Thema.kleur(.papierZacht))
+            }
+            Spacer()
+        }
+    }
+
+    private var opnameRij: some View {
+        HStack(spacing: 8) {
+            Circle().fill(Thema.kleur(.inkt)).frame(width: 8, height: 8)
+            Text("Spraakmemo — opname (demo; spraak-na-tekst volgt in een latere fase)")
+                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.zacht))
+            Spacer()
+        }
+        .padding(10)
+        .background(Thema.kleur(.papierZacht))
+        .overlay(alignment: .leading) { Rectangle().fill(Thema.kleur(.inkt)).frame(width: 2) }
+    }
+
+    private func balkKnop(_ symbool: String, toegankelijk: String,
+                          actie: @escaping () -> Void) -> some View {
+        Button(action: actie) {
+            Image(systemName: symbool).font(.system(size: 13))
+                .frame(width: 38, height: 38)
+                .overlay(Capsule().stroke(Thema.kleur(.lijn)))
+                .background(Thema.kleur(.papierZacht))
+                .foregroundStyle(Thema.kleur(.zacht))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(toegankelijk)
+    }
+
+    private func wisselOpname() {
+        neemtOp.toggle()
     }
 
     private func verzendBericht() {

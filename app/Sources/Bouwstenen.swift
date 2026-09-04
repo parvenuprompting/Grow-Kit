@@ -336,3 +336,14 @@ struct PlaceholderView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
+struct Pulserend: ViewModifier {
+    @State private var zichtbaar = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(zichtbaar ? 0.25 : 1)
+            .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: zichtbaar)
+            .onAppear { zichtbaar = true }
+    }
+}
