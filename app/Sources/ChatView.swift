@@ -78,6 +78,10 @@ struct ChatView: View {
                     bewijsRef: "SEED.md §1", isVoorstel: false)
     ]
     @State private var agentDenktNa: Bool = false
+    // Slice 2 — vragen-rondje: de poort stelde vragen; antwoorden gaan onveranderd mee.
+    @State private var openVragen: [[String: Any]] = []
+    @State private var vraagAntwoorden: [String: String] = [:]
+    @State private var vraagTekst: String = ""   // de ruwe invoer van de geweigerde beurt
 
     var body: some View {
         groep
@@ -97,6 +101,7 @@ struct ChatView: View {
             StappenStreep(stappen: ["Agentkeuze", "Prompt-slijper", "Voorstel", "Curatie"], actieveIndex: 1)
             agentKiezer
             gespreksPaneel
+            if !openVragen.isEmpty { vragenKaart }
             snelleVragen
             invoerBalk
             Spacer(minLength: 16)
@@ -279,6 +284,89 @@ struct ChatView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Vragen-rondje (slice 2)
+
+    private var vragenKaart: some View {
+        Kaart(kop: "De poort stelde vragen", rechterKop: "antwoorden gaan onveranderd door") {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(openVragen.enumerated()), id: \.offset) { index, vraag in
+                    let vraagTekstje = (vraag["vraag"] as? String) ?? "?"
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(vraagTekstje).font(Thema.tekst(12, gewicht: .semibold))
+                            .foregroundStyle(Thema.kleur(.inkt))
+                        if let opties = vraag["opties"] as? [String], !opties.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 6) {
+                                    ForEach(opties, id: \.self) { optie in
+                                        Button(optie) {
+                                            vraagAntwoorden[vraagTekstje] = optie
+                                        }
+                                        .buttonStyle(.plain)
+                                        .font(Thema.tekst(11))
+                                        .padding(.horizontal, 10).padding(.vertical, 5)
+                                        .background(Thema.kleur(vraagAntwoorden[vraagTekstje] == optie ? .inkt : .papierZacht))
+                                        .foregroundStyle(Thema.kleur(vraagAntwoorden[vraagTekstje] == optie ? .papier : .inkt))
+                                        .overlay(Capsule().stroke(Thema.kleur(.lijn)))
+                                        .clipShape(Capsule())
+                                    }
+                                }
+                            }
+                        }
+                        TextField("of typ je eigen antwoord…", text: Binding(
+                            get: { vraagAntwoorden[vraagTekstje] ?? "" },
+                            set: { vraagAntwoorden[vraagTekstje] = $0 }))
+                            .textFieldStyle(.plain).font(Thema.tekst(12)).padding(8)
+                            .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                            .background(Thema.kleur(.papierZacht))
+                            .foregroundStyle(Thema.kleur(.inkt))
+                    }
+                    .id(index)
+                }
+                HStack {
+                    PillKnop(titel: "Verstuur antwoorden", gevuld: true) { verstuurAntwoorden() }
+                    PillKnop(titel: "Laat staan", gevuld: false) { openVragen = []; vraagAntwoorden = [:] }
+                }
+            }
+        }
+    }
+
+    private func verstuurAntwoorden() {
+        let vragen = openVragen
+        let tekst = vraagTekst
+        openVragen = []
+        let antwoorden = vraagAntwoorden
+        vraagAntwoorden = [:]
+        // Vaste mapping vraag-tekst → poort-veld (geen interpretatie van inhoud).
+        let mapping: [String: String] = [
+            "Wat is het einddoel?": "einddoel",
+            "Waar moet het groeien (omgeving)?": "omgeving",
+            "Wanneer is het geslaagd (slaag-criterium)?": "slaag_criterium",
+        ]
+        var velden: [String: String] = [:]
+        for (vraag, antwoord) in antwoorden {
+            if let veld = mapping[vraag] { velden[veld] = antwoord }
+        }
+        let tijd = actueleTijd()
+        berichten.append(ChatBericht(
+            afzender: "Mens", rol: .mens, tijdstip: tijd,
+            tekst: vragen.compactMap { $0["vraag"] as? String }
+                .map { "\($0) → \(antwoorden[$0] ?? "(niet beantwoord)")" }
+                .joined(separator: "\n"),
+            bewijsRef: nil, isVoorstel: false))
+        agentDenktNa = true
+        let repoPad = repoPad
+        let interpreter = interpreter
+        Task {
+            let resultaat = await agentKoppeling.slijp(runner: runner, repoPad: repoPad,
+                                                       interpreter: interpreter,
+                                                       tekst: tekst, antwoorden: velden)
+            await MainActor.run {
+                agentDenktNa = false
+                verwerk(resultaat, vraag: tekst)
+            }
+        }
+    }
+
     // MARK: - Invoerbalk
 
     private var invoerBalk: some View {
@@ -433,6 +521,9 @@ struct ChatView: View {
                 let lijst = r.vragen.compactMap { $0["vraag"] as? String }
                     .map { "• \($0)" }.joined(separator: "\n")
                 tekst += "\n\nAanvullende vragen van de poort:\n\(lijst)"
+                openVragen = r.vragen
+                vraagAntwoorden = [:]
+                vraagTekst = r.ruweTekst
             }
             berichten.append(ChatBericht(
                 afzender: "Tuinier", rol: .tuinier, tijdstip: tijd,

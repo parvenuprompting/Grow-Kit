@@ -10,6 +10,8 @@ struct SlijpResultaat {
     let conceptJSON: String?      // nette weergave van het concept
     let vragen: [[String: Any]]
     let fout: String?
+    /// De ruwe invoer van deze beurt — onthouden voor het vragen-rondje (slice 2).
+    let ruweTekst: String
 }
 
 final class AgentKoppeling: ObservableObject {
@@ -17,18 +19,24 @@ final class AgentKoppeling: ObservableObject {
     @Published var laatsteFout: String?
 
     /// Stuur een chat-invoer door de Scope-poort via de adapter.
+    /// Antwoorden uit het vragen-rondje gaan onveranderd mee in de invoer-JSON:
+    /// de app interpreteert niets, de poort blijft de bewaker.
     func slijp(runner: Runner, repoPad: String, interpreter: String,
-               tekst: String) async -> SlijpResultaat {
+               tekst: String, antwoorden: [String: String] = [:]) async -> SlijpResultaat {
         await MainActor.run { self.bezig = true; self.laatsteFout = nil }
         defer { Task { await MainActor.run { self.bezig = false } } }
+        var invoer: [String: Any] = ["tekst": tekst]
+        for (veld, antwoord) in antwoorden where !antwoord.trimmingCharacters(in: .whitespaces).isEmpty {
+            invoer[veld] = antwoord.trimmingCharacters(in: .whitespaces)
+        }
         do {
             let r = try await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                          commando: "slijp",
-                                          invoer: ["tekst": tekst])
+                                          commando: "slijp", invoer: invoer)
             if let fout = r.fout {
                 await MainActor.run { self.laatsteFout = fout }
                 return SlijpResultaat(geaccepteerd: false, weigering: nil,
-                                      conceptJSON: nil, vragen: [], fout: fout)
+                                      conceptJSON: nil, vragen: [], fout: fout,
+                                      ruweTekst: tekst)
             }
             var weigering: String?
             var conceptJSON: String?
@@ -42,12 +50,13 @@ final class AgentKoppeling: ObservableObject {
             }
             return SlijpResultaat(geaccepteerd: r.data["geaccepteerd"] as? Bool == true,
                                   weigering: weigering, conceptJSON: conceptJSON,
-                                  vragen: vragen, fout: nil)
+                                  vragen: vragen, fout: nil, ruweTekst: tekst)
         } catch {
             let melding = error.localizedDescription
             await MainActor.run { self.laatsteFout = melding }
-            return SlijpResultaat(geaccepteerd: false, `weigering`: nil,
-                                  conceptJSON: nil, vragen: [], fout: melding)
+            return SlijpResultaat(geaccepteerd: false, weigering: nil,
+                                  conceptJSON: nil, vragen: [], fout: melding,
+                                  ruweTekst: tekst)
         }
     }
 
