@@ -248,7 +248,7 @@ struct ContentView: View {
         HStack(alignment: .center, spacing: 10) {
             Image("LogoIcon")
                 .resizable().scaledToFit()
-                .frame(width: 30, height: 30)
+                .frame(width: 40, height: 40)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
 
