@@ -70,13 +70,22 @@ struct AgentChatView: View {
     @Binding var repoPad: String
     @Binding var interpreter: String
     @StateObject private var store = AgentChatStore()
-    @State private var gekozenAgent = "vigil"
+    @State private var gekozenAgent = ""
     @State private var nieuwBericht = ""
 
     private var agenten: [(naam: String, live: Bool)] {
         FamilieStatusStore.gedeeld.leeft
             .sorted { $0.key < $1.key }
             .map { ($0.key, $0.value == "active") }
+    }
+
+    /// Kies bij eerste opening de eerste bekende agent uit de familie;
+    /// val terug op de eerste uit de live-status als er nog niets gekozen is.
+    private func stelEersteAgentIn() {
+        guard gekozenAgent.isEmpty else { return }
+        if !agenten.isEmpty {
+            gekozenAgent = agenten[0].naam
+        }
     }
 
     var body: some View {
@@ -91,7 +100,17 @@ struct AgentChatView: View {
         }
         .background(Thema.kleur(.papier))
         .onAppear {
-            if store.draad.isEmpty {
+            stelEersteAgentIn()
+            if !gekozenAgent.isEmpty, store.draad.isEmpty {
+                store.laadDraad(agent: gekozenAgent, runner: runner,
+                                repoPad: repoPad, interpreter: interpreter)
+            }
+        }
+        // De familie-status arriveert asynchroon; zodra er agenten bekend zijn
+        // en er nog niets gekozen is, alsnog de eerste agent kiezen.
+        .onChange(of: FamilieStatusStore.gedeeld.leeft) { _ in
+            stelEersteAgentIn()
+            if !gekozenAgent.isEmpty, store.draad.isEmpty {
                 store.laadDraad(agent: gekozenAgent, runner: runner,
                                 repoPad: repoPad, interpreter: interpreter)
             }
@@ -125,6 +144,13 @@ struct AgentChatView: View {
     private var agentLijst: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
+                if agenten.isEmpty {
+                    Text(store.geladen ? "Familie nog niet geladen."
+                                       : "Familie laden…")
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                        .padding(16)
+                }
                 ForEach(agenten, id: \.naam) { agent in
                     Button {
                         gekozenAgent = agent.naam

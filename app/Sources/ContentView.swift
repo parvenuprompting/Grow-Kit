@@ -91,8 +91,8 @@ struct ContentView: View {
         }
         var isMock: Bool {
             switch self {
-            case .agentchat, .skills, .browser, .ide, .connectors: return true
-            case .graaf: return false   // live functie
+            case .skills, .browser, .ide, .connectors: return true
+            case .graaf, .agentchat: return false   // live functies
             default: return false
             }
         }
@@ -170,7 +170,7 @@ struct ContentView: View {
 
                     // WERK — de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
+                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agentchat, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
                         modusRij(modus)
                     }
 
