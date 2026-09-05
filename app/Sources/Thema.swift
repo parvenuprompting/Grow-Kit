@@ -32,10 +32,17 @@ enum Thema {
     }
 
     static func display(_ grootte: CGFloat, cursief: Bool = false) -> Font {
-        Font.custom(cursief ? "Fraunces-Italic" : "Fraunces", size: grootte)
+        // Let op: de meegeleverde Fraunces is een variabele font waarvan de
+        // PostScript-namen afwijken ("Fraunces-Regular" bestaat; "Fraunces"
+        // als opspraak levert een lege render op macOS). Daarom de exacte
+        // PS-namen gebruiken — cursief werkt al via "Fraunces-Italic".
+        Font.custom(cursief ? "Fraunces-Italic" : "Fraunces-Regular", size: grootte)
     }
 
     static func tekst(_ grootte: CGFloat, gewicht: Font.Weight = .regular) -> Font {
+        // Inter-variabele font: "Inter" als familienaam werkt, maar de
+        // gewichts-modifiers (.semibold e.d.) matchen niet betrouwbaar op de
+        // benoemde instanties; familienaam + weight is de stabiele route.
         Font.custom("Inter", size: grootte).weight(gewicht)
     }
 }
