@@ -407,10 +407,12 @@ struct AgentsView: View {
                     .foregroundStyle(Thema.kleur(.gedempt))
                     .frame(width: 150, alignment: .leading)
                 TextField("", text: $nieuwTaak)
+                    .foregroundStyle(Thema.kleur(.inkt))
                     .textFieldStyle(.plain)
                     .font(Thema.tekst(12))
                     .frame(width: 110)
                 TextField("Wat moet er gedaan worden?", text: $nieuwTitel)
+                    .foregroundStyle(Thema.kleur(.inkt))
                     .textFieldStyle(.plain)
                     .font(Thema.tekst(12))
                 PillKnop(titel: "Taak koppelen", gevuld: true) {
@@ -474,6 +476,7 @@ struct AgentsView: View {
                 .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.2)
                 .foregroundStyle(Thema.kleur(.gedempt))
             TextField(placeholder, text: tekst)
+                .foregroundStyle(Thema.kleur(.inkt))
                 .textFieldStyle(.plain).font(Thema.tekst(11))
                 .padding(.bottom, 3)
                 .overlay(alignment: .bottom) {

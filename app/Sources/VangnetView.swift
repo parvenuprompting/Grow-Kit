@@ -43,8 +43,8 @@ struct VangnetView: View {
     private var boomPadVeld: some View {
         Kaart(kop: "Boom", rechterKop: "DOEL-MAP") {
             HStack {
-                TextField("bijv. ~/mijn-brein", text: $boomPad)
-                    .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+                Veld(placeholder: "bijv. ~/mijn-brein", tekst: $boomPad)
+                    .padding(10)
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                     .background(Thema.kleur(.papierZacht))
                 PillKnop(titel: "Laad") { laad() }

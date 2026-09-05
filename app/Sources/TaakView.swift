@@ -54,8 +54,8 @@ struct TaakView: View {
                 Text("BOOM-PAD")
                     .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                     .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("~/mijn-brein", text: $boomPad)
-                    .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+                Veld(placeholder: "~/mijn-brein", tekst: $boomPad)
+                    .padding(10)
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                     .background(Thema.kleur(.papierZacht))
             }
@@ -63,8 +63,8 @@ struct TaakView: View {
                 Text("AGENT (GOVERNOR)")
                     .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                     .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("bijv. subagent-1 — leeg = zonder governor", text: $agentNaam)
-                    .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+                Veld(placeholder: "bijv. subagent-1 — leeg = zonder governor", tekst: $agentNaam)
+                    .padding(10)
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                     .background(Thema.kleur(.papierZacht))
             }

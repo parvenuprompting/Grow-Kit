@@ -124,12 +124,7 @@ struct StatusView: View {
                 Image(systemName: "folder")
                     .font(.system(size: 13))
                     .foregroundStyle(Thema.kleur(.gedempt))
-                TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad,
-                          prompt: Text("Pad naar de boom, bijv. ~/mijn-brein")
-                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.inkt)))
-                    .textFieldStyle(.plain)
-                    .font(Thema.tekst(13))
-                    .foregroundStyle(Thema.kleur(.inkt))
+                Veld(placeholder: "Pad naar de boom, bijv. ~/mijn-brein", tekst: $boomPad)
             }
             .padding(10)
             .overlay(Rectangle().stroke(Thema.kleur(.lijn), lineWidth: 1))

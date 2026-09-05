@@ -326,12 +326,10 @@ struct ChatView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                 .foregroundStyle(Thema.kleur(.gedempt))
-            TextField(placeholder, text: text,
-                      prompt: Text(placeholder).font(Thema.tekst(12)).foregroundColor(Thema.kleur(.zacht)))
-                .textFieldStyle(.plain).font(Thema.tekst(12)).padding(8)
+            Veld(placeholder: placeholder, tekst: text, lettergrootte: 12)
+                .padding(8)
                 .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                 .background(Thema.kleur(.papierZacht))
-                .foregroundStyle(Thema.kleur(.inkt))
         }
     }
 
@@ -528,12 +526,7 @@ struct ChatView: View {
                     Image(systemName: "bubble.left.and.bubble.right")
                         .font(.system(size: 13))
                         .foregroundStyle(Thema.kleur(.gedempt))
-                    TextField("Stel een vraag of geef een opdracht aan de geselecteerde agent…", text: $invoerTekst,
-                              prompt: Text("Stel een vraag of geef een opdracht aan de geselecteerde agent…")
-                                  .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
-                        .textFieldStyle(.plain)
-                        .font(Thema.tekst(13))
-                        .foregroundStyle(Thema.kleur(.inkt))
+                    Veld(placeholder: "Stel een vraag of geef een opdracht aan de geselecteerde agent…", tekst: $invoerTekst)
                         .onSubmit { verzendBericht() }
                 }
                 .padding(10)

@@ -52,6 +52,7 @@ struct ModelDropdown: View {
                 TextField("kies uit de lijst of typ een model-id",
                           text: $model,
                           onEditingChanged: { edit in if edit { open = true } })
+                    .foregroundStyle(Thema.kleur(.inkt))
                     .textFieldStyle(.plain).font(Thema.tekst(13))
                 Image(systemName: open ? "chevron.up" : "chevron.down")
                     .font(.system(size: 10, weight: .semibold))
@@ -65,6 +66,7 @@ struct ModelDropdown: View {
             if open {
                 VStack(alignment: .leading, spacing: 0) {
                     TextField("zoek in \(modellen.count) modellen…", text: $zoek)
+                        .foregroundStyle(Thema.kleur(.inkt))
                         .textFieldStyle(.plain).font(Thema.tekst(12))
                         .padding(8)
                         .overlay(alignment: .bottom) {

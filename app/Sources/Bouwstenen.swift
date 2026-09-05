@@ -347,3 +347,31 @@ struct Pulserend: ViewModifier {
             .onAppear { zichtbaar = true }
     }
 }
+
+// MARK: - Invoerveld met werkende placeholder (omzeilt AppKit NSTextField placeholder-bug)
+
+/// Drop-in vervanging voor TextField — de placeholder is ALTIJD leesbaar omdat die
+/// via een overlay Text wordt getoond i.p.v. via AppKit's NSTextField placeholder
+/// die SwiftUI-kleurmodifiers negeert op macOS.
+struct Veld: View {
+    let placeholder: String
+    @Binding var tekst: String
+    var lettergrootte: CGFloat = 13
+    var breed: Bool = true
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            if tekst.isEmpty {
+                Text(placeholder)
+                    .font(Thema.tekst(lettergrootte))
+                    .foregroundColor(Thema.kleur(.gedempt))
+                    .allowsHitTesting(false)
+            }
+            TextField("", text: $tekst)
+                .textFieldStyle(.plain)
+                .font(Thema.tekst(lettergrootte))
+                .foregroundStyle(Thema.kleur(.inkt))
+        }
+        .frame(maxWidth: breed ? .infinity : nil)
+    }
+}

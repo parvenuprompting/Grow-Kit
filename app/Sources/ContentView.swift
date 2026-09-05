@@ -257,16 +257,9 @@ struct ContentView: View {
 
     private var merk: some View {
         HStack(alignment: .center, spacing: 10) {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Thema.kleur(.papier))
+            Image("LogoIcon")
+                .resizable().scaledToFit()
                 .frame(width: 36, height: 36)
-                .overlay(
-                    Image("LogoIcon")
-                        .resizable().scaledToFit()
-                        .padding(3)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
 
             Text("Grow Kit").font(Thema.tekst(17, gewicht: .semibold))
                 .tracking(0.3)
@@ -518,6 +511,7 @@ struct ContentView: View {
                                     .foregroundStyle(Thema.kleur(.gedempt))
                                 SecureField("plak of typ de sleutel — verlaat ~/.growkit nooit",
                                             text: $provider.apiSleutel)
+                                    .foregroundStyle(Thema.kleur(.inkt))
                                     .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
                                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                                     .background(Thema.kleur(.papierZacht))
@@ -587,11 +581,8 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                 .foregroundStyle(Thema.kleur(.gedempt))
-            TextField(placeholder.isEmpty ? label : placeholder, text: text,
-                      prompt: Text(placeholder.isEmpty ? label : placeholder)
-                          .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
-                .foregroundStyle(Thema.kleur(.inkt))
-                .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+            Veld(placeholder: placeholder.isEmpty ? label : placeholder, tekst: text)
+                .padding(10)
                 .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                 .background(Thema.kleur(.papierZacht))
         }

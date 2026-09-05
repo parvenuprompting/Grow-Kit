@@ -102,9 +102,7 @@ struct PromptBibliotheekView: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Thema.kleur(.gedempt))
-            TextField("Zoek in titel, tags, rol of tekst…", text: $zoekTekst)
-                .textFieldStyle(.plain)
-                .font(Thema.tekst(12))
+            Veld(placeholder: "Zoek in titel, tags, rol of tekst…", tekst: $zoekTekst, lettergrootte: 12, breed: true)
             if !zoekTekst.isEmpty {
                 Button(action: { zoekTekst = "" }) {
                     Image(systemName: "xmark.circle.fill")
@@ -125,7 +123,8 @@ struct PromptBibliotheekView: View {
                 Button(action: { gekozenSectie = s }) {
                     Text(s == "alles" ? "Alles" : (s == "public" ? "Publiek" : "Infra"))
                         .font(Thema.tekst(10, gewicht: .semibold)).tracking(0.8)
-                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .fixedSize()
                         .background(RoundedRectangle(cornerRadius: 4)
                             .fill(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.papierZacht)))
                         .foregroundStyle(gekozen ? Thema.kleur(.papier) : Thema.kleur(.gedempt))
@@ -216,17 +215,16 @@ struct PromptBibliotheekView: View {
                                         .font(Thema.tekst(10, gewicht: .semibold))
                                         .tracking(0.5)
                                         .foregroundStyle(Thema.kleur(.gedempt))
-                                    TextField(v["placeholder"] as? String ?? "",
-                                              text: Binding(
-                                                get: { variabelen[key] ?? "" },
-                                                set: { variabelen[key] = $0 }))
-                                        .textFieldStyle(.plain)
-                                        .font(Thema.tekst(12))
-                                        .padding(6)
-                                        .background(RoundedRectangle(cornerRadius: 4)
-                                            .fill(Thema.kleur(.papier)))
-                                        .overlay(RoundedRectangle(cornerRadius: 4)
-                                            .stroke(Thema.kleur(.lijn)))
+                                    Veld(placeholder: v["placeholder"] as? String ?? "",
+                                                                                          tekst: Binding(
+                                                                                            get: { variabelen[key] ?? "" },
+                                                                                            set: { variabelen[key] = $0 }),
+                                                                                          lettergrootte: 12, breed: true)
+                                                                                    .padding(6)
+                                                                                    .background(RoundedRectangle(cornerRadius: 4)
+                                                                                        .fill(Thema.kleur(.papier)))
+                                                                                    .overlay(RoundedRectangle(cornerRadius: 4)
+                                                                                        .stroke(Thema.kleur(.lijn)))
                                 }
                             }
                         }

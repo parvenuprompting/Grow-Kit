@@ -213,6 +213,7 @@ struct AgentChatView: View {
         HStack(spacing: 10) {
             TextField("Bericht aan \(gekozenAgent.capitalized)…",
                       text: $nieuwBericht, axis: .vertical)
+                .foregroundStyle(Thema.kleur(.inkt))
                 .textFieldStyle(.plain)
                 .font(Thema.tekst(13))
                 .lineLimit(1...4)

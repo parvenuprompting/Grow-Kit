@@ -76,6 +76,7 @@ struct OnboardingView: View {
                         Text("OVERZICHT MOMENT").font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
                             .foregroundStyle(Thema.kleur(.gedempt))
                         TextField("bijv. ochtend", text: $moment)
+                            .foregroundStyle(Thema.kleur(.inkt))
                             .textFieldStyle(.plain).font(Thema.tekst(12)).frame(width: 140)
                     }
                 }
@@ -138,6 +139,7 @@ struct OnboardingView: View {
                 }
             }
             TextField("", text: tekst)
+                .foregroundStyle(Thema.kleur(.inkt))
                 .textFieldStyle(.plain).font(Thema.tekst(13))
                 .padding(.bottom, 4)
                 .overlay(alignment: .bottom) {
