@@ -137,7 +137,7 @@ struct ChatView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("06 DIALOOG · GEÏNSTALLEERDE AGENTEN")
+            Text("05 DIALOOG · GEÏNSTALLEERDE AGENTEN")
                 .font(Thema.tekst(10, gewicht: .semibold))
                 .tracking(3)
                 .foregroundStyle(Thema.kleur(.gedempt))

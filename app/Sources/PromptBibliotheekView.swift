@@ -103,7 +103,7 @@ struct PromptBibliotheekView: View {
 
     private var kopKlein: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("18 PROMPTS").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
+            Text("08 PROMPTS").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
                 .foregroundStyle(Thema.kleur(.gedempt))
             Text("Gecureerde bibliotheek").font(Thema.display(22))
         }
@@ -111,7 +111,7 @@ struct PromptBibliotheekView: View {
 
     private var kopBalk: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("18 PROMPTS · GECUREERDE BIBLIOTHEEK").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
+            Text("08 PROMPTS · GECUREERDE BIBLIOTHEEK").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
                 .foregroundStyle(Thema.kleur(.gedempt))
             Text("Gecureerde bibliotheek").font(Thema.display(28))
             Text("Letterlijk uit de privé-bibliotheek, alleen te lezen. Kies een prompt, vul de variabelen in en kopieer hem naar je agent.")

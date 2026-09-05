@@ -276,7 +276,7 @@ struct GraafView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("HUIS · KNOWLEDGE GRAPH").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+            Text("07 KNOWLEDGE GRAPH · HET BREIN").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                 .foregroundStyle(Thema.kleur(.gedempt))
             HStack(alignment: .firstTextBaseline) {
                 Text("Alles, ").font(Thema.display(30))

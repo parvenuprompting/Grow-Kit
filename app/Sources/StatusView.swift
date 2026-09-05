@@ -107,7 +107,7 @@ struct StatusView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("01 STATUS · IDENTITEIT & REGISTER")
+            Text("02 STATUS · IDENTITEIT & REGISTER")
                 .font(Thema.tekst(10, gewicht: .semibold))
                 .tracking(3)
                 .foregroundStyle(Thema.kleur(.gedempt))

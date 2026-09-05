@@ -23,24 +23,24 @@ struct ContentView: View {
         var nummer: String {
             switch self {
             case .home: return "00"
-            case .status: return "01"
-            case .planten: return "02"
-            case .goedkeuringen: return "03"
-            case .dialoog: return "04"
-            case .agenten: return "05"
-            case .graaf: return "06"
-            case .vangnet: return "07"
-            case .audit: return "08"
-            case .hervatten: return "09"
-            case .taak: return "10"
-            case .rondleiding: return "11"
-            case .uitleg: return "12"
-            case .agentchat: return "13"
-            case .skills: return "14"
-            case .browser: return "15"
-            case .ide: return "16"
-            case .connectors: return "17"
-            case .prompts: return "18"
+            case .agentchat: return "01"
+            case .status: return "02"
+            case .planten: return "03"
+            case .goedkeuringen: return "04"
+            case .dialoog: return "05"
+            case .agenten: return "06"
+            case .graaf: return "07"
+            case .prompts: return "08"
+            case .vangnet: return "09"
+            case .audit: return "10"
+            case .hervatten: return "11"
+            case .taak: return "12"
+            case .rondleiding: return "13"
+            case .uitleg: return "14"
+            case .skills: return "15"
+            case .browser: return "16"
+            case .ide: return "17"
+            case .connectors: return "18"
             }
         }
         var naam: String {
@@ -168,9 +168,9 @@ struct ContentView: View {
 
                     Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
-                    // WERK — de dagelijkse modi
+                    // WERK — Agent Chat eerst (hoofdfunctie), daarna de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agentchat, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
+                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
                         modusRij(modus)
                     }
 

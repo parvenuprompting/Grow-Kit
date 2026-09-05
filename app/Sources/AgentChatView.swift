@@ -106,9 +106,9 @@ struct AgentChatView: View {
                                 repoPad: repoPad, interpreter: interpreter)
             }
         }
-        // De familie-status arriveert asynchroon; zodra er agenten bekend zijn
-        // en er nog niets gekozen is, alsnog de eerste agent kiezen.
-        .onChange(of: FamilieStatusStore.gedeeld.leeft) { _ in
+        // De familie-status arriveert asynchroon. Observeer de store direct:
+        // alleen dan herlaadt SwiftUI deze view wanneer leeft gevuld wordt.
+        .onReceive(FamilieStatusStore.gedeeld.$leeft) { _ in
             stelEersteAgentIn()
             if !gekozenAgent.isEmpty, store.draad.isEmpty {
                 store.laadDraad(agent: gekozenAgent, runner: runner,
@@ -121,7 +121,7 @@ struct AgentChatView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("HUIS · AGENT CHAT").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+            Text("01 AGENT CHAT · DE FAMILIE").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                 .foregroundStyle(Thema.kleur(.gedempt))
             HStack(alignment: .firstTextBaseline) {
                 Text("Praat met ").font(Thema.display(30))

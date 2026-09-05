@@ -60,7 +60,7 @@ struct PlantView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("02 PLANTEN · SCOPE-POORT")
+            Text("03 PLANTEN · SCOPE-POORT")
                 .font(Thema.tekst(10, gewicht: .semibold))
                 .tracking(3)
                 .foregroundStyle(Thema.kleur(.gedempt))
