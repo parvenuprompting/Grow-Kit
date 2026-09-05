@@ -18,7 +18,7 @@ Rol = Literal["uitvoering", "onderzoek", "bewaking", "kosten",
 
 FAMILIE: list[dict] = [
     {"naam": "KairOS",  "rol": "uitvoering", "platform": "telegram",
-     "beschrijving": "Papa — bouwt, voert uit, herstelt."},
+     "beschrijving": "Papa — bouwt, voert uit, herstelt én coördineert de kinderen."},
     {"naam": "Riri",    "rol": "onderzoek",  "platform": "telegram",
      "beschrijving": "Mama — research, ontwerp, externe review."},
     {"naam": "Vigil",   "rol": "bewaking",   "platform": "telegram",
@@ -30,7 +30,7 @@ FAMILIE: list[dict] = [
     {"naam": "Codex",   "rol": "archief",    "platform": "telegram",
      "beschrijving": "Archivaris — brein-boekingen, documenten, orde."},
     {"naam": "Genius",  "rol": "observer",   "platform": "telegram",
-     "beschrijving": "Jongste — observeert, noteert, levert aan. Groeit in fasen."},
+     "beschrijving": "Jongste — observeert en levert aan. Observer is zijn startpunt, geen vonnis: hij groeit in fasen."},
 ]
 
 MAX_AGENTS = 8
