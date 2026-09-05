@@ -140,6 +140,13 @@ struct ContentView: View {
             // ook op een klein venster.
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+                    // THUIS — de landingspagina, altijd bereikbaar
+                    ForEach([Modi.home]) { modus in
+                        modusRij(modus)
+                    }
+
+                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
                     // WERK — de dagelijkse modi
                     zijbalkSectie("WERK")
                     ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet, .audit]) { modus in
