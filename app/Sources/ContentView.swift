@@ -17,6 +17,7 @@ struct ContentView: View {
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
+        case prompts = 120
 
         var id: Int { rawValue }
         var nummer: String {
@@ -39,6 +40,7 @@ struct ContentView: View {
             case .browser: return "15"
             case .ide: return "16"
             case .connectors: return "17"
+            case .prompts: return "18"
             }
         }
         var naam: String {
@@ -61,6 +63,7 @@ struct ContentView: View {
             case .ide: return "IDE"
             case .connectors: return "Connectors"
             case .graaf: return "Knowledge Graph"
+            case .prompts: return "Prompts"
             }
         }
         var beschrijving: String {
@@ -83,6 +86,7 @@ struct ContentView: View {
             case .ide: return "Mini-IDE voor de projectmappen"
             case .connectors: return "Google Drive en andere bronnen koppelen"
             case .graaf: return "Het hele brein in één soepele kaart"
+            case .prompts: return "De gecureerde audit-prompts, letterlijk en alleen-lezen"
             }
         }
         var isMock: Bool {
@@ -165,7 +169,7 @@ struct ContentView: View {
 
                     // WERK — de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .vangnet, .audit]) { modus in
+                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
                         modusRij(modus)
                     }
 
@@ -354,6 +358,8 @@ struct ContentView: View {
                     AgentsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .graaf:
                     GraafView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .prompts:
+                    PromptBibliotheekView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .vangnet:
                     VangnetView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .audit:

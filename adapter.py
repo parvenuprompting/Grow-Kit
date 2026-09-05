@@ -20,6 +20,7 @@ REPO = Path(__file__).parent.resolve()
 sys.path.insert(0, str(REPO))
 
 from kern import growkit_oerwoud  # noqa: E402
+from kern import growkit_prompts  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -312,6 +313,22 @@ def cmd_slijp(invoer: dict) -> dict:
                                  "vragen": vragen}}
 
 
+
+
+def cmd_prompts(invoer: dict) -> dict:
+    """Prompt-bibliotheek (roadmap 5 sept): lees-filter over de gecureerde
+    prompts. Filters: domein (int), sectie, zoek (tekst), id (enkel).
+    Alleen-lezen — curation gebeurt in de bron-repo, nooit hier."""
+    try:
+        data = growkit_prompts.bibliotheek(
+            domein=invoer.get("domein"),
+            sectie=invoer.get("sectie"),
+            zoek=invoer.get("zoek"),
+            prompt_id=invoer.get("id"),
+        )
+    except ValueError as e:
+        raise AdapterFout(str(e)) from e
+    return {"ok": True, "data": data}
 
 
 def cmd_bomen(invoer: dict) -> dict:
@@ -1028,6 +1045,7 @@ COMMANDOS = {
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,
     "bomen": cmd_bomen,
+    "prompts": cmd_prompts,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,
     "inbox": cmd_inbox,

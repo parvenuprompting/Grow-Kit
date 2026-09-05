@@ -1,0 +1,3341 @@
+{
+  "domains": [
+    {
+      "id": 1,
+      "title": "Architectuur & Systeemontwerp",
+      "icon": "Layers",
+      "description": "Koppeling tussen modules, contracts, schema-ontwerp en schaalbaarheid.",
+      "promptCount": 4,
+      "section": "public"
+    },
+    {
+      "id": 2,
+      "title": "Code Kwaliteit & Correctheid",
+      "icon": "CheckCircle2",
+      "description": "Logicafouten, edge cases, error handling, refactoring en consistentie.",
+      "promptCount": 4,
+      "section": "public"
+    },
+    {
+      "id": 3,
+      "title": "Security",
+      "icon": "ShieldCheck",
+      "description": "Kwetsbaarheden, auth & permissies, injecties, secrets en dependencies.",
+      "promptCount": 5,
+      "section": "public"
+    },
+    {
+      "id": 4,
+      "title": "Performance",
+      "icon": "Zap",
+      "description": "N+1 queries, memory leaks, blocking operaties en piekbelasting.",
+      "promptCount": 3,
+      "section": "public"
+    },
+    {
+      "id": 5,
+      "title": "Testing & Kwaliteitsborging",
+      "icon": "FlaskConical",
+      "description": "Testdekking van kritieke paden, assertie-kwaliteit en regressierisico.",
+      "promptCount": 5,
+      "section": "public"
+    },
+    {
+      "id": 6,
+      "title": "Data",
+      "icon": "Database",
+      "description": "Migratieveiligheid, uptime, model constraints en data-integriteit.",
+      "promptCount": 2,
+      "section": "public"
+    },
+    {
+      "id": 7,
+      "title": "DevOps, CI/CD & Infrastructuur",
+      "icon": "GitPullRequest",
+      "description": "Pijplijnbetrouwbaarheid, IaC-drift, pre-deploy checks en disaster recovery.",
+      "promptCount": 4,
+      "section": "public"
+    },
+    {
+      "id": 8,
+      "title": "Observability",
+      "icon": "Activity",
+      "description": "Logging signaal-ruisverhouding, monitoring dekking en alerting drempels.",
+      "promptCount": 2,
+      "section": "public"
+    },
+    {
+      "id": 9,
+      "title": "UI/UX & Toegankelijkheid",
+      "icon": "Sparkles",
+      "description": "Component UX, WCAG 2.1 AA toegankelijkheid, responsive gedrag en breakpoints.",
+      "promptCount": 3,
+      "section": "public"
+    },
+    {
+      "id": 10,
+      "title": "Documentatie",
+      "icon": "BookOpen",
+      "description": "Documentatie-volledigheid, inline commentaar en vlotte developer onboarding.",
+      "promptCount": 2,
+      "section": "public"
+    },
+    {
+      "id": 11,
+      "title": "Compliance, Privacy & Licenties",
+      "icon": "Scale",
+      "description": "AVG/GDPR dataminimalisatie, bewaartermijnen en open-source licenties.",
+      "promptCount": 2,
+      "section": "public"
+    },
+    {
+      "id": 12,
+      "title": "Kosten & Efficiëntie",
+      "icon": "Coins",
+      "description": "Cloud infrastructuur optimalisatie, overprovisioning en ongebruikte resources.",
+      "promptCount": 1,
+      "section": "public"
+    },
+    {
+      "id": 13,
+      "title": "Internationalisatie (i18n/l10n)",
+      "icon": "Globe",
+      "description": "Hardcoded strings, datum/valuta formattering en multi-taal ondersteuning.",
+      "promptCount": 1,
+      "section": "public"
+    },
+    {
+      "id": 14,
+      "title": "Proces & Git-hygiëne",
+      "icon": "GitBranch",
+      "description": "Commit historie leesbaarheid, branch strategie en effectieve code reviews.",
+      "promptCount": 2,
+      "section": "public"
+    },
+    {
+      "id": 15,
+      "title": "Overdracht & Zelfcontrole",
+      "icon": "SlidersHorizontal",
+      "description": "Context-overdracht tussen agents en scope-creep verificatie voor het model.",
+      "promptCount": 3,
+      "section": "public"
+    },
+    {
+      "id": 16,
+      "title": "Eigen Infrastructuur (Niet Publiek)",
+      "icon": "Server",
+      "description": "RAG/pgvector, approval-flows, ProofPanel, multi-agent, hash-chains, VPS, Telegram bots en iOS.",
+      "promptCount": 9,
+      "isPrivate": true,
+      "section": "custom_infra"
+    },
+    {
+      "id": 17,
+      "title": "iOS & Swift Project Starters",
+      "icon": "Smartphone",
+      "description": "Van eerste idee naar een solide Swift- en SwiftUI-projectstructuur.",
+      "promptCount": 6,
+      "section": "public"
+    },
+    {
+      "id": 18,
+      "title": "Python APIs & Backends",
+      "icon": "ServerCog",
+      "description": "Start FastAPI-projecten, endpoints, persistence, auth en deployment.",
+      "promptCount": 5,
+      "section": "public"
+    },
+    {
+      "id": 19,
+      "title": "Monolithische Code Detectie & Refactor",
+      "icon": "GitBranch",
+      "description": "Detecteer te grote bestanden, gemixte verantwoordelijkheden en structurele refactorrisico’s.",
+      "promptCount": 6,
+      "section": "public"
+    },
+    {
+      "id": 20,
+      "title": "Meta Prompts",
+      "icon": "BrainCircuit",
+      "description": "Lange, bewijsgerichte prompts voor diepgaande codebase-audits en bouwplannen.",
+      "promptCount": 1,
+      "section": "public"
+    },
+    {
+      "id": 21,
+      "title": "API & Backend",
+      "icon": "Route",
+      "description": "API-ontwerp, integraties, jobs, webhooks en beheerlagen.",
+      "promptCount": 6,
+      "section": "public"
+    },
+    {
+      "id": 22,
+      "title": "Database & Data",
+      "icon": "Database",
+      "description": "PostgreSQL, multi-tenancy, uploads en dataveilige opslag.",
+      "promptCount": 3,
+      "section": "public"
+    },
+    {
+      "id": 23,
+      "title": "Hetzner & Serverbeheer",
+      "icon": "Server",
+      "description": "VPS-hardening, Docker, HTTPS, backups, monitoring en migraties.",
+      "promptCount": 7,
+      "section": "public"
+    },
+    {
+      "id": 24,
+      "title": "Productie & Integraties",
+      "icon": "Rocket",
+      "description": "CI/CD, e-mail, OAuth, starter templates en externe developer-documentatie.",
+      "promptCount": 5,
+      "section": "public"
+    },
+    {
+      "id": 25,
+      "title": "Productonderdelen & Applicatiefuncties",
+      "icon": "LayoutDashboard",
+      "description": "Voeg complete schermen, modules en gebruikersfuncties toe als veilige verticale slices.",
+      "promptCount": 20,
+      "section": "public"
+    },
+    {
+      "id": 26,
+      "title": "Vibe Coding — Workflow Templates",
+      "icon": "WandSparkles",
+      "description": "Van concept naar deployment met direct bruikbare prompts, beslispunten en valkuilen.",
+      "promptCount": 14,
+      "section": "public"
+    }
+  ],
+  "prompts": [
+    {
+      "id": "1.1",
+      "domainId": 1,
+      "domainTitle": "Architectuur & Systeemontwerp",
+      "domainIcon": "Layers",
+      "title": "1.1 Architectuuraudit",
+      "role": "senior software-architect",
+      "scope": "koppeling tussen modules, scheiding van verantwoordelijkheden en interne consistentie",
+      "prioritizationCriteria": "impact bij toekomstige uitbreiding (blokkerend / beperkend / cosmetisch)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "architectuur",
+        "modules",
+        "coupling",
+        "refactoring",
+        "systeemontwerp"
+      ],
+      "variables": [
+        {
+          "key": "codebase_context",
+          "label": "Codebase / Module Context",
+          "placeholder": "bijv. src/services/auth en src/domain/orders",
+          "description": "Geef specifieke mappen, modules of services op"
+        },
+        {
+          "key": "toekomstige_uitbreiding",
+          "label": "Geplande toekomstige uitbreiding",
+          "placeholder": "bijv. migratie naar microservices of toevoegen multi-tenancy",
+          "description": "Welke features of schaalslagen komen eraan?"
+        }
+      ],
+      "content": "Je bent een senior software-architect. Beoordeel de onderstaande codebase op systeemstructuur: koppeling tussen modules, scheiding van verantwoordelijkheden, en waar de architectuur inconsistent is met zichzelf. Prioriteer bevindingen op impact bij toekomstige uitbreiding (blokkerend / beperkend / cosmetisch). Sluit af met concrete herstructureringsvoorstellen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "1.2",
+      "domainId": 1,
+      "domainTitle": "Architectuur & Systeemontwerp",
+      "domainIcon": "Layers",
+      "title": "1.2 API-ontwerpaudit",
+      "role": "API-architect",
+      "scope": "consistentie van contracten, versioning-strategie, foutresponsen en conventies",
+      "prioritizationCriteria": "impact voor bestaande consumers (breaking / niet-breaking)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "api",
+        "rest",
+        "graphql",
+        "contracten",
+        "versioning",
+        "foutresponsen"
+      ],
+      "variables": [
+        {
+          "key": "api_endpoints",
+          "label": "Endpoints of Router context",
+          "placeholder": "bijv. /api/v1/users, OpenAPI spec of controllers/routes"
+        }
+      ],
+      "content": "Je bent een API-architect. Beoordeel de onderstaande API op consistentie van contracten, versioning-strategie, foutresponsen en conventies (REST/GraphQL). Prioriteer op impact voor bestaande consumers (breaking / niet-breaking). Sluit af met concrete aanpassingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "1.3",
+      "domainId": 1,
+      "domainTitle": "Architectuur & Systeemontwerp",
+      "domainIcon": "Layers",
+      "title": "1.3 Database-schema-audit",
+      "role": "database-architect",
+      "scope": "normalisatie, relaties, indexstrategie en groeigeschiktheid",
+      "prioritizationCriteria": "risico voor data-integriteit versus risico voor query-performance",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "database",
+        "schema",
+        "sql",
+        "indexes",
+        "relaties",
+        "performance"
+      ],
+      "variables": [
+        {
+          "key": "schema_context",
+          "label": "Schema bestanden / Modellen",
+          "placeholder": "bijv. prisma/schema.prisma, schema.sql of models.py"
+        }
+      ],
+      "content": "Je bent een database-architect. Beoordeel het onderstaande schema op normalisatie, relaties, indexstrategie en groeigeschiktheid. Prioriteer bevindingen op risico voor data-integriteit versus risico voor query-performance. Sluit af met concrete schema-aanpassingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "1.4",
+      "domainId": 1,
+      "domainTitle": "Architectuur & Systeemontwerp",
+      "domainIcon": "Layers",
+      "title": "1.4 Schaalbaarheids- en capaciteitsaudit",
+      "role": "systeemarchitect gespecialiseerd in schaalbaarheid",
+      "scope": "bottlenecks bij groei in gebruikers, data-volume of verkeer",
+      "prioritizationCriteria": "wanneer het probleem zich voordoet (nu al merkbaar / bij 10x groei / bij 100x groei)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "schaalbaarheid",
+        "capaciteit",
+        "bottlenecks",
+        "concurrency",
+        "high-traffic"
+      ],
+      "variables": [
+        {
+          "key": "verwacht_verkeer",
+          "label": "Verwachte belasting & bottlenecks",
+          "placeholder": "bijv. 10.000 req/sec of 5 miljoen rijen per dag"
+        }
+      ],
+      "content": "Je bent een systeemarchitect gespecialiseerd in schaalbaarheid. Identificeer bottlenecks die optreden bij groei in gebruikers, data-volume of verkeer. Prioriteer op wanneer het probleem zich voordoet (nu al merkbaar / bij 10x groei / bij 100x groei). Sluit af met concrete aanpassingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "2.1",
+      "domainId": 2,
+      "domainTitle": "Code Kwaliteit & Correctheid",
+      "domainIcon": "CheckCircle2",
+      "title": "2.1 Logica- en correctheidsaudit",
+      "role": "senior software engineer gespecialiseerd in correctheid",
+      "scope": "logicafouten, edge cases, race conditions en niet-gegarandeerde aannames",
+      "prioritizationCriteria": "waarschijnlijkheid dat het fout gaat in productie",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "correctheid",
+        "edge-cases",
+        "race-conditions",
+        "bugs",
+        "logica"
+      ],
+      "variables": [
+        {
+          "key": "module_path",
+          "label": "Specifieke functie of module",
+          "placeholder": "bijv. paymentProcessor.ts of calculateInvoice()"
+        }
+      ],
+      "content": "Je bent een senior software engineer gespecialiseerd in correctheid. Doorloop de onderstaande code op logicafouten, edge cases, race conditions en aannames die niet gegarandeerd zijn. Prioriteer op waarschijnlijkheid dat het fout gaat in productie. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "2.2",
+      "domainId": 2,
+      "domainTitle": "Code Kwaliteit & Correctheid",
+      "domainIcon": "CheckCircle2",
+      "title": "2.2 Foutafhandelingsaudit",
+      "role": "senior software engineer",
+      "scope": "ontbrekende error handling, silent failures en inconsistente systeemstaat",
+      "prioritizationCriteria": "ernst van de gevolgen bij falen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "error-handling",
+        "exceptions",
+        "silent-failures",
+        "robuustheid"
+      ],
+      "variables": [
+        {
+          "key": "error_flows",
+          "label": "Focusgebieden (bijv. API calls / database writes)",
+          "placeholder": "bijv. async operaties en netwerk requests"
+        }
+      ],
+      "content": "Je bent een senior software engineer. Beoordeel hoe deze codebase omgaat met fouten: ontbrekende error handling, silent failures, en plekken waar een fout de gebruiker niets vertelt of het systeem in een inconsistente staat laat. Prioriteer op ernst van de gevolgen bij falen. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "2.3",
+      "domainId": 2,
+      "domainTitle": "Code Kwaliteit & Correctheid",
+      "domainIcon": "CheckCircle2",
+      "title": "2.3 Refactor- en technische-schuld-audit",
+      "role": "senior software engineer",
+      "scope": "gedupliceerde logica, verouderde patronen en onevenredige complexiteit",
+      "prioritizationCriteria": "onderscheid tussen \"moet nu\" en \"kan wachten\"",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "refactoring",
+        "tech-debt",
+        "clean-code",
+        "duplicatie",
+        "onderhoudbaarheid"
+      ],
+      "variables": [
+        {
+          "key": "target_package",
+          "label": "Bestand of component voor refactoring",
+          "placeholder": "bijv. legacy router of utility helpers"
+        }
+      ],
+      "content": "Je bent een senior software engineer. Beoordeel de onderstaande codebase op technische schuld: gedupliceerde logica, verouderde patronen, en plekken waar complexiteit niet in verhouding staat tot wat de code doet. Onderscheid \"moet nu\" van \"kan wachten\". Geef geen volledige herschrijving, alleen een prioriteitenlijst met korte onderbouwing per punt. Richt je antwoord aan mijn AI Code Agent."
+    },
+    {
+      "id": "2.4",
+      "domainId": 2,
+      "domainTitle": "Code Kwaliteit & Correctheid",
+      "domainIcon": "CheckCircle2",
+      "title": "2.4 Naming- en consistentie-audit",
+      "role": "code-auditor gericht op consistentie",
+      "scope": "naming conventions, gemengde stijlen (camelCase vs snake_case) en interne afwijkingen",
+      "prioritizationCriteria": "waar het project zichzelf tegenspreekt (zonder stijlvoorkeur op te dringen)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "naming",
+        "conventies",
+        "stijl",
+        "consistentie",
+        "clean-code"
+      ],
+      "content": "Je bent een code-auditor gericht op consistentie. Doorloop de codebase op inconsistente naming conventions, gemengde stijlen (bijv. camelCase vs snake_case), en afwijkingen van het patroon dat elders in het project wordt gebruikt. Geen mening over welke stijl \"beter\" is — alleen waar het project zichzelf tegenspreekt. Gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "3.1",
+      "domainId": 3,
+      "domainTitle": "Security",
+      "domainIcon": "ShieldCheck",
+      "title": "3.1 Security- en stabiliteitsaudit",
+      "role": "senior software engineer en security-auditor",
+      "scope": "stabiliteit, veiligheid, onderhoudbaarheid en performance met bestands- en regelreferenties",
+      "prioritizationCriteria": "risico (kritiek / belangrijk / nice-to-have)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "security",
+        "stabiliteit",
+        "owasp",
+        "audit",
+        "kwetsbaarheden"
+      ],
+      "variables": [
+        {
+          "key": "scope_files",
+          "label": "Bestanden of modules om te scannen",
+          "placeholder": "bijv. backend auth, API handlers en data layer"
+        }
+      ],
+      "content": "Je bent een senior software engineer en security-auditor. Voer een kritische code-audit uit op de onderstaande codebase, gericht op stabiliteit, veiligheid, onderhoudbaarheid en performance. Wees specifiek: verwijs naar bestand en regel waar relevant. Prioriteer bevindingen op risico (kritiek / belangrijk / nice-to-have) en sluit af met concrete, uitvoerbare verbeteringen. Houd je antwoord kort en richt het direct aan mijn AI Code Agent."
+    },
+    {
+      "id": "3.2",
+      "domainId": 3,
+      "domainTitle": "Security",
+      "domainIcon": "ShieldCheck",
+      "title": "3.2 Authenticatie- & autorisatie-audit",
+      "role": "security-auditor gespecialiseerd in identity & access management",
+      "scope": "sessiebeheer, permissiemodel, privilege escalation en checks op object-niveau (BOLA/IDOR)",
+      "prioritizationCriteria": "uitbuitbaarheid in productie",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "auth",
+        "rbac",
+        "jwt",
+        "idor",
+        "bola",
+        "privilege-escalation"
+      ],
+      "variables": [
+        {
+          "key": "auth_middleware",
+          "label": "Auth middleware & guards",
+          "placeholder": "bijv. requireAuth.ts, rolesGuard of Firebase Security Rules"
+        }
+      ],
+      "content": "Je bent een security-auditor gespecialiseerd in identity & access management. Beoordeel sessiebeheer, permissiemodel en autorisatiecontroles op deze codebase. Zoek expliciet naar plekken waar een gebruiker meer kan dan bedoeld (privilege escalation, ontbrekende checks op object-niveau). Prioriteer op uitbuitbaarheid. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "3.3",
+      "domainId": 3,
+      "domainTitle": "Security",
+      "domainIcon": "ShieldCheck",
+      "title": "3.3 Input-validatie- & injectie-audit",
+      "role": "security-auditor gespecialiseerd in input-gerelateerde kwetsbaarheden",
+      "scope": "SQL-injectie, XSS, command injection, onveilige deserialisatie en ontbrekende validatie",
+      "prioritizationCriteria": "blootstelling (welke input komt direct van niet-vertrouwde gebruikers)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "input-validatie",
+        "xss",
+        "sql-injection",
+        "command-injection",
+        "owasp"
+      ],
+      "content": "Je bent een security-auditor gespecialiseerd in input-gerelateerde kwetsbaarheden. Doorloop de codebase op ontbrekende of onvoldoende validatie: SQL-injectie, XSS, command injection, onveilige deserialisatie. Prioriteer op blootstelling (welke input komt direct van een niet-vertrouwde gebruiker). Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "3.4",
+      "domainId": 3,
+      "domainTitle": "Security",
+      "domainIcon": "ShieldCheck",
+      "title": "3.4 Secrets- & configuratiebeheer-audit",
+      "role": "security-auditor",
+      "scope": "hardcoded secrets, onveilig env-vars gebruik en ontbrekende rotatiestrategie",
+      "prioritizationCriteria": "blootstelling (publieke repo, client-side bundles, logs)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "secrets",
+        "env-vars",
+        "api-keys",
+        "tokens",
+        "configuratie"
+      ],
+      "content": "Je bent een security-auditor. Doorloop de codebase en configuratiebestanden op hardcoded secrets, onveilig gebruik van environment variables, en ontbrekende rotatie- of vervalstrategie voor keys en tokens. Prioriteer op blootstelling (publiek repo, logs, client-side code). Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "3.5",
+      "domainId": 3,
+      "domainTitle": "Security",
+      "domainIcon": "ShieldCheck",
+      "title": "3.5 Dependency- & supply-chain-audit",
+      "role": "security-auditor gespecialiseerd in supply chain risico's",
+      "scope": "verouderde versies, bekende CVE kwetsbaarheden en onnodige packages",
+      "prioritizationCriteria": "exposure (welke dependency raakt direct productie/gebruikersdata)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "dependencies",
+        "cve",
+        "supply-chain",
+        "npm",
+        "packages",
+        "vulnerabilities"
+      ],
+      "variables": [
+        {
+          "key": "manifest_file",
+          "label": "Dependency manifest",
+          "placeholder": "bijv. package.json, requirements.txt of Cargo.toml"
+        }
+      ],
+      "content": "Je bent een security-auditor gespecialiseerd in supply chain risico's. Beoordeel de dependencies in deze codebase op verouderde versies, bekende kwetsbaarheden, en onnodige packages. Prioriteer op basis van exposure (welke dependency raakt productie/gebruikersdata direct). Sluit af met concrete upgrade- of vervangingsacties, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "4.1",
+      "domainId": 4,
+      "domainTitle": "Performance",
+      "domainIcon": "Zap",
+      "title": "4.1 Performance-audit",
+      "role": "performance-engineer",
+      "scope": "N+1 queries, onnodige recomputatie, memory leaks en blocking operaties",
+      "prioritizationCriteria": "impact voor gebruikerservaring (merkbare vertraging vs theoretische inefficiëntie)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "performance",
+        "n-plus-1",
+        "memory-leak",
+        "latency",
+        "caching"
+      ],
+      "variables": [
+        {
+          "key": "perf_target",
+          "label": "Verdacht trage component of endpoint",
+          "placeholder": "bijv. GET /api/dashboard of DataTable render cycle"
+        }
+      ],
+      "content": "Je bent een performance-engineer. Doorloop de codebase op N+1 queries, onnodige recomputatie, memory leaks en blocking operaties op plekken waar dat niet hoort. Prioriteer op impact voor gebruikerservaring (merkbare vertraging versus theoretische inefficiëntie). Sluit af met concrete optimalisaties, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "4.2",
+      "domainId": 4,
+      "domainTitle": "Performance",
+      "domainIcon": "Zap",
+      "title": "4.2 Load- & stresstest-gereedheidsaudit",
+      "role": "performance-engineer gespecialiseerd in schaalgedrag onder belasting",
+      "scope": "rate limiting, connection pools, degradatiegedrag bij piekbelasting",
+      "prioritizationCriteria": "waarschijnlijkheid van optreden bij normale piekmomenten",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "load-testing",
+        "rate-limiting",
+        "connection-pools",
+        "resilience",
+        "stresstest"
+      ],
+      "content": "Je bent een performance-engineer gespecialiseerd in schaalgedrag onder belasting. Beoordeel waar dit systeem breekt bij piekbelasting: ontbrekende rate limiting, connection pool-limieten, degradatiegedrag. Prioriteer op waarschijnlijkheid van optreden bij normale piekmomenten. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "4.3",
+      "domainId": 4,
+      "domainTitle": "Performance",
+      "domainIcon": "Zap",
+      "title": "4.3 Lichtgewicht-, snelheid- & batterij-audit",
+      "role": "senior mobile performance-engineer",
+      "scope": "app-grootte, geheugengebruik, achtergrondactiviteit, polling, re-renders, animaties en sensor-, locatie- en netwerkgebruik",
+      "prioritizationCriteria": "impact voor batterijverbruik en waargenomen snelheid door de gebruiker",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "mobile",
+        "performance",
+        "batterij",
+        "geheugen",
+        "ios",
+        "energie"
+      ],
+      "content": "Je bent een senior mobile performance-engineer. Beoordeel de onderstaande app op lichtgewicht gedrag: app-grootte, geheugengebruik, onnodige achtergrondactiviteit, polling waar push of event-driven kan, overbodige re-renders of animaties, en inefficiënt gebruik van sensoren, locatie of netwerk dat batterij verbruikt zonder directe gebruikerswaarde. Prioriteer op impact voor batterijverbruik en waargenomen snelheid door de gebruiker. Sluit af met concrete optimalisaties, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "5.1",
+      "domainId": 5,
+      "domainTitle": "Testing & Kwaliteitsborging",
+      "domainIcon": "FlaskConical",
+      "title": "5.1 Testdekking-audit",
+      "role": "QA-engineer",
+      "scope": "onbeteste kritieke paden en ontbrekende scenario's (los van pure percentages)",
+      "prioritizationCriteria": "risico bij falen (financiële logica, authenticatie, dataverlies eerst)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "qa",
+        "test-coverage",
+        "unit-tests",
+        "critical-paths",
+        "scenario-testing"
+      ],
+      "variables": [
+        {
+          "key": "critical_modules",
+          "label": "Kritieke domeinmodules",
+          "placeholder": "bijv. billing, checkout of permission engine"
+        }
+      ],
+      "content": "Je bent een QA-engineer. Identificeer welke kritieke code-paden onbetest zijn in deze codebase — niet het coverage-percentage, maar welke specifieke scenario's ontbreken. Prioriteer op risico bij falen (financiële logica, authenticatie, dataverlies eerst). Sluit af met concrete testvoorstellen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "5.2",
+      "domainId": 5,
+      "domainTitle": "Testing & Kwaliteitsborging",
+      "domainIcon": "FlaskConical",
+      "title": "5.2 Testkwaliteit-audit",
+      "role": "QA-engineer",
+      "scope": "zinvolheid van tests: gedragstesten vs coverage-theater en triviale mocks",
+      "prioritizationCriteria": "welke tests een vals gevoel van veiligheid geven",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "test-kwaliteit",
+        "mocks",
+        "assertions",
+        "coverage-theater",
+        "qa"
+      ],
+      "content": "Je bent een QA-engineer. Beoordeel de bestaande tests in deze codebase op zinvolheid: testen ze daadwerkelijk gedrag, of zijn het coverage-theater (triviale asserties, gemockte afhankelijkheden die niets valideren). Prioriteer op welke tests een vals gevoel van veiligheid geven. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "5.3",
+      "domainId": 5,
+      "domainTitle": "Testing & Kwaliteitsborging",
+      "domainIcon": "FlaskConical",
+      "title": "5.3 Regressierisico-audit",
+      "role": "QA-engineer",
+      "scope": "afhankelijkheden, gedeelde state en impliciete contracten bij een codewijziging",
+      "prioritizationCriteria": "waarschijnlijkheid en impact van regressie elders in het systeem",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "regressie",
+        "side-effects",
+        "state",
+        "contracten",
+        "qa"
+      ],
+      "variables": [
+        {
+          "key": "proposed_change",
+          "label": "Omschrijving van de recente wijziging / PR",
+          "placeholder": "bijv. aanpassen van het user model of auth middleware"
+        }
+      ],
+      "content": "Je bent een QA-engineer. Beoordeel deze wijziging op wat er elders in het systeem kan breken — afhankelijkheden, gedeelde state, impliciete contracten met andere modules. Prioriteer op waarschijnlijkheid en impact van regressie. Sluit af met concrete controlepunten, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "5.4",
+      "domainId": 5,
+      "domainTitle": "Testing & Kwaliteitsborging",
+      "domainIcon": "FlaskConical",
+      "title": "5.4 Uitgebreide testsuite-ontwikkeling",
+      "role": "senior test engineer",
+      "scope": "kritieke business-logica, dataflows en randgevallen volgens bestaande testconventies",
+      "prioritizationCriteria": "risico bij falen (financiële logica, authenticatie en dataverlies eerst)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "qa",
+        "tests",
+        "business-logica",
+        "dataflows",
+        "edge-cases"
+      ],
+      "content": "Je bent een senior test engineer. Ontwikkel een uitgebreide testsuite voor de onderstaande codebase, gericht op kritieke business-logica, dataflows en randgevallen. Gebruik het bestaande testframework en de bestaande conventies in het project; introduceer geen nieuw patroon tenzij noodzakelijk. Prioriteer dekking op risico: financiële logica, authenticatie en dataverlies eerst, cosmetische paden laatst. Voer de testsuite daadwerkelijk uit en rapporteer de ruwe testoutput (geslaagd/gefaald per test), niet alleen een samenvatting. Meld expliciet welke onderdelen nog onbetest blijven en waarom."
+    },
+    {
+      "id": "5.5",
+      "domainId": 5,
+      "domainTitle": "Testing & Kwaliteitsborging",
+      "domainIcon": "FlaskConical",
+      "title": "5.5 Foutmeldingen- & edge-case-dekking (geen happy path)",
+      "role": "QA engineer gespecialiseerd in negatieve testpaden",
+      "scope": "ongeldige of ontbrekende invoer, grenswaarden, netwerkfouten, timeouts en gelijktijdige toegang",
+      "prioritizationCriteria": "foutafhandeling en randgevallen, zonder happy-pathgedrag opnieuw te testen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "qa",
+        "negative-testing",
+        "edge-cases",
+        "foutafhandeling",
+        "timeouts"
+      ],
+      "content": "Je bent een QA engineer gespecialiseerd in negatieve testpaden. Schrijf tests die zich uitsluitend richten op foutafhandeling en randgevallen in de onderstaande code: ongeldige of ontbrekende invoer, grenswaarden, netwerkfouten, timeouts, en gelijktijdige toegang waar relevant. Sla happy-path-gedrag over — dat wordt elders al getest. Voer de tests uit en rapporteer de ruwe output. Meld expliciet welke foutscenario's nog niet gedekt zijn na deze toevoeging."
+    },
+    {
+      "id": "6.1",
+      "domainId": 6,
+      "domainTitle": "Data",
+      "domainIcon": "Database",
+      "title": "6.1 Datamigratie-audit",
+      "role": "database-engineer",
+      "scope": "reversibiliteit, dataverlies en uptime impact tijdens migratie",
+      "prioritizationCriteria": "onomkeerbaarheid van de gevolgen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "datamigratie",
+        "zero-downtime",
+        "rollback",
+        "data-verlies",
+        "database"
+      ],
+      "variables": [
+        {
+          "key": "migration_script",
+          "label": "Migratiescript of DDL context",
+          "placeholder": "bijv. migrations/20260821_add_tenant_id.sql"
+        }
+      ],
+      "content": "Je bent een database-engineer. Beoordeel deze migratie op reversibiliteit, risico op dataverlies, en impact op uptime tijdens uitvoering. Prioriteer op onomkeerbaarheid van de gevolgen. Sluit af met concrete aanpassingen aan de migratiestrategie, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "6.2",
+      "domainId": 6,
+      "domainTitle": "Data",
+      "domainIcon": "Database",
+      "title": "6.2 Datakwaliteit- & integriteitsaudit",
+      "role": "database-engineer",
+      "scope": "ontbrekende constraints, validaties, orphaned records en data-inconsistentie",
+      "prioritizationCriteria": "impact voor data-betrouwbaarheid",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "data-integriteit",
+        "foreign-keys",
+        "constraints",
+        "orphaned-records",
+        "data-quality"
+      ],
+      "content": "Je bent een database-engineer. Doorloop het datamodel op ontbrekende constraints, onvoldoende validatie, en risico op orphaned of inconsistente records. Prioriteer op impact voor data-betrouwbaarheid. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "7.1",
+      "domainId": 7,
+      "domainTitle": "DevOps, CI/CD & Infrastructuur",
+      "domainIcon": "GitPullRequest",
+      "title": "7.1 CI/CD-pijplijnaudit",
+      "role": "DevOps-engineer",
+      "scope": "testgates, build-snelheid, silent failures en onveilige deploy steps",
+      "prioritizationCriteria": "risico dat kapotte code productie bereikt",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "ci-cd",
+        "github-actions",
+        "pipelines",
+        "testgates",
+        "deployment"
+      ],
+      "variables": [
+        {
+          "key": "workflow_file",
+          "label": "Workflow configuratie",
+          "placeholder": "bijv. .github/workflows/deploy.yml of GitLab CI"
+        }
+      ],
+      "content": "Je bent een DevOps-engineer. Beoordeel de CI/CD-pijplijn op betrouwbaarheid: ontbrekende testgates, trage builds, en stappen die falen kunnen doorlaten zonder het te signaleren. Prioriteer op risico dat kapotte code productie bereikt. Sluit af met concrete aanpassingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "7.2",
+      "domainId": 7,
+      "domainTitle": "DevOps, CI/CD & Infrastructuur",
+      "domainIcon": "GitPullRequest",
+      "title": "7.2 Infrastructure-as-code-audit",
+      "role": "DevOps-engineer",
+      "scope": "reproduceerbaarheid, configuratie-drift en secrets in configuratiebestanden",
+      "prioritizationCriteria": "risico voor consistentie tussen omgevingen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "iac",
+        "terraform",
+        "docker",
+        "kubernetes",
+        "drift",
+        "infrastructuur"
+      ],
+      "variables": [
+        {
+          "key": "iac_files",
+          "label": "IaC / Docker configuratie",
+          "placeholder": "bijv. Dockerfile, docker-compose.yml of main.tf"
+        }
+      ],
+      "content": "Je bent een DevOps-engineer. Beoordeel de infrastructuurconfiguratie op reproduceerbaarheid, configuratie-drift tussen omgevingen, en secrets die in configuratiebestanden staan in plaats van een secrets-manager. Prioriteer op risico voor consistentie tussen omgevingen. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "7.3",
+      "domainId": 7,
+      "domainTitle": "DevOps, CI/CD & Infrastructuur",
+      "domainIcon": "GitPullRequest",
+      "title": "7.3 Pre-deploy sanity check",
+      "role": "senior engineer die verantwoordelijk is voor release-kwaliteit",
+      "scope": "ontbrekende migraties, environment-afhankelijkheden en rollback-risico vóór deploy",
+      "prioritizationCriteria": "risico's en checklists vóór de release live gaat",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "pre-deploy",
+        "release-check",
+        "smoke-test",
+        "sanity-check",
+        "devops"
+      ],
+      "content": "Je bent een senior engineer die verantwoordelijk is voor release-kwaliteit. Beoordeel deze wijzigingen op wat er kan breken bij deploy: ontbrekende migraties, environment-afhankelijkheden, rollback-risico. Geen positieve feedback nodig — alleen risico's en wat te checken vóór het live gaat. Kort en direct aan mijn AI Code Agent."
+    },
+    {
+      "id": "7.4",
+      "domainId": 7,
+      "domainTitle": "DevOps, CI/CD & Infrastructuur",
+      "domainIcon": "GitPullRequest",
+      "title": "7.4 Rollback- & disaster-recovery-audit",
+      "role": "DevOps-engineer gespecialiseerd in betrouwbaarheid",
+      "scope": "hersteltijd, rollback-mogelijkheden, backupstrategie en single points of failure (SPOF)",
+      "prioritizationCriteria": "hersteltijd (RTO) en dataverlies-risico (RPO)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "disaster-recovery",
+        "rollback",
+        "spof",
+        "backups",
+        "high-availability"
+      ],
+      "content": "Je bent een DevOps-engineer gespecialiseerd in betrouwbaarheid. Beoordeel de hersteltijd bij een falende deploy of dataverlies: is rollback mogelijk, is er een backupstrategie, zijn er single points of failure. Prioriteer op hersteltijd en dataverlies-risico. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "8.1",
+      "domainId": 8,
+      "domainTitle": "Observability",
+      "domainIcon": "Activity",
+      "title": "8.1 Logging- & monitoring-audit",
+      "role": "engineer gespecialiseerd in observability",
+      "scope": "logging dekking van kritieke events en signaal-ruisverhouding",
+      "prioritizationCriteria": "wat ontbreekt bij het debuggen van een productie-incident",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "logging",
+        "monitoring",
+        "observability",
+        "telemetry",
+        "debugging"
+      ],
+      "content": "Je bent een engineer gespecialiseerd in observability. Beoordeel de logging in deze codebase op dekking (worden kritieke gebeurtenissen gelogd) en signaal-ruisverhouding (te veel of te weinig detail). Prioriteer op wat ontbreekt bij het debuggen van een productie-incident. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "8.2",
+      "domainId": 8,
+      "domainTitle": "Observability",
+      "domainIcon": "Activity",
+      "title": "8.2 Alerting-audit",
+      "role": "engineer gespecialiseerd in observability",
+      "scope": "drempelwaarden, alert fatigue (onnodige alerts) en ontbrekende escalatiepaden",
+      "prioritizationCriteria": "risico dat een echt incident wordt gemist",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "alerting",
+        "alert-fatigue",
+        "escalatie",
+        "pagerduty",
+        "observability"
+      ],
+      "content": "Je bent een engineer gespecialiseerd in observability. Beoordeel de alerting-configuratie op drempelwaarden, alert fatigue (te veel onbelangrijke alerts) en ontbrekende escalatiepaden voor kritieke fouten. Prioriteer op risico dat een echt incident wordt gemist. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "9.1",
+      "domainId": 9,
+      "domainTitle": "UI/UX & Toegankelijkheid",
+      "domainIcon": "Sparkles",
+      "title": "9.1 UI/UX-audit",
+      "role": "senior software engineer en UI/UX-specialist",
+      "scope": "design, gebruiksvriendelijkheid, onderhoudbaarheid en frontend performance",
+      "prioritizationCriteria": "impact voor de eindgebruiker (kritiek / belangrijk / nice-to-have)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "ui-ux",
+        "design",
+        "frontend",
+        "usability",
+        "interactie"
+      ],
+      "variables": [
+        {
+          "key": "component_context",
+          "label": "UI Componenten / Pagina",
+          "placeholder": "bijv. Modal, CheckoutFlow of Navigation header"
+        }
+      ],
+      "content": "Je bent een senior software engineer en UI/UX-specialist. Voer een kritische code-audit uit op de onderstaande codebase, gericht op design, gebruiksvriendelijkheid, onderhoudbaarheid en performance. Wees specifiek: verwijs naar component of bestand waar relevant. Prioriteer bevindingen op impact voor de gebruiker (kritiek / belangrijk / nice-to-have) en sluit af met concrete, uitvoerbare verbeteringen. Houd je antwoord kort en richt het direct aan mijn AI Code Agent."
+    },
+    {
+      "id": "9.2",
+      "domainId": 9,
+      "domainTitle": "UI/UX & Toegankelijkheid",
+      "domainIcon": "Sparkles",
+      "title": "9.2 Toegankelijkheidsaudit",
+      "role": "accessibility-auditor (WCAG 2.1 AA)",
+      "scope": "kleurcontrast, toetsenbordnavigatie, screenreader-ondersteuning (ARIA) en touch targets",
+      "prioritizationCriteria": "ernst van de blokkade voor gebruikers met een beperking",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "a11y",
+        "wcag",
+        "accessibility",
+        "screenreader",
+        "aria",
+        "contrast"
+      ],
+      "content": "Je bent een accessibility-auditor (WCAG 2.1 AA). Beoordeel deze interface op kleurcontrast, toetsenbordnavigatie, screenreader-ondersteuning en touch-target-grootte. Prioriteer op ernst van de blokkade voor gebruikers met een beperking. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "9.3",
+      "domainId": 9,
+      "domainTitle": "UI/UX & Toegankelijkheid",
+      "domainIcon": "Sparkles",
+      "title": "9.3 Responsive- & mobile-audit",
+      "role": "frontend-engineer gespecialiseerd in responsive design",
+      "scope": "breekpunten, overflow, layout shifts en mobiele netwerkperformance",
+      "prioritizationCriteria": "meest gebruikte schermformaten (mobile / tablet / desktop)",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "responsive",
+        "mobile",
+        "css",
+        "breakpoints",
+        "layout-shifts"
+      ],
+      "content": "Je bent een frontend-engineer gespecialiseerd in responsive design. Beoordeel deze interface op gedrag bij verschillende schermformaten: breekpunten, overflow, en performance op mobiele netwerken. Prioriteer op meest gebruikte schermformaten eerst. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "10.1",
+      "domainId": 10,
+      "domainTitle": "Documentatie",
+      "domainIcon": "BookOpen",
+      "title": "10.1 Documentatie-volledigheidsaudit",
+      "role": "technisch schrijver",
+      "scope": "API-documentatie, inline comments bij complexe logica en architectuurbeslissingen (ADR's)",
+      "prioritizationCriteria": "wat het meeste tijd kost aan een nieuwe developer of AI-agent",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "documentatie",
+        "comments",
+        "adr",
+        "tsdoc",
+        "onboarding"
+      ],
+      "content": "Je bent een technisch schrijver. Beoordeel deze codebase op ontbrekende of verouderde documentatie: API-documentatie, inline comments bij niet-triviale logica, en vastgelegde architectuurbeslissingen. Prioriteer op wat het meeste tijd kost aan een nieuwe developer of agent. Sluit af met concrete aanvullingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "10.2",
+      "domainId": 10,
+      "domainTitle": "Documentatie",
+      "domainIcon": "BookOpen",
+      "title": "10.2 Onboarding-audit",
+      "role": "technisch schrijver",
+      "scope": "README, omgevingsvariabelen documentatie en lokale setup-instructies",
+      "prioritizationCriteria": "stappen die vastlopen, ontbreken of aannames doen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "readme",
+        "onboarding",
+        "developer-experience",
+        "setup-guide"
+      ],
+      "content": "Je bent een technisch schrijver. Beoordeel de README en setup-instructies van dit project: kan iemand zonder voorkennis het project lokaal draaiend krijgen? Prioriteer op stappen die vastlopen of ontbreken. Sluit af met concrete aanvullingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "11.1",
+      "domainId": 11,
+      "domainTitle": "Compliance, Privacy & Licenties",
+      "domainIcon": "Scale",
+      "title": "11.1 Privacy- & AVG-audit",
+      "role": "privacy-auditor",
+      "scope": "verwerking persoonsgegevens, dataminimalisatie, bewaartermijnen en logs",
+      "prioritizationCriteria": "gevoeligheid van persoonsgegevens en blootstellingsrisico",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "privacy",
+        "avg",
+        "gdpr",
+        "pii",
+        "compliance"
+      ],
+      "content": "Je bent een privacy-auditor. Beoordeel hoe deze codebase persoonsgegevens verwerkt: dataminimalisatie, bewaartermijnen, en waar gevoelige data wordt gelogd of opgeslagen zonder noodzaak. Prioriteer op gevoeligheid van de data en blootstellingsrisico. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "11.2",
+      "domainId": 11,
+      "domainTitle": "Compliance, Privacy & Licenties",
+      "domainIcon": "Scale",
+      "title": "11.2 Licentie-compliance-audit",
+      "role": "compliance-auditor gespecialiseerd in softwarelicenties",
+      "scope": "licenties van dependencies (copyleft, GPL vs MIT/Apache) en commerciële compatibiliteit",
+      "prioritizationCriteria": "juridisch risico voor het project",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "licenties",
+        "legal",
+        "compliance",
+        "copyleft",
+        "gpl",
+        "mit"
+      ],
+      "content": "Je bent een compliance-auditor gespecialiseerd in softwarelicenties. Doorloop de dependencies op licentietype en signaleer conflicten met het beoogde gebruik van dit project (bijv. copyleft-licenties in commerciële software). Prioriteer op juridisch risico. Sluit af met concrete vervangingsvoorstellen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "12.1",
+      "domainId": 12,
+      "domainTitle": "Kosten & Efficiëntie",
+      "domainIcon": "Coins",
+      "title": "12.1 Cloud-kosten-audit",
+      "role": "cloud-kostenanalist",
+      "scope": "overprovisioning, ongebruikte cloud resources, transfer costs en inefficiënte services",
+      "prioritizationCriteria": "grootte van de potentiële kostenbesparing",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "finops",
+        "cloud-kosten",
+        "optimalisatie",
+        "aws",
+        "gcp",
+        "serverless"
+      ],
+      "variables": [
+        {
+          "key": "cloud_config",
+          "label": "Infrastructuur of serverless configuratie",
+          "placeholder": "bijv. serverless.yml, terraform resources of database tiers"
+        }
+      ],
+      "content": "Je bent een cloud-kostenanalist. Beoordeel de infrastructuurconfiguratie op overprovisioning, ongebruikte resources en kostendrijvers die niet in verhouding staan tot het daadwerkelijke gebruik. Prioriteer op grootte van de potentiële besparing. Sluit af met concrete aanpassingen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "13.1",
+      "domainId": 13,
+      "domainTitle": "Internationalisatie (i18n/l10n)",
+      "domainIcon": "Globe",
+      "title": "13.1 i18n/l10n-audit",
+      "role": "engineer gespecialiseerd in internationalisatie",
+      "scope": "hardcoded strings, datum-/valutaformattering en rechts-naar-links (RTL) ondersteuning",
+      "prioritizationCriteria": "impact voor de beoogde internationale doelmarkten",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "i18n",
+        "l10n",
+        "vertalingen",
+        "rtl",
+        "formatting",
+        "lokalisatie"
+      ],
+      "content": "Je bent een engineer gespecialiseerd in internationalisatie. Doorloop de codebase op hardcoded strings, aannames over datum-/valutaformattering, en ontbrekende ondersteuning voor rechts-naar-links-talen. Prioriteer op impact voor de beoogde doelmarkten. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "14.1",
+      "domainId": 14,
+      "domainTitle": "Proces & Git-hygiëne",
+      "domainIcon": "GitBranch",
+      "title": "14.1 Git-hygiëne-audit",
+      "role": "engineer gespecialiseerd in versiebeheer",
+      "scope": "commit-berichten, branch-structuur en traceerbaarheid bij bisect/incidenten",
+      "prioritizationCriteria": "wat het lastigst maakt om een regressie in de historie op te sporen",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "git",
+        "commit-hygiene",
+        "branches",
+        "rebase",
+        "versiebeheer"
+      ],
+      "content": "Je bent een engineer gespecialiseerd in versiebeheer. Beoordeel de commit-geschiedenis van dit project op leesbaarheid: commit-berichten, branch-structuur, en of de geschiedenis te herleiden is bij een probleem. Prioriteer op wat het lastigst maakt om een regressie op te sporen. Sluit af met concrete verbeterpunten voor toekomstige commits, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "14.2",
+      "domainId": 14,
+      "domainTitle": "Proces & Git-hygiëne",
+      "domainIcon": "GitBranch",
+      "title": "14.2 Code review-effectiviteitsaudit",
+      "role": "engineering lead",
+      "scope": "terugkerende foutpatronen die structureel door code reviews glippen",
+      "prioritizationCriteria": "herhaling van hetzelfde type probleem",
+      "targetAudience": "AI Code Agent",
+      "section": "public",
+      "complexity": "Grondig",
+      "tags": [
+        "code-review",
+        "engineering-practices",
+        "pull-requests",
+        "proces"
+      ],
+      "content": "Je bent een engineering lead. Beoordeel, op basis van de code en eventuele review-geschiedenis, wat er structureel gemist wordt in reviews — welk type fout keert terug ondanks reviews. Prioriteer op herhaling van hetzelfde probleem. Sluit af met concrete aanpassingen aan de reviewaanpak, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "15.1",
+      "domainId": 15,
+      "domainTitle": "Overdracht & Zelfcontrole",
+      "domainIcon": "SlidersHorizontal",
+      "title": "15.1 Context-overdracht tussen agents",
+      "role": "model zelf ten behoeve van jouw eigen overzicht",
+      "scope": "doel, huidige staat, laatste bekende blokkade en expliciete verificatie-eisen",
+      "prioritizationCriteria": "feitelijk, zonder interpretatie of verlies van kritieke projectcontext",
+      "targetAudience": "Overdracht & Zelfcontrole",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "overdracht",
+        "context-handoff",
+        "multi-agent",
+        "zelfcontrole",
+        "status"
+      ],
+      "variables": [
+        {
+          "key": "doel_samenvatting",
+          "label": "Doel van het project/taak",
+          "placeholder": "bijv. Implementatie van nieuwe checkout flow met Stripe"
+        },
+        {
+          "key": "huidige_blokkades",
+          "label": "Huidige staat & open blokkades",
+          "placeholder": "bijv. Webhook handler faalt op signature verification"
+        }
+      ],
+      "content": "Vat de status van dit project samen zodat ik het zonder verlies van context kan overdragen aan een andere AI-agent. Structuur: wat is het doel, wat is de huidige staat, wat is de laatste bekende blokkade of open vraag, wat mag niet worden aangenomen als \"af\" zonder bewijs. Kort, feitelijk, geen interpretatie toevoegen die niet in de brontekst staat."
+    },
+    {
+      "id": "15.2",
+      "domainId": 15,
+      "domainTitle": "Overdracht & Zelfcontrole",
+      "domainIcon": "SlidersHorizontal",
+      "title": "15.2 Scope-creep check",
+      "role": "model zelf ten behoeve van jouw eigen overzicht",
+      "scope": "vergelijking tussen originele specificatie en daadwerkelijk gebouwde functionaliteit",
+      "prioritizationCriteria": "feitelijke afwijkingen (toegevoegd vs ontbrekend vs afwijkende interpretatie)",
+      "targetAudience": "Overdracht & Zelfcontrole",
+      "section": "public",
+      "complexity": "Snel",
+      "tags": [
+        "scope-creep",
+        "specificatie",
+        "kwaliteitscontrole",
+        "zelfcontrole",
+        "audit"
+      ],
+      "variables": [
+        {
+          "key": "oorspronkelijke_specificatie",
+          "label": "Oorspronkelijke specificatie / prompt",
+          "placeholder": "Plak hier de initiële requirements of PRD samenvatting"
+        }
+      ],
+      "content": "Vergelijk de oorspronkelijke specificatie met wat er daadwerkelijk is gebouwd. Wat is toegevoegd dat niet gevraagd was, wat ontbreekt dat wel gevraagd was, en waar is de interpretatie van de Agent afgeweken van de opdracht. Feitelijk, geen waardeoordeel over of de afwijking goed of slecht is."
+    },
+    {
+      "id": "15.3",
+      "domainId": 15,
+      "domainTitle": "Overdracht & Zelfcontrole",
+      "domainIcon": "SlidersHorizontal",
+      "title": "15.3 Hervattingsprompt — begripscontrole vóór wijziging op live projecten",
+      "role": "senior software engineer die een bestaand live project overneemt",
+      "scope": "dataflow, afhankelijkheden, business-logica, productie-impact en achterwaartse compatibiliteit vóór een wijziging",
+      "prioritizationCriteria": "risico voor actieve gebruikers, opgeslagen data en bestaande integraties",
+      "targetAudience": "Overdracht & Zelfcontrole",
+      "section": "public",
+      "complexity": "Architecturaal",
+      "tags": [
+        "live-project",
+        "overdracht",
+        "begripscontrole",
+        "productierisico",
+        "compatibiliteit"
+      ],
+      "content": "Je bent een senior software engineer die een bestaand, live project overneemt waar je zelf niet de volledige recente geschiedenis van kent. Dit project heeft actieve gebruikers of klanten in productie. Voer eerst een begripsfase uit, zonder enige code te wijzigen: breng de relevante dataflow, afhankelijkheden en bestaande business-logica in kaart rond het onderdeel dat gewijzigd moet worden. Vat je begrip samen in eigen woorden voordat je iets aanpast — inclusief wat je nog niet zeker weet. Wijzig pas code nadat dit begrip expliciet is vastgelegd. Behandel elke aanpassing als potentieel risicovol voor bestaande gebruikers: geef aan wat er kan breken voor actieve sessies, opgeslagen data of bestaande integraties, en of de wijziging achterwaarts compatibel is. Vermijd destructieve of onomkeerbare operaties tenzij expliciet bevestigd. Stel een vraag in plaats van een aanname te doen bij elke onduidelijkheid die productie-impact kan hebben. Rapporteer na de wijziging volgens spec/implementatie/bewijs: wat je begreep, wat je hebt aangepast, en het bewijs (build-/testoutput) dat het werkt zonder bestaande functionaliteit te breken."
+    },
+    {
+      "id": "16.1",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.1 RAG- & Vectordatabase-kwaliteitsaudit",
+      "role": "senior engineer gespecialiseerd in retrieval-augmented generation",
+      "scope": "chunk-strategie, embedding-kwaliteit, retrieval-relevantie, indexeerstrategie en tegenstrijdige data in de vectordatabase",
+      "prioritizationCriteria": "impact voor antwoordkwaliteit (aantoonbaar fout antwoord versus suboptimale relevantie)",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor backend-only kennisbank-project (pgvector, FastAPI, RAG-first)",
+      "complexity": "Architecturaal",
+      "tags": [
+        "rag",
+        "vectordatabase",
+        "pgvector",
+        "fastapi",
+        "embeddings",
+        "kennisbank",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "rag_pipeline",
+          "label": "RAG Pipeline / Vector DB bestanden",
+          "placeholder": "bijv. src/services/rag.py of pgvector embeddings schema"
+        }
+      ],
+      "content": "Je bent een senior engineer gespecialiseerd in retrieval-augmented generation. Beoordeel de onderstaande RAG-implementatie op chunk-strategie, embedding-kwaliteit, retrieval-relevantie en indexeerstrategie in de vectordatabase. Signaleer expliciet waar verouderde of tegenstrijdige data in de index kan leiden tot foutieve retrieval. Prioriteer bevindingen op impact voor antwoordkwaliteit (leidt het tot een aantoonbaar fout antwoord, of alleen tot suboptimale relevantie). Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.2",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.2 Agent-orchestratie- & Approval-flow-audit",
+      "role": "senior engineer gespecialiseerd in agent-orchestratie en workflow-betrouwbaarheid",
+      "scope": "propose→approval→accept/reject-flow op correctheid bij falen (netwerkfout, timeout, overlap, rollback, audit-trail)",
+      "prioritizationCriteria": "risico van ongeautoriseerde of stille writes",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor propose→Telegram-approval→accept/reject flow (Hermes en vergelijkbare patronen)",
+      "complexity": "Architecturaal",
+      "tags": [
+        "orchestratie",
+        "approval-flow",
+        "telegram",
+        "hermes",
+        "rollback",
+        "audit-trail",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "flow_handler",
+          "label": "Approval Handler / Orchestrator module",
+          "placeholder": "bijv. src/orchestration/approval_flow.ts of hermes_bot.py"
+        }
+      ],
+      "content": "Je bent een senior engineer gespecialiseerd in agent-orchestratie en workflow-betrouwbaarheid. Beoordeel de onderstaande propose→approval→accept/reject-flow op correctheid bij falen: wat gebeurt er bij een netwerkfout tussen voorstel en goedkeuring, bij een timeout op de approval-stap, en bij gelijktijdige voorstellen die elkaar overlappen. Controleer of een afwijzing altijd volledig terugdraait en of de audit-trail sluitend blijft bij elk van deze scenario's. Prioriteer op risico van ongeautoriseerde of stille writes. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.3",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.3 \"Done\"-claim & Bewijsverificatie-audit",
+      "role": "QA-auditor gespecialiseerd in het valideren van opleveringen door AI-agents",
+      "scope": "verificatie van \"done\"-claim tegen ruwe output (git diff, testresultaten, build-log); classificatie in bewezen/deels bewezen/onbewezen",
+      "prioritizationCriteria": "directe onderbouwing in de output; wat er nog geverifieerd moet worden vóór oplevering",
+      "targetAudience": "Overdracht & Zelfcontrole",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor de ProofPanel-werkwijze (gericht aan jouzelf, niet doorgestuurd naar de Agent)",
+      "complexity": "Grondig",
+      "tags": [
+        "proofpanel",
+        "done-claim",
+        "verificatie",
+        "bewijs",
+        "qa",
+        "zelfcontrole",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "agent_claim",
+          "label": "Done-claim van de agent",
+          "placeholder": "Plak hier de bewering/oplevertekst van de AI-agent"
+        },
+        {
+          "key": "raw_evidence",
+          "label": "Ruwe output (git diff, test output, build log)",
+          "placeholder": "Plak hier de ruwe terminal / diff output"
+        }
+      ],
+      "content": "Je bent een QA-auditor gespecialiseerd in het valideren van opleveringen door AI-agents. Je krijgt een \"done\"-claim van een agent samen met de bijbehorende ruwe output (git diff, testresultaten, build-log). Vergelijk de claim met wat de ruwe output daadwerkelijk aantoont. Wijs elk onderdeel van de claim aan als bewezen, gedeeltelijk bewezen, of onbewezen. Neem geen bewering aan zonder directe onderbouwing in de output. Sluit af met wat er nog geverifieerd moet worden voordat dit als \"af\" geldt."
+    },
+    {
+      "id": "16.4",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.4 Multi-agent consistentie-audit",
+      "role": "senior software engineer gespecialiseerd in codebases waar meerdere AI-agents aan werken",
+      "scope": "sporen van inconsistentie tussen agents (gedupliceerde logica, verschillende foutafhandelingsstijlen, tegenstrijdige patronen)",
+      "prioritizationCriteria": "risico dat de inconsistentie later een stille bug veroorzaakt",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant wanneer Hermes, AGA, Claude Code en OpenCode op dezelfde codebase werken",
+      "complexity": "Grondig",
+      "tags": [
+        "multi-agent",
+        "hermes",
+        "aga",
+        "claude-code",
+        "opencode",
+        "consistentie",
+        "eigen-stack"
+      ],
+      "content": "Je bent een senior software engineer gespecialiseerd in codebases waar meerdere AI-agents aan werken. Doorloop de onderstaande code op sporen van inconsistentie tussen agents: gedupliceerde implementaties van dezelfde functionaliteit, verschillende foutafhandelingsstijlen tussen modules, of patronen die elkaar tegenspreken. Prioriteer op risico dat de inconsistentie later een stille bug veroorzaakt. Sluit af met concrete consolidatievoorstellen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.5",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.5 Determinisme-audit",
+      "role": "senior engineer gespecialiseerd in deterministische systemen",
+      "scope": "verborgen non-determinisme: LLM-calls zonder vaste temp/seed, race conditions, async volgorde, tijdstip/state afhankelijkheid",
+      "prioritizationCriteria": "waar non-determinisme de reproduceerbaarheid of audit-trail ondermijnt",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor systemen die expliciet als deterministisch en rule-based zijn opgezet",
+      "complexity": "Architecturaal",
+      "tags": [
+        "determinisme",
+        "rule-based",
+        "reproduceerbaarheid",
+        "race-conditions",
+        "llm-seeds",
+        "eigen-stack"
+      ],
+      "content": "Je bent een senior engineer gespecialiseerd in deterministische systemen. Dit systeem claimt deterministisch en rule-based gedrag. Doorloop de code op verborgen non-determinisme: LLM-calls zonder vaste temperature of seed, race conditions, onvoorspelbare volgorde van async operaties, of output die afhankelijk is van tijdstip of interne state. Prioriteer op waar non-determinisme de reproduceerbaarheid of audit-trail ondermijnt. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.6",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.6 Audit-trail- & hash-chain-integriteitsaudit",
+      "role": "security-auditor gespecialiseerd in auditability",
+      "scope": "tamper-evidentie van gelogde audit-trail, hash-chaining correctheid, bypass van writes, retroactieve wijzigingen",
+      "prioritizationCriteria": "elk gat waar manipulatie onopgemerkt zou blijven",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor systemen met een hash-chained audit-trail (governance- en diagnostiek-architecturen)",
+      "complexity": "Architecturaal",
+      "tags": [
+        "hash-chain",
+        "audit-trail",
+        "tamper-evident",
+        "integriteit",
+        "security",
+        "governance",
+        "eigen-stack"
+      ],
+      "content": "Je bent een security-auditor gespecialiseerd in auditability. Beoordeel of de gelogde audit-trail daadwerkelijk tamper-evident is: is de hash-chaining correct geïmplementeerd, zijn er writes die het logsysteem kunnen omzeilen, en is retroactieve wijziging van eerdere entries mogelijk. Prioriteer op elk gat waar manipulatie onopgemerkt zou blijven. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.7",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.7 VPS- & zelfgehoste-service-audit",
+      "role": "DevOps- en security-engineer gespecialiseerd in zelfgehoste infrastructuur",
+      "scope": "service-configuratie (systemd/docker, poorten, firewall), onbedoelde internet blootstelling, inter-service isolatie",
+      "prioritizationCriteria": "wat direct vanaf het publieke internet bereikbaar is",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor services op de Hetzner VPS (OpenClaw/NemoClaw, Systeemdenker, kennisbank-API)",
+      "complexity": "Grondig",
+      "tags": [
+        "vps",
+        "hetzner",
+        "self-hosted",
+        "firewall",
+        "systemd",
+        "docker-isolatie",
+        "openclaw",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "service_config",
+          "label": "VPS Service / Docker Compose / UFW regels",
+          "placeholder": "bijv. docker-compose.vps.yml of systemd unit bestanden"
+        }
+      ],
+      "content": "Je bent een DevOps- en security-engineer gespecialiseerd in zelfgehoste infrastructuur. Beoordeel de service-configuratie (systemd/docker, poorten, firewall-regels) op onbedoelde blootstelling aan het publieke internet en onvoldoende isolatie tussen services. Prioriteer op wat direct vanaf het publieke internet bereikbaar is. Sluit af met concrete verbeteringen, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.8",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.8 Telegram-bot- & webhook-beveiligingsaudit",
+      "role": "security-auditor gespecialiseerd in bot-integraties",
+      "scope": "webhook-signature validatie, bot-token blootstelling, command injection via bot, ongeautoriseerde approvals",
+      "prioritizationCriteria": "risico van ongeautoriseerde acties via bot-kanaal",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor propose→Telegram-approval-flow en OpenClaw/NemoClaw-integratie",
+      "complexity": "Grondig",
+      "tags": [
+        "telegram",
+        "bot-security",
+        "webhook-signatures",
+        "command-injection",
+        "openclaw",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "bot_handler",
+          "label": "Telegram Webhook Handler code",
+          "placeholder": "bijv. src/bots/telegram_webhook.py"
+        }
+      ],
+      "content": "Je bent een security-auditor gespecialiseerd in bot-integraties. Beoordeel de Telegram-bot-integratie op validatie van webhook-signatures, blootstelling van het bot-token, mogelijke command injection via bot-commando's, en of iemand zonder autorisatie een approval-actie zou kunnen triggeren via het bot-kanaal. Prioriteer op risico van ongeautoriseerde acties. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "16.9",
+      "domainId": 16,
+      "domainTitle": "Eigen Infrastructuur (Niet Publiek)",
+      "domainIcon": "Server",
+      "title": "16.9 iOS App Store- & sideload-gereedheidsaudit",
+      "role": "iOS-engineer gespecialiseerd in App Store-compliance",
+      "scope": "privacy-manifesten, App Store-richtlijnen, provisioning-profiles, hardcoded credentials in app-bundle",
+      "prioritizationCriteria": "wat submission blokkeert versus wat een review-afwijzing riskeert",
+      "targetAudience": "AI Code Agent",
+      "section": "custom_infra",
+      "isPrivate": true,
+      "contextNote": "Relevant voor iOS-apps gebouwd onder het Apple Developer Program",
+      "complexity": "Grondig",
+      "tags": [
+        "ios",
+        "app-store",
+        "privacy-manifest",
+        "provisioning",
+        "apple-developer",
+        "swift",
+        "eigen-stack"
+      ],
+      "variables": [
+        {
+          "key": "ios_project",
+          "label": "Xcode Project / PrivacyInfo.xcprivacy pad",
+          "placeholder": "bijv. ios/App/PrivacyInfo.xcprivacy of project.pbxproj"
+        }
+      ],
+      "content": "Je bent een iOS-engineer gespecialiseerd in App Store-compliance. Beoordeel de app op ontbrekende privacy-manifesten, mogelijke schendingen van de App Store-richtlijnen, provisioning-profile-issues, en hardcoded credentials in de app-bundle. Onderscheid wat submission blokkeert van wat een review-afwijzing riskeert. Sluit af met concrete fixes, gericht aan mijn AI Code Agent."
+    },
+    {
+      "id": "17.1",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.1 iOS Swift-project starten",
+      "role": "senior iOS-architect",
+      "scope": "requirements, projectstructuur, Swift-versie, deployment target, dependencies, architectuur en eerste milestones",
+      "prioritizationCriteria": "een klein compileerbaar fundament met duidelijke uitbreidingspunten",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "ios",
+        "swift",
+        "project-starter",
+        "architecture"
+      ],
+      "variables": [
+        {
+          "key": "project_context",
+          "label": "Projectcontext",
+          "placeholder": "App-doel, doelgroep, deployment target en gewenste backend"
+        }
+      ],
+      "content": "Start een nieuw iOS-project in Swift. Analyseer eerst mijn projectcontext en maak daarna een concreet voorstel voor deployment target, Swift-versie, architectuur, mappenstructuur, dependencies en eerste milestones. Houd het eerste increment klein en compileerbaar. Geef vervolgens de bestanden die ik moet aanmaken of wijzigen, inclusief volledige code voor het minimale werkende fundament. Benoem aannames en laat zien hoe ik het project lokaal bouw en test."
+    },
+    {
+      "id": "17.2",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.2 SwiftUI-feature bouwen",
+      "role": "senior SwiftUI-engineer",
+      "scope": "view state, navigation, loading/error/empty states, accessibility, previews en tests",
+      "prioritizationCriteria": "duidelijke state-flow en een feature die direct in de bestaande app past",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "ios",
+        "swiftui",
+        "feature",
+        "accessibility"
+      ],
+      "content": "Bouw deze SwiftUI-feature volgens de bestaande architectuur. Begin met de user flow en state machine. Werk daarna de view hierarchy, navigation, loading-, error- en empty states uit. Gebruik moderne SwiftUI-patronen, houd verantwoordelijkheden klein en voeg previews en relevante unit/UI-tests toe. Geef concrete bestandswijzigingen en controleer accessibility labels, Dynamic Type en VoiceOver gedrag."
+    },
+    {
+      "id": "17.3",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.3 Swift networking layer opzetten",
+      "role": "senior iOS platform engineer",
+      "scope": "URLSession, Codable, endpoint types, async/await, typed errors, retries en mocks",
+      "prioritizationCriteria": "testbaarheid, foutdiagnose en veilige omgang met configuratie",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "ios",
+        "swift",
+        "networking",
+        "api"
+      ],
+      "content": "Ontwerp en implementeer een onderhoudbare networking layer voor deze iOS-app. Gebruik URLSession en async/await, typed request/response modellen met Codable, een duidelijke endpoint abstraction en typed errors. Voeg timeouts, cancellation, logging zonder secrets en mockbare transportlagen toe. Lever productiecode plus tests voor succes, decoding errors, HTTP errors, timeouts en cancellation."
+    },
+    {
+      "id": "17.4",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.4 SwiftData persistence starten",
+      "role": "senior iOS data engineer",
+      "scope": "models, persistence boundary, migrations, previews, loading states en offline gedrag",
+      "prioritizationCriteria": "dataveiligheid en een migratiepad dat toekomstige releases niet blokkeert",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "ios",
+        "swiftdata",
+        "persistence",
+        "offline"
+      ],
+      "content": "Zet een SwiftData persistence-laag op voor deze feature. Ontwerp eerst de modellen en ownership-relaties, daarna de persistence boundary, query-strategie, previews en testopstelling. Beschrijf migraties voor toekomstige modelwijzigingen en hoe de app omgaat met lege, verouderde of corrupte lokale data. Geef de concrete Swift-bestanden en tests voor de kritieke paden."
+    },
+    {
+      "id": "17.5",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.5 TestFlight-release voorbereiden",
+      "role": "iOS release engineer",
+      "scope": "signing, build settings, schemes, privacy manifests, CI, TestFlight en release checklist",
+      "prioritizationCriteria": "submission blockers eerst, daarna reproduceerbaarheid en rollbackbaarheid",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "ios",
+        "testflight",
+        "release",
+        "app-store"
+      ],
+      "content": "Maak deze iOS-app klaar voor een gecontroleerde TestFlight-release. Controleer signing, bundle identifiers, schemes, build configurations, version/build numbers, privacy manifests, entitlements, crash reporting en CI. Maak een stap-voor-stap checklist voor lokaal archiveren, uploaden, testen met interne testers en het terugdraaien van een problematische build."
+    },
+    {
+      "id": "17.6",
+      "domainId": 17,
+      "domainTitle": "iOS & Swift Project Starters",
+      "domainIcon": "Smartphone",
+      "title": "17.6 iOS toetsenbordgedrag oplossen",
+      "role": "senior SwiftUI-engineer gespecialiseerd in regressieveilige UI-fixes",
+      "scope": "deployment target, invoerschermen met scrollcontainers, geneste containers en decimalPad/numberPad-velden",
+      "prioritizationCriteria": "alleen keyboard-dismissal wijzigen en regressies aantoonbaar voorkomen met gerichte tests",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "ios",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "ios",
+        "swiftui",
+        "keyboard",
+        "ui-test",
+        "regression"
+      ],
+      "content": "Los het iOS-toetsenbordgedrag op in deze SwiftUI-app. Controleer eerst de deployment target: .scrollDismissesKeyboard(.interactively) vereist iOS 16+; als de target lager is, gebruik een #available-check of een alternatieve aanpak en meld dit expliciet. Inventariseer via een systematische zoekopdracht (niet uit het geheugen) alle invoerschermen met ScrollView, Form, List of andere scrollcontainers, inclusief geneste scrollcontainers en velden met decimalPad/numberPad. Voeg op elke relevante scrollcontainer .scrollDismissesKeyboard(.interactively) toe; sla containers over die de modifier al hebben en noem deze expliciet. Beperk de wijziging strikt tot keyboard-dismissal: verander geen dataflow, validatie of layout. Voeg per aangepast scherm een gerichte UI-test of regressietest toe die het dismiss-gedrag verifieert. Voer daarna xcodebuild test en build uit met een concrete iOS Simulator-bestemming, en rapporteer volgens spec/implementatie/bewijs: welke schermen zijn aangepast, welke zijn overgeslagen en waarom, en de ruwe terminal-output met ** TEST SUCCEEDED ** en ** BUILD SUCCEEDED **."
+    },
+    {
+      "id": "18.1",
+      "domainId": 18,
+      "domainTitle": "Python APIs & Backends",
+      "domainIcon": "ServerCog",
+      "title": "18.1 Python FastAPI-project starten",
+      "role": "senior Python backend architect",
+      "scope": "FastAPI-structuur, configuratie, dependency management, routes, services, tests en lokale development",
+      "prioritizationCriteria": "een kleine productieklare verticale slice zonder onnodige infrastructuur",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "python",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "python",
+        "fastapi",
+        "api",
+        "project-starter"
+      ],
+      "variables": [
+        {
+          "key": "api_context",
+          "label": "API-context",
+          "placeholder": "Doel van de API, resources, auth, database en deploymentomgeving"
+        }
+      ],
+      "content": "Start een Python API met FastAPI voor deze context. Stel een heldere projectstructuur voor met configuratie, routers, services, schemas, dependencies en tests. Kies alleen noodzakelijke dependencies. Bouw één verticale slice die lokaal draait, gevalideerde request/response schemas heeft, consistente fouten teruggeeft en met pytest getest wordt. Geef alle benodigde bestanden, run-commando's en expliciete aannames."
+    },
+    {
+      "id": "18.2",
+      "domainId": 18,
+      "domainTitle": "Python APIs & Backends",
+      "domainIcon": "ServerCog",
+      "title": "18.2 FastAPI endpoint ontwerpen",
+      "role": "senior API engineer",
+      "scope": "resource model, HTTP semantics, Pydantic schemas, validation, pagination, errors en OpenAPI",
+      "prioritizationCriteria": "een voorspelbaar contract voor clients en goede foutmeldingen",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "python",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "python",
+        "fastapi",
+        "rest",
+        "openapi"
+      ],
+      "content": "Ontwerp en implementeer dit FastAPI-endpoint als een stabiel publiek contract. Definieer resource en identifiers, HTTP-methodes, statuscodes, Pydantic request/response schemas, validatie, pagination en foutformaat. Werk OpenAPI-beschrijving en tests uit voor happy path, validatiefouten, ontbrekende resources, autorisatie en onverwachte servicefouten."
+    },
+    {
+      "id": "18.3",
+      "domainId": 18,
+      "domainTitle": "Python APIs & Backends",
+      "domainIcon": "ServerCog",
+      "title": "18.3 Python API-database-laag bouwen",
+      "role": "senior Python data engineer",
+      "scope": "SQLAlchemy models, repositories, transactions, migrations, constraints en integration tests",
+      "prioritizationCriteria": "integriteit onder fouten en een expliciete transaction boundary",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "python",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "python",
+        "sqlalchemy",
+        "database",
+        "migrations"
+      ],
+      "content": "Bouw een database-laag voor deze Python API. Ontwerp SQLAlchemy-modellen met constraints en indexes, een kleine repository/service boundary, transaction handling en migraties. Maak duidelijk welke queries nodig zijn, hoe concurrency wordt behandeld en hoe integration tests met een geïsoleerde database draaien. Vermijd verborgen globale state en geef rollbackgedrag expliciet aan."
+    },
+    {
+      "id": "18.4",
+      "domainId": 18,
+      "domainTitle": "Python APIs & Backends",
+      "domainIcon": "ServerCog",
+      "title": "18.4 Python API-authenticatie toevoegen",
+      "role": "senior application security engineer",
+      "scope": "identity, sessions/JWT, password hashing, permissions, secrets, rate limiting en audit logging",
+      "prioritizationCriteria": "misbruik voorkomen zonder auth-logica door de hele codebase te verspreiden",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "python",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "python",
+        "fastapi",
+        "auth",
+        "security"
+      ],
+      "content": "Voeg veilige authenticatie en autorisatie toe aan deze Python API. Beschrijf eerst het threat model en kies daarna een passend identity- en tokenmodel. Implementeer password hashing, token/session expiry, permission checks, secret management, rate limiting en audit logging zonder gevoelige data te loggen. Voeg tests toe voor login, verlopen tokens, privilege escalation en unauthenticated requests."
+    },
+    {
+      "id": "18.5",
+      "domainId": 18,
+      "domainTitle": "Python APIs & Backends",
+      "domainIcon": "ServerCog",
+      "title": "18.5 Python API production-ready maken",
+      "role": "senior platform engineer",
+      "scope": "Docker, health checks, structured logging, environment config, CI/CD, observability en deployment",
+      "prioritizationCriteria": "betrouwbare deploys en snelle diagnose bij productieproblemen",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "python",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "python",
+        "api",
+        "docker",
+        "deployment",
+        "observability"
+      ],
+      "content": "Maak deze Python API production-ready. Voeg veilige environment-configuratie, een kleine Docker image, health- en readiness checks, structured logging, request correlation, metrics en graceful shutdown toe. Ontwerp een CI/CD-pipeline met linting, typechecks, tests, migrations en deploy gates. Benoem secrets, rollbackstrategie en de minimale dashboards/alerts die nodig zijn."
+    },
+    {
+      "id": "19.1",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.1 Bestandsgrootte-audit",
+      "role": "senior software-architect en codebase-auditor",
+      "scope": "bestandsgrootte, verantwoordelijkheid, geëxporteerde symbolen en gemixte concerns",
+      "prioritizationCriteria": "alleen bevindingen met aantoonbaar shell-bewijs, zonder codewijzigingen",
+      "targetAudience": "AI Code Agent",
+      "kind": "audit",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "refactor",
+        "codebase-audit",
+        "file-size",
+        "shell"
+      ],
+      "content": "Voer een audit uit op de codebase naar bestandsgrootte en verantwoordelijkheid.\n\nGenereer eerst een lijst van alle broncodebestanden (exclusief node_modules, dist, build, .git) gesorteerd op regelaantal, aflopend. Gebruik hiervoor daadwerkelijke shell-output (bijv. wc -l of equivalent), geen schattingen.\n\nVoor elk bestand boven de volgende drempels, markeer het als kandidaat voor opsplitsing:\n- >300 regels voor React/Vue componenten\n- >400 regels voor backend service/controller bestanden\n- >500 regels voor overige modules\n- >150 regels voor een enkele functie/methode binnen een bestand\n\nRapporteer per kandidaat-bestand:\n1. Pad en regelaantal\n2. Aantal geëxporteerde functies/classes/componenten\n3. Een korte inschatting van hoeveel losse verantwoordelijkheden (single responsibility violations) het bestand bevat\n4. Of het bestand meerdere ongerelateerde concerns mixt (bijv. data-fetching + UI + business logic in één component)\n\nPresenteer dit als een tabel. Doe nog GEEN wijzigingen aan de code. Rapporteer alleen bevindingen met bewijs (bestandspad + regelaantal), geen aannames."
+    },
+    {
+      "id": "19.2",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.2 Structuuranalyse (folders/imports)",
+      "role": "software-architect gespecialiseerd in codebase-structuur",
+      "scope": "mapstructuur, import-relaties, circulaire imports, god files en diepe relatieve imports",
+      "prioritizationCriteria": "exacte paden en importregels als bewijs, zonder wijzigingen of oplossingsvoorstellen",
+      "targetAudience": "AI Code Agent",
+      "kind": "audit",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "imports",
+        "architecture",
+        "folders",
+        "codebase-audit"
+      ],
+      "content": "Analyseer de mapstructuur van de codebase en de onderlinge import-relaties.\n\nRapporteer:\n1. Bestanden die op root-niveau of in één platte map staan terwijl ze logisch bij een feature/domein horen\n2. Circulaire imports (bestand A importeert B die weer A importeert)\n3. Bestanden met meer dan 10 imports van andere lokale modules — dit duidt vaak op een \"god file\" die te veel weet van de rest van het systeem\n4. Gebruik van relatieve imports met meer dan 2 niveaus diep (../../../) — dit duidt op een structuur die niet logisch is opgebouwd\n\nGeef per bevinding het exacte bestandspad en de betrokken import-regel(s) als bewijs. Stel nog geen wijzigingen voor, alleen de analyse."
+    },
+    {
+      "id": "19.3",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.3 Refactor-prioritering",
+      "role": "technical lead en refactor-planner",
+      "scope": "bestandsgrootte, importfan-out, git-historie, refactorrisico en impact",
+      "prioritizationCriteria": "risico maal impact, onderbouwd met git- en importbewijs",
+      "targetAudience": "AI Code Agent",
+      "kind": "audit",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "refactor",
+        "prioritization",
+        "git-history",
+        "risk"
+      ],
+      "content": "Op basis van de vorige twee audits (bestandsgrootte + structuur), stel een geprioriteerde refactor-lijst op.\n\nSorteer op risico × impact:\n- Risico = hoe vaak wordt dit bestand aangeraakt in de laatste git-historie (gebruik git log --oneline -- <pad> | wc -l) en hoeveel andere bestanden importeren het\n- Impact = regelaantal en aantal gemixte verantwoordelijkheden\n\nGeef een top 5 met per item: bestandspad, waarom het risicovol is, en een inschatting van de omvang van de refactor (klein/middel/groot). Nog geen code wijzigen."
+    },
+    {
+      "id": "19.4",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.4 Specifiek bestand opsplitsen",
+      "role": "senior software engineer gespecialiseerd in veilige refactors",
+      "scope": "single responsibility, feature-submappen, importmigratie, barrel-files en regressieverificatie",
+      "prioritizationCriteria": "exact hetzelfde extern gedrag en aantoonbaar groene test/build-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "refactor",
+        "split-file",
+        "imports",
+        "testing"
+      ],
+      "variables": [
+        {
+          "key": "file_path",
+          "label": "Bestandspad",
+          "placeholder": "bijv. src/features/orders/OrderPage.tsx"
+        }
+      ],
+      "content": "Splits het bestand {BESTANDSPAD} op in meerdere kleinere, logisch gescheiden bestanden.\n\nRegels:\n1. Behoud exact hetzelfde extern gedrag — dit is een pure refactor, geen functionele wijziging\n2. Maak een submap aan volgens de bestaande projectconventie; kijk eerst hoe andere features al gestructureerd zijn\n3. Update ALLE imports in de rest van de codebase die naar het oude bestand verwezen. Zoek expliciet met een grep/ripgrep-achtige zoekopdracht naar elke plek die het oude pad importeert\n4. Gebruik indien van toepassing een barrel-file (index.ts) zodat externe imports niet allemaal hoeven te wijzigen, tenzij het project die conventie niet al gebruikt\n5. Draai de bestaande test-suite en build, en toon de ruwe terminaloutput als bewijs dat er niets breekt\n6. Rapporteer welke bestanden zijn aangemaakt, welke imports zijn aangepast met paden, en de ruwe output van test/build"
+    },
+    {
+      "id": "19.5",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.5 Batch-refactor met veiligheidsnet",
+      "role": "staff engineer en refactor-coördinator",
+      "scope": "één-voor-één bestandssplitsing, git-checkpoints, test/build-gates en foutisolatie",
+      "prioritizationCriteria": "geen volgend bestand starten voordat het vorige checkpoint groen is",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "refactor",
+        "batch",
+        "git",
+        "checkpoints"
+      ],
+      "variables": [
+        {
+          "key": "file_list",
+          "label": "Bestandenlijst",
+          "placeholder": "Bestandspaden van klein naar groot, komma- of regelgescheiden"
+        }
+      ],
+      "content": "Voer de refactor uit voor de volgende bestanden, één voor één, in deze volgorde: {LIJST VAN BESTANDEN, KLEIN NAAR GROOT}.\n\nVoor elk bestand:\n1. Maak eerst een git commit als checkpoint vóór je begint aan dit bestand\n2. Splits volgens dezelfde regels als bij een pure single-responsibility-refactor: behoud gedrag, volg bestaande projectconventies, werk imports overal bij en gebruik barrel-files alleen waar consistent\n3. Draai test + build en toon de ruwe output\n4. Als test/build faalt: los het op binnen dit bestand, ga niet door naar het volgende bestand voordat dit groen is\n5. Commit pas als checkpoint na een groene test/build-run\n\nRapporteer na elk bestand apart: specificatie (wat je ging doen), implementatie (wat je hebt gedaan), en bewijs (ruwe terminal output). Meng deze drie categorieën niet door elkaar."
+    },
+    {
+      "id": "19.6",
+      "domainId": 19,
+      "domainTitle": "Monolithische Code Detectie & Refactor",
+      "domainIcon": "GitBranch",
+      "title": "19.6 Import-integriteit check achteraf",
+      "role": "release engineer en codebase-integriteitsauditor",
+      "scope": "verwijderde bestanden, dubbele exports, oude barrels, ongebruikte bestanden en regressieverificatie",
+      "prioritizationCriteria": "daadwerkelijke zoekopdrachten en groene test/build-output, geen inschattingen",
+      "targetAudience": "AI Code Agent",
+      "kind": "audit",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "monolith",
+        "refactor",
+        "imports",
+        "exports",
+        "integrity"
+      ],
+      "content": "Voer een laatste integriteitscheck uit na de refactor-ronde.\n\nZoek in de hele codebase naar:\n1. Imports die nog verwijzen naar bestanden die niet meer bestaan\n2. Dubbele exports: dezelfde functie/component ge-export vanuit twee plekken door een vergeten oude barrel-file\n3. Ongebruikte bestanden die zijn achtergebleven na de split: het oude bestand is nog aanwezig maar nergens meer geïmporteerd\n\nGebruik voor elk punt een daadwerkelijke zoekopdracht over de bestanden, geen inschatting. Toon de ruwe output. Ruim gevonden probleemgevallen op en draai daarna opnieuw test + build als bewijs dat de codebase consistent is."
+    },
+    {
+      "id": "20.1",
+      "domainId": 20,
+      "domainTitle": "Meta Prompts",
+      "domainIcon": "BrainCircuit",
+      "title": "20.1 Productierijpheid-audit en bouwplan",
+      "role": "code-editor-AI die een codebase bewijsgericht audit en een bouwplan opstelt",
+      "scope": "tests en CI/CD plus elf productierijpheidslagen: secrets, cybersecurity, STRIDE, licenties, staging, observability, rollback, rate limiting, documentatie, AVG en review",
+      "prioritizationCriteria": "concreet bewijs, risicovermindering per haalbare stap en expliciet onderscheid tussen nu en later",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "meta-prompt",
+        "production-readiness",
+        "security",
+        "privacy",
+        "audit",
+        "bouwplan",
+        "evidence"
+      ],
+      "variables": [
+        {
+          "key": "project_context",
+          "label": "Projectcontext",
+          "placeholder": "Optionele context over product, gebruikers, stack en deployment"
+        }
+      ],
+      "content": "# Meta-prompt: Productierijpheid-audit en Bouwplan\n\nDeze prompt instrueert een code-editor-AI om de huidige codebase te toetsen aan elf lagen die verder gaan dan CI/CD (linting, type-checking, tests) en op basis daarvan een bouwplan op te stellen.\n\n## Opdracht aan de AI\n\nVoer een audit uit op deze codebase langs de elf onderstaande lagen. Voor elke laag:\n1. **Huidige staat** — beschrijf wat er al aanwezig is, met concreet bewijs (bestandsnaam, regelnummer, configuratie-inhoud, test-output). Geen beweringen zonder verwijzing naar de daadwerkelijke code.\n2. **Ontbrekende onderdelen** — wat mist, specifiek benoemd.\n3. **Risico bij niet-actie** — kort, concreet, geen algemene waarschuwingen.\n\nDoorloop daarna alle bevindingen en verdeel ze in twee groepen:\n* **Nu oppakken** — onderdelen die met de huidige stack en scope haalbaar zijn zonder architectuurwijziging, en die het meeste risico wegnemen per tijdsinvestering.\n* **Later** — onderdelen die pas relevant worden bij schaal, bij een volgend soort gebruiker, of die een aparte beslissing vereisen (bijvoorbeeld een betaalde dienst, een architectuurwijziging, een juridische stap). Onderbouw per item waarom uitstel verantwoord is — niet \"kost tijd\", maar waarom het risico op dit moment beperkt is.\n\n## Voorafgaand: staat van tests en CI/CD\n\nVoordat de elf lagen worden doorlopen, eerst de basis controleren — dit is het fundament waarop de rest steunt.\n\n* **Bestaande tests** — zijn er tests aanwezig? Draai ze daadwerkelijk uit en rapporteer het werkelijke resultaat (geslaagd/gefaald, aantal). Geen aanname op basis van bestandsnamen of eerdere statustabellen.\n* **Dekking** — wat is de test-coverage, gemeten met het coverage-tool van de gebruikte stack (bijvoorbeeld coverage.py, jest --coverage, nyc)? Rapporteer het percentage en welke delen van de codebase ongedekt zijn — niet alleen een totaalcijfer.\n* **Kwaliteit van de tests, niet alleen aanwezigheid** — controleer of tests daadwerkelijk het gedrag verifiëren dat ze beweren te testen, of dat ze bijvoorbeeld alleen checken of een functie geen exception gooit. Signaleer tests die triviaal zijn (geen echte assertie) of die alleen het happy path dekken zonder edge cases of foutscenario's.\n* **Correctheid ten opzichte van de specificatie** — voor kritieke functionaliteit (authenticatie, dataverwerking, berekeningen): vergelijk het daadwerkelijke gedrag met wat er beschreven staat (in documentatie, commit-berichten, of eerdere bouwplannen) en meld afwijkingen expliciet.\n* **CI/CD-pipeline** — is er een pipeline aanwezig (bijvoorbeeld GitHub Actions, GitLab CI)? Welke stappen voert die uit (linting, type-checking, tests, build)? Draait de pipeline daadwerkelijk groen bij de huidige code, of is de laatste bekende status verouderd?\n* **Gat tussen bewering en bewijs** — als eerdere documentatie of statusoverzichten claimen dat iets \"getest is\" of \"CI groen\", verifieer dit opnieuw vanaf nul in plaats van de eerdere claim over te nemen.\n\nRapporteer deze basis als apart onderdeel, vóór de elf lagen, met dezelfde bewijsregel: alleen \"is gedaan\" met een daadwerkelijk uitgevoerd resultaat, nooit een aanname.\n\n## De elf lagen\n\n### 1. Secrets management\n\nStaan er secrets in code, .env-bestanden, of Git-historie? Is er een .gitignore-regel vanaf de eerste commit? Worden secrets via omgevingsvariabelen of een vault beheerd?\n\n### 2. Cybersecurity\n\nBeoordeel hardening tegen hacking en datalekken, los van businesslogica (die valt onder threat modeling, laag 3):\n* **Inputvalidatie en injectie** — wordt alle gebruikersinvoer gevalideerd en gesaniticeerd? Zijn database-queries geparametriseerd? Is er bescherming tegen command-injectie bij systeemaanroepen?\n* **XSS en CSRF** — wordt uitvoer naar de browser correct ge-escaped? Zijn er CSRF-tokens op state-wijzigende requests? Zijn cookies ingesteld met HttpOnly, Secure, SameSite?\n* **Authenticatie-hardening** — worden wachtwoorden gehasht met een tragere, salted hash zoals bcrypt of argon2, niet met MD5, SHA-1 of enkel SHA-256 zonder salt? Is er lockout of rate limiting tegen brute force? Verlopen sessies/tokens na een redelijke tijd?\n* **Transport- en opslagbeveiliging** — wordt verkeer verplicht via HTTPS/TLS afgehandeld? Zijn gevoelige databasevelden versleuteld waar relevant?\n* **Security headers** — zijn headers ingesteld zoals Content-Security-Policy, X-Content-Type-Options en Strict-Transport-Security?\n* **Dependency-kwetsbaarheden** — draai een audit-tool zoals pip-audit, npm audit, Snyk of vergelijkbaar en rapporteer het daadwerkelijke resultaat: aantal kwetsbaarheden, ernst en bekende exploits.\n* **Toegang tot infrastructuur** — zijn beheerderstoegang tot server en database beperkt, bijvoorbeeld SSH met sleutel en firewallregels met alleen noodzakelijke poorten?\n* **Back-ups** — worden back-ups gemaakt, hoe vaak, en is ooit een restore getest? Een back-up die nooit is teruggezet is een aanname, geen garantie.\n* **Incident response** — is er een minimaal plan voor een daadwerkelijk datalek, inclusief wie informeren en hoe toegang direct intrekken? Zo niet, benoem dit als ontbrekend.\n\n### 3. Threat modeling (STRIDE)\n\nDoorloop per endpoint en feature: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service en Elevation of privilege. Focus op autorisatiechecks die een linter niet ziet, bijvoorbeeld of gebruiker A bij data van gebruiker B kan.\n\n### 4. Dependency-licenties\n\nWelke licenties gebruiken de dependencies? Zijn er restrictieve licenties, zoals GPL en strenger, die commercieel gebruik beperken?\n\n### 5. Staging-omgeving\n\nIs er een omgeving tussen development en productie? Zo niet: is er ten minste een gescheiden database en configuratie voor testen met productie-achtige data?\n\n### 6. Logging en monitoring\n\nIs er structured logging op kritieke acties zoals login, dataverwerking en betaling? Is er error tracking, bijvoorbeeld Sentry? Is er basis infrastructuur-monitoring?\n\n### 7. Rollback-strategie\n\nHeeft elke deploy een versietag? Hebben database-migraties een expliciete terug-stap? Is er een gedocumenteerd commando om terug te gaan naar de vorige versie?\n\n### 8. Rate limiting\n\nIs er een limiet per gebruiker of IP op publiek toegankelijke endpoints? Op applicatieniveau, infrastructuurniveau, of geen van beide?\n\n### 9. Documentatie-drift\n\nKomt ARCHITECTURE.md of vergelijkbare documentatie nog overeen met de huidige code? Wijs concrete afwijkingen aan, niet alleen dat het verouderd kan zijn.\n\n### 10. Data privacy / AVG\n\nWelke persoonsgegevens worden verwerkt, met welk doel, hoe lang bewaard en wie heeft toegang? Is een verwerkersovereenkomst nodig voor externe diensten die data verwerken? Besteed extra aandacht aan gegevens van minderjarigen.\n\n### 11. Tweede-paar-ogen-review\n\nIs er een vast moment waarop logica wordt getoetst aan het oorspronkelijke doel, los van of tests slagen? Met name bij authenticatie, betalingen of verwerking van kindergegevens.\n\n## Bewijsvoering — verplicht\n\n* Elke uitspraak over wat er al is of al werkt moet gestaafd zijn met een concrete verwijzing: bestandspad, codefragment, test-output of build-resultaat.\n* Gebruik nooit toekomstige of voorwaardelijke formuleringen als status voor een afgerond punt. Alleen is gedaan met bewijs, of nog niet gedaan.\n* Als iets niet met zekerheid te verifiëren is vanuit de code alleen, bijvoorbeeld een externe configuratie, benoem dat expliciet als open vraag in plaats van aan te nemen dat het in orde is.\n\n## Gewenst eindresultaat\n\nStel de bevindingen op in een `Walktrough.md`-bestand met:\n* Per laag: status (aanwezig / gedeeltelijk / afwezig), bewijs en ontbrekende onderdelen.\n* Een sectie **Nu oppakken** met concrete, uitvoerbare stappen, geordend naar impact.\n* Een sectie **Later** met onderdelen en onderbouwing waarom uitstel op dit moment verantwoord is.\n* Geen inschatting van tijd of moeilijkheid tenzij expliciet gevraagd — alleen status en risico.\n\nSchrijf niet alleen een samenvatting: voer de controles daadwerkelijk uit, toon de ruwe relevante output en maak het bouwplan pas nadat de bewijsgerichte audit compleet is."
+    },
+    {
+      "id": "21.1",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.1 API-stack kiezen en MVP afbakenen",
+      "role": "senior backend architect",
+      "scope": "requirements, resources, API-stijl, database, auth en eerste verticale slice",
+      "tags": [
+        "api",
+        "mvp",
+        "architecture"
+      ],
+      "content": "Analyseer de requirements die ik aanlever en zet ze om in een minimaal API-MVP. Lever resources en relaties, een keuze tussen REST/GraphQL/RPC met onderbouwing, een passende databasekeuze, authenticatiestrategie en de implementatievolgorde voor één verticale slice van datamodel tot endpoint en test. Voeg geen microservices, queues, caching of andere infrastructuur toe tenzij ik dat expliciet vraag. Rapporteer aannames apart van beslissingen.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "21.2",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.2 REST API vanaf nul ontwerpen",
+      "role": "API-architect",
+      "scope": "resources, endpoints, HTTP-methodes, statuscodes, errors, pagination en versioning",
+      "tags": [
+        "rest",
+        "openapi",
+        "api-design"
+      ],
+      "content": "Ontwerp een complete API-specificatie voor de resources die ik beschrijf voordat je code schrijft. Specificeer per resource endpoints, methodes, request- en response-schema's, statuscodes inclusief foutpaden, een consistent errorformaat, pagination en versioning. Laat mij de specificatie eerst goedkeuren. Implementeer daarna precies één resource volledig met OpenAPI, inputvalidatie en tests die statuscodes en errorpaden dekken. Rapporteer specificatie, implementatie en test-output apart.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "21.3",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.3 Backend voor bestaande frontend bouwen",
+      "role": "full-stack architect",
+      "scope": "frontend-contracten, endpoints, datamodel, auth, CORS en error states",
+      "tags": [
+        "frontend",
+        "backend",
+        "contracts"
+      ],
+      "content": "Analyseer de meegeleverde frontend-code en leid daaruit de benodigde backend-contracten af. Zoek expliciet naar fetch- en axios-calls en gebruik die als brondocument. Bouw één volledige user flow end-to-end met datamodel, endpoints, CORS en authenticatie. Verzin geen extra functionaliteit die niet uit de frontend-code blijkt en test ook de foutmeldingen die de frontend al verwacht.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "21.4",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.4 Background jobs en queues toevoegen",
+      "role": "senior distributed-systems engineer",
+      "scope": "async jobs, queue, retries, idempotency, dead-letter handling en monitoring",
+      "tags": [
+        "jobs",
+        "queues",
+        "retries"
+      ],
+      "content": "Ontwerp en implementeer achtergrondverwerking voor de taak die ik beschrijf. Kies een queue-oplossing die past bij de bestaande infrastructuur en vraag na als dat onduidelijk is. Implementeer exponential backoff, idempotency zodat herhaalde uitvoering geen dubbel effect heeft, dead-letter handling en een manier om status te bevragen. Toon een test waarin dezelfde taak tweemaal wordt aangeboden maar slechts eenmaal effect heeft.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "21.5",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.5 Webhooks betrouwbaar verwerken",
+      "role": "senior integration engineer",
+      "scope": "signature validation, idempotency, retries, event-opslag en failure handling",
+      "tags": [
+        "webhooks",
+        "integrations",
+        "idempotency"
+      ],
+      "content": "Bouw een webhook-endpoint voor de provider die ik aangeef. Zoek de officiële signature-validatie op en verzin geen logica. Dedupliceer op event-ID, sla ruwe events vóór verwerking op en verwerk asynchroon zodat de provider snel 200 ontvangt. Schrijf tests voor replay, timeout tijdens verwerking en ongeldige signature en toon de ruwe testoutput.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "21.6",
+      "domainId": 21,
+      "domainTitle": "API & Backend",
+      "title": "21.6 Admin API en beheerlaag starten",
+      "role": "senior backend engineer",
+      "scope": "admin resources, rollen, audit logging, filtering en veilige mutaties",
+      "tags": [
+        "admin",
+        "rbac",
+        "audit-log"
+      ],
+      "content": "Bouw een beheerlaag voor de resources die ik aangeef. Specificeer rollen en toegestane acties, voeg audit logging toe met wie, wat, wanneer, oude en nieuwe waarde, en implementeer filtering en pagination. Gebruik soft delete waar zinvol en bevestiging voor destructieve acties. Test expliciet dat een gebruiker zonder juiste rol op elke beheeractie 403 krijgt.",
+      "domainIcon": "Route",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "22.1",
+      "domainId": 22,
+      "domainTitle": "Database & Data",
+      "title": "22.1 PostgreSQL-laag vanaf nul opzetten",
+      "role": "senior database engineer",
+      "scope": "schema, migraties, indexes, constraints, seed data en lokale ontwikkeling",
+      "tags": [
+        "postgresql",
+        "migrations",
+        "database"
+      ],
+      "content": "Ontwerp een PostgreSQL-datamodel op basis van mijn requirements. Lever stapsgewijze, los uitvoerbare migraties, indexes voor filters en joins, foreign keys, unique- en check-constraints en seed data voor lokale ontwikkeling. Bouw integration tests tegen een geïsoleerde testdatabase, nooit tegen productie of een gedeelde dev-database, en toon de ruwe testoutput.",
+      "domainIcon": "Database",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "22.2",
+      "domainId": 22,
+      "domainTitle": "Database & Data",
+      "title": "22.2 Multi-tenancy toevoegen",
+      "role": "senior SaaS architect",
+      "scope": "tenants, isolation, permissions, query filtering, migrations en data leakage",
+      "tags": [
+        "multitenancy",
+        "saas",
+        "data-isolation"
+      ],
+      "content": "Ontwerp de eenvoudigste veilige multi-tenant-strategie voor deze applicatie en leg de trade-offs uit vóór implementatie. Implementeer één tenant-aware verticale slice waarbij elke query automatisch filtert op de tenant van de ingelogde gebruiker. Schrijf een test die data van tenant A opvraagt als gebruiker van tenant B en toon dat de datalekpoging wordt geblokkeerd.",
+      "domainIcon": "Database",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "22.3",
+      "domainId": 22,
+      "domainTitle": "Database & Data",
+      "title": "22.3 Bestandsopslag en uploads bouwen",
+      "role": "senior backend/platform engineer",
+      "scope": "upload API, magic bytes, limieten, viruscontrole, signed URLs en cleanup",
+      "tags": [
+        "uploads",
+        "object-storage",
+        "security"
+      ],
+      "content": "Bouw een upload-endpoint dat werkelijk bestandstype controleert via magic bytes, een maximale grootte afdwingt en metadata gescheiden van inhoud opslaat. Gebruik private object storage en signed URLs met beperkte geldigheid. Voeg cleanup toe voor orphaned files en toon een test die een .exe met .png-extensie weigert.",
+      "domainIcon": "Database",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.1",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.1 Nieuwe Hetzner-server veilig initialiseren",
+      "role": "senior Linux platform engineer",
+      "scope": "hardening, SSH, users, firewall, updates, fail2ban, backups en monitoring",
+      "tags": [
+        "hetzner",
+        "linux",
+        "hardening"
+      ],
+      "content": "Maak een reproduceerbaar stappenplan en scripts voor een nieuwe Hetzner VPS. Configureer een niet-root sudo-gebruiker, SSH-key-only login, noodzakelijke firewallpoorten, automatische security-updates, fail2ban en een eerste backup. Documenteer elk exact commando en waarom het nodig is. Voeg een afvinkbare verificatiechecklist en rollbackpad toe.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.2",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.2 Docker-host op Hetzner opzetten",
+      "role": "senior DevOps engineer",
+      "scope": "Docker, Compose, volumes, networks, secrets, resource limits en log rotation",
+      "tags": [
+        "hetzner",
+        "docker",
+        "compose"
+      ],
+      "content": "Richt de Hetzner VPS in als Docker-host. Lever Compose met named volumes, een intern network voor niet-publieke containers, secrets via niet-gecommitte environment-bestanden, resource limits per container en log rotation. Voeg deploymentcommando's en een herstelprocedure toe voor containers die bij opstarten crashen.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.3",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.3 Reverse proxy en HTTPS configureren",
+      "role": "senior platform engineer",
+      "scope": "Caddy/Nginx, domein, TLS, redirects, security headers, rate limiting en routing",
+      "tags": [
+        "hetzner",
+        "https",
+        "reverse-proxy"
+      ],
+      "content": "Configureer een reverse proxy voor meerdere services op deze Hetzner-server. Kies Caddy of Nginx op basis van wat al draait, regel automatische HTTPS-vernieuwing, HTTP-naar-HTTPS redirect, HSTS, X-Content-Type-Options, X-Frame-Options en basale rate limiting. Voeg troubleshootingcommando's toe voor certificaatproblemen, 502's en verkeerde routing.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.4",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.4 Backend naar Hetzner deployen",
+      "role": "senior release engineer",
+      "scope": "build, registry, deploy, migrations, health checks, rollback en minimale downtime",
+      "tags": [
+        "hetzner",
+        "deployment",
+        "rollback"
+      ],
+      "content": "Analyseer eerst repository en runtime-omgeving en rapporteer build-tool, package manager en bestaande deploymethode. Ontwerp daarna een reproduceerbare Hetzner-deploy met build, artifactoverdracht, database-migraties vóór de versie-wissel, health checks en rollback naar de vorige werkende versie. Wijzig alleen bestanden die nodig zijn voor deployment.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.5",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.5 Hetzner backup- en restoreproces bouwen",
+      "role": "senior infrastructure reliability engineer",
+      "scope": "database backups, off-site opslag, encryptie, retentie, restore tests en RPO/RTO",
+      "tags": [
+        "hetzner",
+        "backups",
+        "restore",
+        "rpo"
+      ],
+      "content": "Ontwerp een backupstrategie voor database en kritieke bestanden met een cron- of systemd-timer, encryptie vóór off-site opslag en een expliciet retentiebeleid. Definieer controleerbare RPO/RTO-doelen. Maak onderscheid tussen backup aanwezig en bewezen herstelbaar: implementeer een periodieke restore-test in een geïsoleerde omgeving en toon de output.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.6",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.6 Productie-monitoring voor een VPS instellen",
+      "role": "senior observability engineer",
+      "scope": "uptime, disk, memory, CPU, containers, logs, alerts en incidentdiagnose",
+      "tags": [
+        "hetzner",
+        "monitoring",
+        "alerts"
+      ],
+      "content": "Voeg bruikbare monitoring toe voor publieke endpoints, disk, memory, CPU, containerstatus en centrale logging. Definieer niet te gevoelige alertdrempels, bijvoorbeeld disk boven 85% en herhaalde container-restarts. Schrijf een runbook voor vijf waarschijnlijke incidenten met per incident de eerste drie diagnosestappen.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "23.7",
+      "domainId": 23,
+      "domainTitle": "Hetzner & Serverbeheer",
+      "title": "23.7 Server migreren zonder lange downtime",
+      "role": "senior infrastructure migration engineer",
+      "scope": "inventory, DNS, data sync, cutover, validation, rollback en opruimen",
+      "tags": [
+        "hetzner",
+        "migration",
+        "dns",
+        "downtime"
+      ],
+      "content": "Maak een migratieplan naar een nieuwe Hetzner-instantie. Inventariseer eerst services, cronjobs, certificaten en data. Beschrijf DNS en TTL-verlaging, consistente data-sync, exacte cutover- en verificatiestappen. Benoem expliciet tot wanneer rollback mogelijk is en wanneer de oude server pas mag worden opgeruimd.",
+      "domainIcon": "Server",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "24.1",
+      "domainId": 24,
+      "domainTitle": "Productie & Integraties",
+      "title": "24.1 CI/CD-pipeline voor backend en server bouwen",
+      "role": "senior DevOps engineer",
+      "scope": "linting, tests, image build, security scan, deploy gates, migrations en rollback",
+      "tags": [
+        "cicd",
+        "security-scan",
+        "deployment"
+      ],
+      "content": "Bouw een CI/CD-pipeline die alleen deployt als linting, tests, typechecks en image/dependency-securityscan slagen. Falende stappen stoppen de pipeline. Gebruik environment-configuratie zonder secrets in logs of definities, voeg database-migraties als expliciete stap vóór deploy toe en beschrijf rollback. Toon een geslaagde en waar mogelijk bewust gefaalde run.",
+      "domainIcon": "Rocket",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "24.2",
+      "domainId": 24,
+      "domainTitle": "Productie & Integraties",
+      "title": "24.2 E-mailverzending als backendmodule starten",
+      "role": "senior backend engineer",
+      "scope": "provider, templates, queueing, retries, unsubscribe, delivery status en lokale mocks",
+      "tags": [
+        "email",
+        "queue",
+        "adapter"
+      ],
+      "content": "Voeg transactionele e-mail toe als losse module. Gebruik een provider-interface zodat businesslogica geen provider kent, queueing en begrensde retries zodat de hoofdflow niet blokkeert, unsubscribe-verwerking en delivery status. Bouw een lokale mock-provider en configureer de wissel tussen mock en echte provider zonder applicatiecode te wijzigen.",
+      "domainIcon": "Rocket",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "24.3",
+      "domainId": 24,
+      "domainTitle": "Productie & Integraties",
+      "title": "24.3 OAuth-login toevoegen",
+      "role": "application security engineer",
+      "scope": "provider flow, callback, state/nonce, account linking, sessions en logout",
+      "tags": [
+        "oauth",
+        "auth",
+        "security"
+      ],
+      "content": "Beschrijf eerst het threat model voor CSRF via callback, session fixation en open redirects. Implementeer OAuth voor de provider die ik aangeef met state- en nonce-validatie, veilige sessieopbouw, account-linking voor bestaande e-mailadressen en echte server-side logout. Schrijf tests voor ongeldige state, verlopen sessie en dubbele login tijdens een lopende flow.",
+      "domainIcon": "Rocket",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "24.4",
+      "domainId": 24,
+      "domainTitle": "Productie & Integraties",
+      "title": "24.4 API documenteren en SDK-ready maken",
+      "role": "developer-platform engineer",
+      "scope": "OpenAPI, voorbeelden, auth docs, changelog, generated clients en compatibiliteit",
+      "tags": [
+        "openapi",
+        "documentation",
+        "sdk"
+      ],
+      "content": "Maak de bestaande API begrijpelijk voor een externe developer. Verbeter OpenAPI met realistische voorbeelden per endpoint, werkende authenticatie-instructies en voorbeeldrequests. Voeg een changelog toe die breaking changes markeert, definieer versioning en compatibiliteitsbeleid en beschrijf hoe client-SDK's gegenereerd kunnen worden.",
+      "domainIcon": "Rocket",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "24.5",
+      "domainId": 24,
+      "domainTitle": "Productie & Integraties",
+      "title": "24.5 Project transformeren naar Lean Starter Template & Pushen naar GitHub",
+      "role": "senior full-stack platform engineer en template-architect",
+      "scope": "starter template, mock data, generic branding, AGENTS.md, README.md, unit tests en GitHub template repo",
+      "tags": [
+        "starter-template",
+        "template",
+        "github",
+        "scaffolding",
+        "agents-md",
+        "testing",
+        "mock-data"
+      ],
+      "variables": [
+        {
+          "key": "template_naam",
+          "label": "Template Naam",
+          "placeholder": "bijv. Leermodules Starter"
+        },
+        {
+          "key": "github_org_of_user",
+          "label": "GitHub Organisatie / User",
+          "placeholder": "bijv. parvenuprompting"
+        },
+        {
+          "key": "repo_naam",
+          "label": "Repository Naam",
+          "placeholder": "bijv. leermodules-starter"
+        },
+        {
+          "key": "visibility",
+          "label": "Zichtbaarheid",
+          "placeholder": "PRIVATE of PUBLIC"
+        }
+      ],
+      "content": "Bouw het huidige project in deze repository om tot een herbruikbare, modulaire starter template en publiceer direct naar GitHub als een officiële Template Repository.\n\nSpecificaties & uitgangspunten:\n1. Behoud van design & architectuur: behoud de volledige styling, animaties, thematoken (dark/light mode), componenten en navigatiestructuren. Verwijder alle project- of domeinspecifieke content en vervang deze door schone, realistische stock/mock data die alle features van de UI demonstreert.\n2. Generieke branding & config: werk package.json, index.html (titel, meta tags, pre-paint thema script) en layout headers bij naar de generieke template-naam [TEMPLATE_NAAM]. Zorg dat localStorage keys netjes gesynchroniseerd en geprefixt zijn.\n3. AI Agent richtlijnen (AGENTS.md): maak een AGENTS.md bestand in de root met het datacontract / datamodel (Single Source of Truth), de vaste instructie voor agents dat bij het toevoegen van content altijd automatisch de bijbehorende logica/oefeningen/componenten gegenereerd moeten worden, en kwaliteits- en verificatiestappen.\n4. Documentatie & kwaliteit (README.md & tests): schrijf een professionele README.md met architectuur, data-schema, snelstart-commando's en deployment-instructies. Voeg unit tests toe voor de centrale helperfuncties / parsers met exacte, doorgerekende testwaarden.\n5. GitHub publicatie: commit alle wijzigingen met een duidelijke conventionele commit (feat: initialiseer [TEMPLATE_NAAM] template). Maak een nieuwe GitHub repository aan onder [GITHUB_ORGANISATIE_OF_USER]/[REPO_NAAM] met zichtbaarheid [PRIVATE/PUBLIC]. Push de main branch en configureer de repository als een GitHub Template (isTemplate: true).\n\nUitvoeringsregels:\n- Stel eerst een kort implementatieplan op ter goedkeuring via het plan-mechanisme.\n- Lever na uitvoering de exacte diffs, de volledige terminal-output van de teststraat (npm test -- --reporter=verbose) en de build (npm run build).",
+      "domainIcon": "Rocket",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.1",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.1 Nieuwe feature als verticale slice toevoegen",
+      "role": "senior product engineer",
+      "scope": "bestaande architectuur, requirements, route, datastroom, UI, foutpaden en regressietests",
+      "tags": [
+        "feature",
+        "vertical-slice",
+        "architecture",
+        "testing"
+      ],
+      "content": "Voeg de feature toe die ik beschrijf als een complete verticale slice in deze bestaande applicatie. Inspecteer eerst routing, layout, state management, datalaag, authenticatie, designpatronen en testconventies. Beschrijf wat al hergebruikt kan worden, welke aannames je maakt en welke onderdelen nieuw moeten worden. Implementeer alleen de kleinste complete scope met loading-, empty-, error- en success states, responsive gedrag en toegankelijkheid. Wijzig geen bestaande contracten of functionaliteit zonder dat expliciet te melden. Voeg gerichte tests toe voor de belangrijkste gebruikersflow en de relevante foutpaden. Rapporteer spec, implementatie en ruwe test-, typecheck- en buildoutput apart.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.2",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.2 Dashboard toevoegen",
+      "role": "senior product engineer gespecialiseerd in dashboards",
+      "scope": "dashboardroute, samenvattingskaarten, widgets, datalading, permissies en responsive states",
+      "tags": [
+        "dashboard",
+        "widgets",
+        "analytics",
+        "responsive"
+      ],
+      "content": "Voeg een dashboard toe aan deze bestaande applicatie. Inspecteer eerst de huidige routing, layout, authenticatie, datalaag, beschikbare metrics en bestaande componentconventies. Bepaal welke informatie voor de ingelogde gebruiker relevant is en hergebruik bestaande data waar mogelijk. Bouw een dashboardroute met een duidelijke hiërarchie, herbruikbare kaarten of widgets, loading-, empty- en error states en responsive gedrag. Voeg geen metrics, grafieken of acties toe die niet uit de requirements of beschikbare data volgen. Controleer dat iedere kaart alleen data toont waarvoor de gebruiker bevoegd is. Voeg tests toe voor laden, lege data, API-fouten, autorisatie en de belangrijkste dashboardactie. Rapporteer aannames en bewijs afzonderlijk.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.3",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.3 Dashboard-widget toevoegen",
+      "role": "senior frontend engineer",
+      "scope": "widgetcontract, data-fetching, hergebruik, loading/error/empty states en layoutintegratie",
+      "tags": [
+        "dashboard",
+        "widget",
+        "frontend",
+        "data-fetching"
+      ],
+      "content": "Voeg de dashboard-widget toe die ik beschrijf zonder de bestaande dashboardstructuur onnodig te wijzigen. Inspecteer eerst hoe bestaande widgets data ophalen, formatteren, laden en fouten tonen. Definieer een klein widgetcontract met de benodigde data en scheid presentatie van data-fetching volgens de bestaande conventie. Implementeer een herbruikbare widget met loading-, empty-, error- en populated states, correcte autorisatie en responsive gedrag. Voeg geen nieuwe state library of grafiekdependency toe tenzij de huidige stack dat vereist. Voeg component- en integratietests toe voor alle relevante states en toon de ruwe test- en buildoutput.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.4",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.4 Admin-dashboard toevoegen",
+      "role": "senior full-stack engineer gespecialiseerd in beheerfuncties",
+      "scope": "beheerroute, rollen, KPI’s, tabellen, filters, mutaties, audit logging en autorisatie",
+      "tags": [
+        "admin",
+        "dashboard",
+        "rbac",
+        "audit-log"
+      ],
+      "content": "Voeg een admin-dashboard toe voor de beheerbehoefte die ik beschrijf. Breng eerst bestaande rollen, permissies, beheerendpoints, audit logging en tabelconventies in kaart. Bescherm de route én iedere server-side mutatie met autorisatie; verberg een knop nooit als enige beveiligingsmaatregel. Bouw alleen de noodzakelijke samenvattingen, tabellen, filters en acties. Voeg bevestiging voor destructieve acties, duidelijke foutmeldingen en audit logging toe waar data wordt gewijzigd. Test expliciet unauthorised toegang, lege resultaten, pagination, validatiefouten en een succesvolle mutatie. Rapporteer welke informatie admin-only is en lever ruwe testoutput.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.5",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.5 Nieuwsbriefsectie toevoegen",
+      "role": "senior full-stack engineer gespecialiseerd in contentfuncties",
+      "scope": "publieke sectie, contentweergave, routing, inschrijving, privacy en e-mailintegratie",
+      "tags": [
+        "nieuwsbrief",
+        "content",
+        "email",
+        "privacy"
+      ],
+      "content": "Voeg een nieuwsbriefsectie toe aan deze bestaande applicatie. Inspecteer eerst de contentstructuur, routing, formulierconventies, gebruikersstatus, API-contracten, opslaglaag en bestaande e-mailintegratie. Bepaal expliciet of de scope alleen publieke content en inschrijving omvat of ook beheer. Implementeer de kleinste complete verticale slice met duidelijke contentweergave, formulier-validatie, dubbele inschrijving, foutafhandeling, succesbevestiging en privacyvriendelijke opslag. Sla geen persoonsgegevens op die niet nodig zijn en log geen e-mailadressen onnodig. Voeg tests toe voor geldige inschrijving, ongeldige invoer, dubbele inschrijving, providerfout en succesvolle bevestiging.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.6",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.6 Nieuwsbriefinschrijving toevoegen",
+      "role": "senior frontend engineer met kennis van privacyvriendelijke formulieren",
+      "scope": "inschrijfformulier, consent, validatie, states, accessibility en providerkoppeling",
+      "tags": [
+        "nieuwsbrief",
+        "signup",
+        "consent",
+        "accessibility"
+      ],
+      "content": "Voeg een nieuwsbriefinschrijfformulier toe op de plek die ik aangeef. Inspecteer eerst bestaande form components, validatie, feedbackmeldingen, analytics en de e-mailprovideradapter. Gebruik de bestaande integratie in plaats van rechtstreeks providerlogica in de UI te plaatsen. Maak expliciet welke toestemming nodig is, leg geen marketingconsent stilzwijgend vast en voorkom dubbele submits. Implementeer keyboard- en screenreadervriendelijke labels, loading-, fout- en successtates en een duidelijke afhandeling voor een bestaand e-mailadres. Voeg tests toe voor validatie, dubbele submit, providerfout, succes en toegankelijk relevante interacties.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.7",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.7 Nieuwsbriefbeheer voor administrators toevoegen",
+      "role": "senior backend engineer gespecialiseerd in contentbeheer",
+      "scope": "campagnes, abonnees, segmenten, verzending, unsubscribe, rollen en audit trail",
+      "tags": [
+        "nieuwsbrief",
+        "admin",
+        "campaigns",
+        "email",
+        "audit-log"
+      ],
+      "content": "Bouw een beheerfunctie voor de nieuwsbrief die ik beschrijf. Inspecteer eerst bestaande adminrollen, contentmodellen, e-mailproviderinterface, queueing, unsubscribe-logica en audit logging. Ontwerp eerst de minimale resources en statussen voor concept, gepland, verzonden en geannuleerd. Implementeer veilige lijstweergave, filtering, preview en alleen de noodzakelijke mutaties. Verstuur niet synchroon vanuit een HTTP-request als de bestaande infrastructuur achtergrondjobs ondersteunt; zorg voor idempotency en duidelijke failure handling. Test autorisatie, unsubscribe, dubbele verzending, providerfouten, statusovergangen en audit logging.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.8",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.8 Instellingenpagina toevoegen",
+      "role": "senior product engineer",
+      "scope": "instellingenstructuur, laden, opslaan, dirty state, validatie, autorisatie en responsive UI",
+      "tags": [
+        "settings",
+        "preferences",
+        "forms",
+        "account"
+      ],
+      "content": "Voeg een instellingenpagina toe aan deze bestaande applicatie. Breng eerst alle bestaande gebruikersvoorkeuren, accountdata, authenticatiecontroles, API-endpoints en persistentiemechanismen in kaart. Groepeer instellingen logisch, maar voeg alleen categorieën toe waarvoor daadwerkelijk gedrag of opslag bestaat. Implementeer veilige laad- en opslaadlogica, validatie, dirty-state-detectie, annuleren, foutmeldingen en bevestiging van succesvolle wijzigingen. Controleer autorisatie op server- en objectniveau en voorkom wijzigingen aan instellingen van andere accounts. Voeg tests toe voor initialisatie, wijzigen, annuleren, validatiefouten, netwerkfouten en herladen van opgeslagen waarden.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.9",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.9 Profiel- en accountinstellingen toevoegen",
+      "role": "senior identity-aware product engineer",
+      "scope": "profielgegevens, avatar, e-mail, wachtwoord, sessies, gevoelige mutaties en accountstatus",
+      "tags": [
+        "profile",
+        "account",
+        "identity",
+        "security"
+      ],
+      "content": "Voeg profiel- en accountinstellingen toe aan de bestaande applicatie. Inspecteer eerst het user model, authenticatie, sessiebeheer, account-linking, file uploads en bestaande securityconventies. Splits gewone profielwijzigingen van gevoelige acties zoals e-mail-, wachtwoord- of accountstatuswijzigingen. Vereis waar nodig herauthenticatie, valideer ownership server-side en toon geen gevoelige waarden in logs of responses. Implementeer loading-, fout- en successtates met een veilige bevestiging voor destructieve acties. Test unauthorised wijzigingen, validatie, sessie-effecten, e-mailwijziging, wachtwoordwijziging en accountdeactivatie.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.10",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.10 Notificatie-instellingen toevoegen",
+      "role": "senior product engineer gespecialiseerd in voorkeuren en messaging",
+      "scope": "notificatietypen, kanalen, defaults, opslag, opt-in/opt-out en bestaande delivery flows",
+      "tags": [
+        "notifications",
+        "preferences",
+        "email",
+        "privacy"
+      ],
+      "content": "Voeg instellingen toe waarmee gebruikers hun notificatievoorkeuren kunnen beheren. Inventariseer eerst bestaande notificatietypen, kanalen, defaults, delivery adapters, unsubscribe-regels en user preference opslag. Maak onderscheid tussen noodzakelijke transactionele berichten en optionele marketing- of productmeldingen. Implementeer een model dat bestaande gebruikers veilig van defaults voorziet en voorkom dat een opt-out door een race condition direct weer wordt overschreven. Toon de effectieve instelling helder in de UI en valideer alle wijzigingen server-side. Voeg tests toe voor defaults, opt-in, opt-out, onbekende notificatietypen, concurrente updates en deliverygedrag.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.11",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.11 Gebruikersbeheer toevoegen",
+      "role": "senior backend engineer gespecialiseerd in RBAC",
+      "scope": "gebruikerslijst, zoeken, rollen, status, uitnodigingen, ownership, audit logging en pagination",
+      "tags": [
+        "user-management",
+        "admin",
+        "rbac",
+        "permissions"
+      ],
+      "content": "Voeg gebruikersbeheer toe voor de bevoegde beheerrol. Analyseer eerst het user model, tenant- of organisatiegrenzen, rollen, permissies, uitnodigingsflow, soft delete en audit logging. Implementeer lijst, zoeken, filtering, pagination en alleen de mutaties die de requirements vragen. Bescherm iedere actie tegen privilege escalation, inclusief het wijzigen van eigen rol, de laatste administrator en gebruikers buiten de eigen organisatie. Voeg bevestiging toe voor deactiveren en maak uitnodigingen idempotent. Test autorisatie per actie, tenant-isolatie, rolgrenzen, lege resultaten, pagination en audit events.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.12",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.12 Zoek- en filterfunctionaliteit toevoegen",
+      "role": "senior frontend and backend engineer",
+      "scope": "zoekveld, filters, querycontract, pagination, debounce, URL-state en lege/error states",
+      "tags": [
+        "search",
+        "filters",
+        "pagination",
+        "ux"
+      ],
+      "content": "Voeg zoek- en filterfunctionaliteit toe aan de resource die ik beschrijf. Inspecteer eerst de bestaande lijstcomponenten, queryparameters, API-paginering, indexing, URL-routing en debounceconventies. Definieer een consistent querycontract voordat je code schrijft en laat filtering server-side uitvoeren wanneer de dataset dat vereist. Behoud filterwaarden bij navigatie en refresh als de bestaande app URL-state gebruikt. Implementeer loading-, geen-resultaat-, fout- en resetstates zonder onnodige requests. Test combinaties van filters, debouncing, pagination, lege zoekopdracht, speciale tekens, autorisatie en API-fouten.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.13",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.13 Activiteitenfeed toevoegen",
+      "role": "senior product engineer gespecialiseerd in tijdlijnfuncties",
+      "scope": "events, sortering, pagination, actorprivacy, timestamps, read state en realtimekeuze",
+      "tags": [
+        "activity-feed",
+        "timeline",
+        "events",
+        "pagination"
+      ],
+      "content": "Voeg een activiteitenfeed toe voor het domein dat ik beschrijf. Breng eerst bestaande domain events, audit events, timestamps, actorinformatie en toegangsregels in kaart. Definieer welke gebeurtenissen gebruikers mogen zien en maak onderscheid tussen audit logging en een gebruiksvriendelijke activiteitenfeed. Implementeer stabiele sortering met een expliciete tie-breaker, pagination of cursor-based loading en correcte timezone-weergave. Voeg geen realtimekanaal toe tenzij de requirements dat nodig maken; polling mag niet stilzwijgend worden geïntroduceerd. Test autorisatie, gelijke timestamps, pagination, verwijderde actors, lege feed en foutafhandeling.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.14",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.14 Notificatiecentrum toevoegen",
+      "role": "senior full-stack engineer gespecialiseerd in user engagement",
+      "scope": "ongelezen status, lijst, deep links, mark-as-read, pagination en delivery boundaries",
+      "tags": [
+        "notifications",
+        "inbox",
+        "unread",
+        "deep-links"
+      ],
+      "content": "Voeg een notificatiecentrum toe aan deze applicatie. Inspecteer eerst bestaande notification events, user preferences, routes, deep-linking, read-state opslag en retentionbeleid. Modelleer ongelezen status als server-side bron van waarheid wanneer gebruikers op meerdere apparaten werken. Implementeer lijst, pagination, markeer als gelezen, alles gelezen en veilige navigatie naar de bronresource. Laat notificaties van andere tenants of gebruikers nooit uitlekken en maak dubbele events idempotent waar relevant. Test ongelezen tellers, pagination, mark-as-read, ontbrekende bronresource, autorisatie en gelijktijdige updates.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.15",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.15 Onboardingflow toevoegen",
+      "role": "senior product engineer gespecialiseerd in activation en first-run UX",
+      "scope": "stappen, voortgang, skip/resume, bestaande gebruikers, empty states en analytics",
+      "tags": [
+        "onboarding",
+        "activation",
+        "first-run",
+        "ux"
+      ],
+      "content": "Voeg een onboardingflow toe voor nieuwe gebruikers van deze applicatie. Inspecteer eerst signup, user profile, bestaande empty states, routing, feature access en analyticsconventies. Bepaal welke stappen noodzakelijk zijn voor time-to-value en welke optioneel zijn. Maak de flow hervatbaar, laat gebruikers veilige stappen overslaan waar dat kan en voorkom dat bestaande gebruikers onverwacht opnieuw worden geblokkeerd. Sla alleen noodzakelijke voortgang op en definieer wat er gebeurt bij een API-fout of half ingevulde stap. Voeg tests toe voor nieuwe gebruiker, bestaande gebruiker, skippen, hervatten, refresh, fout tijdens opslaan en voltooiing.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.16",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.16 Import- en exportfunctionaliteit toevoegen",
+      "role": "senior software engineer gespecialiseerd in dataveilige productfeatures",
+      "scope": "formaat, validatie, bestandsgrootte, duplicates, partial failures, rollback, autorisatie en download",
+      "tags": [
+        "import",
+        "export",
+        "data",
+        "validation",
+        "rollback"
+      ],
+      "content": "Voeg import- en exportfunctionaliteit toe voor het domein dat ik beschrijf. Inspecteer eerst het datamodel, validatieregels, permissiemodel, bestaande file handling en downloadfunctionaliteit. Definieer vóór implementatie het ondersteunde formaat, maximale grootte, encoding, verplichte velden, duplicate-strategie, gedeeltelijke fouten en rollbackgedrag. Valideer geïmporteerde data vóór mutatie en laat een mislukte import geen corrupte of half geïmporteerde toestand achterlaten. Exporteer uitsluitend data waarvoor de gebruiker bevoegd is en lek geen interne velden. Voeg tests toe voor geldige bestanden, ontbrekende kolommen, ongeldige waarden, duplicates, grote bestanden, autorisatie en rollback.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.17",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.17 Bestandsupload toevoegen",
+      "role": "senior backend/platform engineer gespecialiseerd in veilige uploads",
+      "scope": "upload-UI, multipart API, magic bytes, limieten, opslag, signed URLs, scanning en cleanup",
+      "tags": [
+        "uploads",
+        "files",
+        "object-storage",
+        "security"
+      ],
+      "content": "Voeg veilige bestandsuploads toe voor de resource die ik beschrijf. Inspecteer eerst bestaande opslag, object-storage-adapter, private/public boundaries, downloadroutes en cleanupprocessen. Controleer bestandstype via inhoud of magic bytes en vertrouw niet op extensie of client MIME-type. Dwing grootte- en aantal-limieten af, sla metadata gescheiden op en gebruik private opslag met signed URLs wanneer bestanden niet publiek zijn. Beschrijf gedrag bij uploadfout, scanfout, orphaned file en verwijderen van de parent resource. Voeg tests toe voor geldig bestand, verkeerde inhoud, te groot bestand, ongeautoriseerde download, verlopen URL en cleanup.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.18",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.18 Abonnementen- of betaalpagina toevoegen",
+      "role": "senior product engineer gespecialiseerd in billing flows",
+      "scope": "plannen, pricingweergave, checkout, webhookstatus, entitlements, foutpaden en privacy",
+      "tags": [
+        "billing",
+        "subscriptions",
+        "payments",
+        "entitlements"
+      ],
+      "content": "Voeg een abonnementen- of betaalpagina toe zonder zelf betaalproviderlogica te verzinnen. Inspecteer eerst bestaande billingmodellen, provideradapter, checkoutflow, webhookverwerking, entitlements, auth en pricingbronnen. Bepaal welke informatie uit de provider komt en welke lokaal als bron van waarheid wordt opgeslagen. Toon prijzen, valuta, belastingtekst en planstatus consistent met de bestaande contracten. Bouw loading-, cancelled-, success-, provider-error- en pending states; geef toegang niet uitsluitend op basis van een client redirect. Voeg tests toe voor planweergave, checkoutfout, dubbele webhook, pending status, verlopen abonnement en autorisatie. Gebruik geen echte betalingen in tests.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.19",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.19 Help-, feedback- of contactsectie toevoegen",
+      "role": "senior product engineer gespecialiseerd in self-service UX",
+      "scope": "helpcontent, contactformulier, categorisering, attachments, routing, privacy en supportstatus",
+      "tags": [
+        "help",
+        "feedback",
+        "contact",
+        "support"
+      ],
+      "content": "Voeg een help-, feedback- of contactsectie toe aan deze applicatie. Inspecteer eerst bestaande helpcontent, supportintegraties, formulieren, authenticatie, e-mailadapter en eventuele ticketstatussen. Bepaal of een bericht intern wordt opgeslagen, naar een provider gaat of beide; vermijd dubbele verzending. Implementeer duidelijke categorieën, validatie, rate limiting of spambeheersing volgens de bestaande infrastructuur, en een bevestiging die geen gevoelige details lekt. Voeg alleen attachmentfunctionaliteit toe als die vereist is. Test validatie, providerfout, dubbele submit, ongeautoriseerde toegang tot supportdata en succesvolle verzending.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "25.20",
+      "domainId": 25,
+      "domainTitle": "Productonderdelen & Applicatiefuncties",
+      "title": "25.20 Feature gefaseerd uitrollen met feature flag",
+      "role": "senior release engineer gespecialiseerd in veilige productuitrol",
+      "scope": "feature flag, targeting, defaults, rollout, kill switch, observability, cleanup en tests",
+      "tags": [
+        "feature-flag",
+        "rollout",
+        "release",
+        "observability"
+      ],
+      "content": "Rol de feature die ik beschrijf gefaseerd uit met een feature flag. Inspecteer eerst bestaande configuratie, environmentvariabelen, user- of tenantidentiteit, observability, deploymentproces en eventuele flagconventies. Definieer een veilige default, wie de feature mag zien, hoe de flag in productie wordt gewijzigd en hoe de kill switch werkt. Zorg dat uitgeschakelde code geen onnodige data-mutaties, requests of background jobs uitvoert. Test default-off, allowlist of percentage targeting indien relevant, flagwijziging, ontbrekende configuratie, rollback en de volledige featureflow. Voeg een expliciet cleanup-plan toe zodat de flag geen permanente dode code wordt.",
+      "domainIcon": "LayoutDashboard",
+      "prioritizationCriteria": "behoud de bestaande stack, maak aannames expliciet en bewijs de kritieke paden met tests of verificatie-output",
+      "targetAudience": "AI Code Agent",
+      "kind": "project-starter",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public"
+    },
+    {
+      "id": "26.1",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.1 Concept bedenken",
+      "role": "productdenker en probleemverhelderaar",
+      "scope": "probleem, gebruiker en gewenst resultaat in één heldere zin",
+      "prioritizationCriteria": "scherpte van het werkelijk ervaren probleem boven originaliteit van het idee",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "concept",
+        "mvp"
+      ],
+      "variables": [
+        {
+          "key": "app_type",
+          "label": "Type app",
+          "placeholder": "bijv. webapp, mobiele app of interne tool"
+        },
+        {
+          "key": "problem",
+          "label": "Probleem",
+          "placeholder": "Welk probleem moet worden opgelost?"
+        },
+        {
+          "key": "audience",
+          "label": "Doelgroep",
+          "placeholder": "Voor wie is dit probleem relevant?"
+        }
+      ],
+      "content": "## Doel\nBreng het probleem terug tot één heldere zin.\n## Meta-prompt\nIk wil een [type app] bouwen die [probleem] oplost voor [doelgroep]. Help me dit terugbrengen tot één heldere zin die het probleem, de gebruiker en het gewenste resultaat benoemt.\n## Beslispunt\nIs dit een probleem dat je zelf ervaart, of een probleem dat je theoretisch bedenkt?\n## Let op\nVaagheid hier vertaalt zich direct door naar een vage eerste prompt en extra bouwrondes."
+    },
+    {
+      "id": "26.2",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.2 Concept uitwerken",
+      "role": "productmanager gespecialiseerd in MVP-scoping",
+      "scope": "schermen, gebruikersacties, vast te leggen data en versie-1-scope",
+      "prioritizationCriteria": "directe bijdrage aan de kernfunctie, niet volledigheid van de featurelijst",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "scope",
+        "mvp",
+        "product"
+      ],
+      "variables": [
+        {
+          "key": "concept",
+          "label": "Concept in één zin",
+          "placeholder": "Plak hier de uitkomst van stap 1"
+        }
+      ],
+      "content": "## Doel\nZet het idee om in concrete schermen, acties en data.\n## Meta-prompt\nWerk het volgende concept uit tot een concrete functionaliteitenlijst: [concept in één zin]. Beschrijf per scherm welke acties de gebruiker kan uitvoeren en welke data wordt vastgelegd. Houd het minimaal — voeg niets toe dat niet direct bijdraagt aan de kernfunctie.\n## Beslispunt\nWelke functionaliteit hoort bij versie 1, en wat is \"later\"?\n## Let op\nLet op scope-kruip: alles lijkt op papier nog makkelijk."
+    },
+    {
+      "id": "26.3",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.3 Prototype bouwen met Google Antigravity",
+      "role": "pragmatische prototyping-agent",
+      "scope": "eerste werkende versie, passende stack en overzichtelijke projectstructuur",
+      "prioritizationCriteria": "snelheid naar een werkend prototype, niet productierijpheid",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "prototype",
+        "antigravity",
+        "frontend"
+      ],
+      "variables": [
+        {
+          "key": "app_type",
+          "label": "Type webapp",
+          "placeholder": "bijv. takenplanner of eenvoudige calculator"
+        },
+        {
+          "key": "features",
+          "label": "Functionaliteitenlijst",
+          "placeholder": "Plak hier de uitkomst van stap 2"
+        },
+        {
+          "key": "stack",
+          "label": "Stackvoorkeur",
+          "placeholder": "bijv. vanilla JS, React of laat open"
+        }
+      ],
+      "content": "## Doel\nBouw een eerste werkende versie, geen productierijpe app.\n## Meta-prompt\nBouw een [type] webapp met de volgende functionaliteit: [functionaliteitenlijst uit stap 2]. Gebruik [stack voorkeur, of laat open]. Houd de structuur overzichtelijk en start met een enkel bestand tenzij de complexiteit een opsplitsing rechtvaardigt.\n## Beslispunt\nKies vanilla JS voor iets kleins en React zodra state en interactie toenemen.\n## Let op\nVraag hier nog niet om tests, security of uitgebreide foutafhandeling. Snelheid is hier het doel."
+    },
+    {
+      "id": "26.4",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.4 Codebase delen voor feedback",
+      "role": "onafhankelijke software reviewer",
+      "scope": "architectuur, bugs, edge cases, UX en codekwaliteit",
+      "prioritizationCriteria": "specificiteit en onafhankelijkheid van de review",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "review",
+        "bugs",
+        "ux"
+      ],
+      "variables": [
+        {
+          "key": "app_type",
+          "label": "Type webapp",
+          "placeholder": "bijv. dashboard of contenttool"
+        },
+        {
+          "key": "codebase",
+          "label": "Codebase",
+          "placeholder": "Plak of voeg de volledige codebase toe"
+        }
+      ],
+      "content": "## Doel\nKrijg een onafhankelijke, kritische blik buiten de bouwcontext.\n## Meta-prompt\nHierbij de volledige codebase van een [type] webapp. Geef een kritische review op: (1) architectuur en structuur, (2) mogelijke bugs of edge cases, (3) UX-verbeteringen, (4) codekwaliteit. Wees specifiek — noem bestandsnamen en regelnummers waar relevant.\n## Beslispunt\nWelk LLM past bij deze review? Kies op basis van de taak.\n## Let op\nGebruik een nieuwe sessie of een ander model dan waarmee je gebouwd hebt."
+    },
+    {
+      "id": "26.5",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.5 Bouwplan opstellen",
+      "role": "technisch productplanner",
+      "scope": "reviewfeedback vertalen naar afgebakende actiepunten per thema",
+      "prioritizationCriteria": "risicoreductie en haalbaarheid binnen de huidige scope",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "bouwplan",
+        "prioritering"
+      ],
+      "variables": [
+        {
+          "key": "feedback",
+          "label": "Reviewfeedback",
+          "placeholder": "Plak hier de feedback uit stap 4"
+        }
+      ],
+      "content": "## Doel\nVertaal feedback naar uitvoerbare actiepunten.\n## Meta-prompt\nVertaal de volgende feedback naar een genummerd bouwplan. Groepeer per thema (bugs, architectuur, UX). Geef per punt een korte, concrete beschrijving van wat er moet veranderen — geen implementatiedetails, alleen het doel van de wijziging.\n## Beslispunt\nWelke punten pak je nu op, en welke sla je bewust over?\n## Let op\nNiet elk adviespunt is een verplichting; kleine cosmetische opmerkingen hoeven niet altijd mee."
+    },
+    {
+      "id": "26.6",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.6 Verbeteringen laten doorvoeren",
+      "role": "zorgvuldige implementatie-agent",
+      "scope": "bouwplan puntsgewijs uitvoeren met controle na iedere wijziging",
+      "prioritizationCriteria": "traceerbaarheid van wijzigingen en behoud van werkende functionaliteit",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "implementatie",
+        "regressie"
+      ],
+      "variables": [
+        {
+          "key": "plan",
+          "label": "Bouwplan",
+          "placeholder": "Plak hier het goedgekeurde bouwplan"
+        }
+      ],
+      "content": "## Doel\nZet het bouwplan om in daadwerkelijke code-aanpassingen.\n## Meta-prompt\nVoer de volgende punten uit het bouwplan één voor één door: [bouwplan]. Werk puntsgewijs en bevestig na elk punt wat je hebt aangepast, voordat je aan het volgende begint.\n## Beslispunt\nAlles in één keer, of stap voor stap met controle ertussen?\n## Let op\nBij een groot bouwplan maakt alles-in-één-keer regressies lastiger te herleiden."
+    },
+    {
+      "id": "26.7",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.7 Zelf verfijnen en uitproberen",
+      "role": "menselijke producttester",
+      "scope": "eigen gebruikerservaring, functionele bugs en bewuste UX-keuzes",
+      "prioritizationCriteria": "functionele impact boven persoonlijke smaak",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "testing",
+        "ux",
+        "iteratie"
+      ],
+      "variables": [
+        {
+          "key": "observations",
+          "label": "Eigen observaties",
+          "placeholder": "Wat voelde niet goed tijdens het doorlopen?"
+        }
+      ],
+      "content": "## Doel\nVoer een menselijke controle uit op wat een agent niet eerlijk of volledig rapporteert.\n## Meta-prompt\nIk heb de app doorlopen als gebruiker. De volgende dingen voelden niet goed: [lijst]. Pas dit aan zonder bestaande functionaliteit te breken.\n## Beslispunt\nIs dit een functionele bug of een smaakkwestie?\n## Let op\nVraag bij twijfel om concreet bewijs, zoals een testresultaat, screenshot of specifieke regel code."
+    },
+    {
+      "id": "26.8",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.8 Documentatie en repo opzetten",
+      "role": "developer advocate en software-architect",
+      "scope": "README, architectuurkeuzes, mappenstructuur en versiebeheer",
+      "prioritizationCriteria": "documentatie die een nieuwe ontwikkelaar direct kan gebruiken",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "documentation",
+        "repository"
+      ],
+      "variables": [
+        {
+          "key": "codebase",
+          "label": "Codebase-context",
+          "placeholder": "Plak relevante structuur of voeg de codebase toe"
+        }
+      ],
+      "content": "## Doel\nLeg de app en gemaakte keuzes vast en stel de code veilig.\n## Meta-prompt\nSchrijf een README.md en een ARCHITECTURE.md voor deze codebase. De README beschrijft wat de app doet, hoe je hem lokaal draait en de belangrijkste functionaliteit. De ARCHITECTURE.md beschrijft de architecturale keuzes, waarom die gemaakt zijn en de mappenstructuur.\n## Beslispunt\nKies een publieke of private repository op basis van gevoelige logica of content.\n## Let op\nPlan een vast controlemoment om documentatie met de actuele code te vergelijken."
+    },
+    {
+      "id": "26.9",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.9 Deployen via Netlify",
+      "role": "frontend release engineer",
+      "scope": "buildconfiguratie, environment variables, secrets en Netlify-config",
+      "prioritizationCriteria": "veilige, reproduceerbare deployment zonder secrets in de codebase",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "netlify",
+        "deployment",
+        "secrets"
+      ],
+      "variables": [
+        {
+          "key": "codebase",
+          "label": "Codebase",
+          "placeholder": "Plak de repositorystructuur of voeg de codebase toe"
+        }
+      ],
+      "content": "## Doel\nZet de app veilig live.\n## Meta-prompt\nBereid deze codebase voor op deployment via Netlify: controleer de build-configuratie, eventuele environment variables en of een netlify.toml nodig is.\n## Beslispunt\nWelke waarden horen als environment variable bij het platform, en welke mogen veilig in de code blijven?\n## Let op\nSecrets horen nooit in de code. Verplaats API-keys naar Netlify's environment variables voordat je pusht."
+    },
+    {
+      "id": "26.10",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.10 Live webapp uitproberen",
+      "role": "release-validator",
+      "scope": "gedrag van de live omgeving vergelijken met lokaal",
+      "prioritizationCriteria": "feitelijke verificatie in productie boven aannames op basis van een geslaagde build",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "deployment",
+        "smoke-test"
+      ],
+      "variables": [
+        {
+          "key": "url",
+          "label": "Live URL",
+          "placeholder": "https://..."
+        },
+        {
+          "key": "test_flow",
+          "label": "Te testen flow",
+          "placeholder": "Welke kernflow moet je doorlopen?"
+        }
+      ],
+      "content": "## Doel\nControleer of de live versie zich hetzelfde gedraagt als lokaal.\n## Controleprompt\nOpen de live URL en doorloop de belangrijkste gebruikersflow stap voor stap: [te testen flow]. Vergelijk het resultaat met de lokale versie. Noteer per afwijking de exacte URL, handeling, verwachte uitkomst en werkelijke uitkomst.\n## Beslispunt\nWerkt alles zoals verwacht, of wijkt de live omgeving af van lokaal?\n## Let op\nEen verschil wijst vaak op ontbrekende environment variables of afwijkende build-instellingen."
+    },
+    {
+      "id": "26.11",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.11 Console-errors oplossen",
+      "role": "debugging-agent voor productieomgevingen",
+      "scope": "exacte foutmelding, stacktrace, omgeving en regressieveiligheid",
+      "prioritizationCriteria": "root cause aantonen met de volledige foutmelding en verificatie",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "debugging",
+        "console",
+        "production"
+      ],
+      "variables": [
+        {
+          "key": "error",
+          "label": "Volledige foutmelding",
+          "placeholder": "Plak foutmelding inclusief stacktrace"
+        }
+      ],
+      "content": "## Doel\nLos fouten op basis van de exacte foutmelding op.\n## Meta-prompt\nDe volgende fout verschijnt in de browserconsole op de live omgeving: [volledige foutmelding inclusief stacktrace]. Bepaal of dit een omgevingsprobleem of codebug is en los het op zonder lokale functionaliteit te breken.\n## Beslispunt\nOmgevingsspecifiek probleem of daadwerkelijke bug?\n## Let op\nPlak de volledige foutmelding inclusief stacktrace."
+    },
+    {
+      "id": "26.12",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.12 Opnieuw pushen en controleren",
+      "role": "release-validator",
+      "scope": "fix opnieuw deployen en live verifiëren",
+      "prioritizationCriteria": "zelf waargenomen live bewijs, niet de bewering van de agent",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Snel",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "release",
+        "verification"
+      ],
+      "variables": [
+        {
+          "key": "fix",
+          "label": "Doorgevoerde fix",
+          "placeholder": "Welke fout of wijziging is opgelost?"
+        },
+        {
+          "key": "url",
+          "label": "Live URL",
+          "placeholder": "https://..."
+        }
+      ],
+      "content": "## Doel\nVerifieer de fix opnieuw in de live omgeving.\n## Controleprompt\nPush en deploy de fix. Open daarna de live omgeving opnieuw en herhaal exact de handeling die eerder faalde: [doorgevoerde fix / testflow]. Noteer deploymentstatus en resultaat.\n## Beslispunt\nGeen; dit is een controlestap.\n## Let op\nGa nooit af op \"dit zou nu moeten werken\". Controleer zelf opnieuw, live."
+    },
+    {
+      "id": "26.13",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.13 Testen op mobiele apparaten",
+      "role": "mobile UX- en accessibility-tester",
+      "scope": "responsive layout, touch-bediening, echte schermen en relevante breakpoints",
+      "prioritizationCriteria": "correct gedrag op het kleinste relevante scherm zonder desktopregressie",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Grondig",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "mobile",
+        "responsive",
+        "touch"
+      ],
+      "variables": [
+        {
+          "key": "issues",
+          "label": "Mobiele problemen",
+          "placeholder": "Beschrijf de gevonden problemen"
+        },
+        {
+          "key": "breakpoints",
+          "label": "Relevante breakpoints",
+          "placeholder": "bijv. 375px, 768px en 1024px"
+        }
+      ],
+      "content": "## Doel\nVind bugs die alleen op kleinere schermen of met touch-bediening optreden.\n## Meta-prompt\nDe volgende problemen zijn gevonden bij het testen op mobiel: [lijst]. Pas de responsive styling aan zodat dit correct werkt vanaf 375px breedte, zonder de desktopweergave te beïnvloeden.\n## Beslispunt\nWelke breakpoints zijn relevant voor de doelgroep?\n## Let op\nTest waar mogelijk op een echt apparaat, niet alleen met devtools-simulatie."
+    },
+    {
+      "id": "26.14",
+      "domainId": 26,
+      "domainTitle": "Vibe Coding — Workflow Templates",
+      "domainIcon": "WandSparkles",
+      "title": "26.14 Verder verfijnen en uitbreiden",
+      "role": "productarchitect voor bewuste doorontwikkeling",
+      "scope": "mogelijke uitbreidingen rond auth, opslag en backend met impactanalyse",
+      "prioritizationCriteria": "werkelijke behoefte en opbrengst tegenover implementatie-impact",
+      "targetAudience": "AI Code Agent",
+      "kind": "meta",
+      "platform": "general",
+      "complexity": "Architecturaal",
+      "section": "public",
+      "tags": [
+        "vibe-coding",
+        "roadmap",
+        "auth",
+        "backend"
+      ],
+      "variables": [
+        {
+          "key": "app_context",
+          "label": "Appcontext",
+          "placeholder": "Wat doet de app en voor wie?"
+        }
+      ],
+      "content": "## Doel\nBepaal bewust of, en hoe, de app verder groeit.\n## Meta-prompt\nStel drie mogelijke uitbreidingen voor deze app voor, gericht op [auth/opslag/backend]. Beschrijf per optie wat het toevoegt, de implementatie-impact en of een architecturale wijziging nodig is.\n## Beslispunt\nIs uitbreiding nodig, of is de app compleet voor het doel waarvoor hij gebouwd is?\n## Let op\nNiet elke app hoeft te groeien naar een volwaardig product."
+    }
+  ]
+}
