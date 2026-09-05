@@ -19,6 +19,7 @@ final class GovernorStatus: ObservableObject {
     @Published var meldingen: [[String: Any]] = []
     @Published var familie: [[String: Any]] = []
     @Published var leeft: [String: String] = [:]
+    @Published var controleWachtrij: [[String: Any]] = []
     @Published var laatsteActie: String?
 
     var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
@@ -45,6 +46,7 @@ struct AgentsView: View {
             VStack(alignment: .leading, spacing: 20) {
                 kop
                 familieKaart
+                controleKaart
                 limietenKaart
                 if let fout = status.fout {
                     foutKaart(fout)
@@ -119,6 +121,91 @@ struct AgentsView: View {
             .frame(width: 70, alignment: .trailing)
         }
         .padding(.vertical, 10)
+    }
+
+    // MARK: Controle (slice D — de rondte)
+
+    private var controleKaart: some View {
+        Kaart(kop: "Controle", rechterKop: "DE MENS HEEFT DE LAATSTE STEM") {
+            VStack(alignment: .leading, spacing: 10) {
+                if status.controleWachtrij.isEmpty {
+                    Text("Niets wacht op jouw oordeel. Haal afgeronde taken op zodra agents ze neerleggen.")
+                        .font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                ForEach(Array(status.controleWachtrij.enumerated()), id: \.offset) { _, item in
+                    controleRij(item)
+                }
+                HStack {
+                    PillKnop(titel: "Haal afgeronde taken op") { haalOp() }
+                    if let laatste = status.laatsteActie {
+                        Text(laatste)
+                            .font(Thema.tekst(11))
+                            .foregroundStyle(Thema.kleur(.zacht))
+                    }
+                }
+            }
+        }
+    }
+
+    private func controleRij(_ item: [String: Any]) -> some View {
+        let agent = item["agent"] as? String ?? "?"
+        let taakId = item["taak_id"] as? String ?? "?"
+        let titel = item["titel"] as? String ?? ""
+        let bewijs = item["bewijs"] as? String ?? ""
+
+        return HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(agent.capitalized).font(Thema.display(14))
+                .frame(width: 90, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(titel.isEmpty ? taakId : titel).font(Thema.tekst(12))
+                if !bewijs.isEmpty {
+                    Text("bewijs: " + bewijs)
+                        .font(Thema.tekst(10))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            PillKnop(titel: "Goedkeuren") { doeBesluit(agent: agent, taakId: taakId, goed: true) }
+            PillKnop(titel: "Afkeuren") { doeBesluit(agent: agent, taakId: taakId, goed: false) }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func haalOp() {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentcontrole",
+                                           invoer: ["actie": "ophalen"])
+            await MainActor.run {
+                if let r, let lijst = r.data["afgerond"] as? [[String: Any]] {
+                    status.controleWachtrij = lijst
+                    status.laatsteActie = lijst.isEmpty
+                        ? "Niets nieuw opgehaald."
+                        : "\(lijst.count) taak/taken opgehaald voor controle."
+                }
+            }
+        }
+    }
+
+    private func doeBesluit(agent: String, taakId: String, goed: Bool) {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentcontrole",
+                                           invoer: ["actie": "besluit", "agent": agent,
+                                                    "taak_id": taakId, "goed": goed])
+            await MainActor.run {
+                if let r, r.ok {
+                    status.controleWachtrij.removeAll {
+                        ($0["taak_id"] as? String) == taakId
+                    }
+                    status.laatsteActie = (goed ? "✓ Goedgekeurd: " : "✕ Afgekeurd: ") + taakId
+                } else {
+                    status.laatsteActie = "✕ " + (r?.fout ?? "controle onbereikbaar")
+                }
+            }
+        }
     }
 
     // MARK: Limieten

@@ -827,6 +827,40 @@ def cmd_agenttaak(invoer: dict) -> dict:
             "reden": f"Taak {taak_id} staat in de wachtrij van {agent}."}}}
 
 
+def cmd_agentcontrole(invoer: dict) -> dict:
+    """Agentcontrole (slice D): afgeronde taken ophalen (actie 'ophalen')
+    of een mens-uitspraak verwerken (actie 'besluit' met agent, taak_id, goed)."""
+    from kern import growkit_agentcontrole as ac
+
+    actie = str(invoer.get("actie", "ophalen")).strip()
+    if actie == "ophalen":
+        return ac.ophalen()
+    if actie == "besluit":
+        agent = str(invoer.get("agent", ""))
+        taak_id = str(invoer.get("taak_id", ""))
+        if not isinstance(invoer.get("goed"), bool):
+            raise AdapterFout("besluit vereist goed (true/false)")
+        r = ac.besluit(agent, taak_id, goed=invoer["goed"])
+        if not r["ok"]:
+            return r
+        # gouverneur op de hoogte: taak echt af (goedgekeurd) of weg (afgekeurd)
+        from kern import growkit_agents as ag
+        register_pad = Path(str(invoer.get("register_pad", "")).strip()
+                            or Path.home() / "growkit-governor" / "governor.json")
+        if register_pad.exists():
+            try:
+                register = json.loads(register_pad.read_text(encoding="utf-8"))
+                nieuw, ok, _ = ag.keur_taak(register, taak_id, goed=invoer["goed"])
+                if ok:
+                    register_pad.write_text(
+                        json.dumps(nieuw, indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8")
+            except json.JSONDecodeError:
+                pass  # registerprobleem blokkeert de archivering niet
+        return r
+    raise AdapterFout("onbekende agentcontrole-actie — kies: ophalen, besluit")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -839,6 +873,7 @@ COMMANDOS = {
     "familie": cmd_familie,
     "agentstatus": cmd_agentstatus,
     "agenttaak": cmd_agenttaak,
+    "agentcontrole": cmd_agentcontrole,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,
