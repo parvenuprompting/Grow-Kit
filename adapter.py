@@ -968,6 +968,28 @@ def cmd_graaf(invoer: dict) -> dict:
     raise AdapterFout("onbekende graaf-actie — kies: graaf, document")
 
 
+def cmd_hervatvlag(invoer: dict) -> dict:
+    """Hervatvlag (ronde 2): één generiek 'hervat waar je was'-mechanisme
+    voor alle wizards (profiel-kieming, Tailscale, ...). Acties:
+    hervat (stappenlijst) | rond_af (wizard + stap). Append-only events."""
+    from kern import growkit_hervatvlag as hv
+
+    actie = str(invoer.get("actie", "hervat")).strip()
+    if actie == "hervat":
+        naam = str(invoer.get("wizard", "")).strip()
+        stappen = invoer.get("stappen")
+        if not naam or not isinstance(stappen, list) or not stappen:
+            raise AdapterFout("hervat vereist wizard en stappen (lijst)")
+        return hv.hervat(naam, [str(s) for s in stappen])
+    if actie == "rond_af":
+        r = hv.rond_af(str(invoer.get("wizard", "")),
+                       str(invoer.get("stap", "")))
+        if not r["ok"]:
+            return r
+        return {"ok": True, "data": {"resultaat": r["data"]}}
+    raise AdapterFout("onbekende hervatvlag-actie — kies: hervat, rond_af")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -986,6 +1008,7 @@ COMMANDOS = {
     "harnas": cmd_harnas,
     "contract": cmd_contract,
     "graaf": cmd_graaf,
+    "hervatvlag": cmd_hervatvlag,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

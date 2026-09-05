@@ -152,6 +152,11 @@ struct OnboardingView: View {
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "profiel", invoer: ["actie": "lees"])
+            // hervatvlag: waar was ik? (stap 1 = invullen, stap 2 = bekrachtigen)
+            let h = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "hervatvlag",
+                                           invoer: ["actie": "hervat", "wizard": "onboarding",
+                                                    "stappen": ["invullen", "bekrachtigen"]])
             await MainActor.run {
                 if let r, r.ok, let p = r.data["profiel"] as? [String: Any] {
                     naam = p["naam"] as? String ?? ""
@@ -161,6 +166,10 @@ struct OnboardingView: View {
                     moment = p["moment"] as? String ?? ""
                     agenten = p["agenten"] as? String ?? ""
                     afgerond = !naam.isEmpty || !rol.isEmpty
+                }
+                // wizard al klaar (of profiel bestaat) → niet opnieuw tonen
+                if let h, h.ok, h.data["klaar"] as? Bool == true {
+                    afgerond = true
                 }
             }
         }
@@ -194,14 +203,27 @@ struct OnboardingView: View {
                                            commando: "profiel",
                                            invoer: ["actie": "bekrachtig",
                                                     "concept": concept])
+            var geslaagd = false
             await MainActor.run {
                 bezig = false
                 if let r, r.ok {
+                    geslaagd = true
                     afgerond = true
                     self.concept = nil
                 } else {
                     fout = r?.fout ?? "Opslag mislukt."
                 }
+            }
+            if geslaagd {
+                // hervatvlag: beide stappen af — de wizard is klaar
+                _ = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "hervatvlag",
+                                           invoer: ["actie": "rond_af", "wizard": "onboarding",
+                                                    "stap": "invullen"])
+                _ = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "hervatvlag",
+                                           invoer: ["actie": "rond_af", "wizard": "onboarding",
+                                                    "stap": "bekrachtigen"])
             }
         }
     }
