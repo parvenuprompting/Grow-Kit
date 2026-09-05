@@ -868,6 +868,41 @@ def cmd_observaties(invoer: dict) -> dict:
     return ob.lees()
 
 
+def cmd_profiel(invoer: dict) -> dict:
+    """Profiel (slice H): het geboortemoment van het geheugen.
+    Acties: lees | concept | bekrachtig | vergeten. Opslag is append-only
+    en gebeurt uitsluitend ná ratificatie (regel 6)."""
+    from kern import growkit_profiel as pf
+
+    actie = str(invoer.get("actie", "lees")).strip()
+    if actie == "lees":
+        return pf.lees()
+    if actie == "context":
+        return {"ok": True, "data": {"context_regel": pf.context_regel()}}
+    if actie == "concept":
+        r = pf.concept(str(invoer.get("naam", "")),
+                       rol=str(invoer.get("rol", "")),
+                       doel=str(invoer.get("doel", "")),
+                       taal=str(invoer.get("taal", "")),
+                       moment=str(invoer.get("moment", "")),
+                       agenten=str(invoer.get("agenten", "")))
+        if r["ok"]:
+            return {"ok": True, "data": {"concept": r["data"]["concept"]}}
+        return r
+    if actie == "bekrachtig":
+        doc = invoer.get("concept")
+        if not isinstance(doc, dict):
+            raise AdapterFout("bekrachtig vereist concept (document)")
+        return pf.bekrachtig(doc)
+    if actie == "vergeten":
+        veld = str(invoer.get("veld", "")).strip()
+        if not veld:
+            raise AdapterFout("vergeten vereist veld")
+        return pf.vergeten(veld)
+    raise AdapterFout("onbekende profiel-actie — kies: lees, concept, "
+                      "bekrachtig, vergeten, context")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -882,6 +917,7 @@ COMMANDOS = {
     "agenttaak": cmd_agenttaak,
     "agentcontrole": cmd_agentcontrole,
     "observaties": cmd_observaties,
+    "profiel": cmd_profiel,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

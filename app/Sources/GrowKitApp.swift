@@ -11,6 +11,8 @@ struct GrowKitApp: App {
     @State private var geselecteerd: ContentView.Modi = .home
     @State private var toonInstellingen = false
     @State private var toonOver = false
+    @State private var toonOnboarding = false
+    @State private var onboardingGecheckt = false
 
     var body: some Scene {
         WindowGroup {
@@ -20,6 +22,21 @@ struct GrowKitApp: App {
                 .frame(minWidth: 880, minHeight: 620)
                 .background(Thema.kleur(.papier))
                 .sheet(isPresented: $toonOver) { OverView() }
+                .sheet(isPresented: $toonOnboarding) {
+                    OnboardingView(runner: Runner(), repoPad: .constant(""),
+                                   interpreter: .constant(""),
+                                   isZichtbaar: $toonOnboarding)
+                }
+                .task {
+                    guard !onboardingGecheckt else { return }
+                    onboardingGecheckt = true
+                    let r = try? await Runner().roep(
+                        repoPad: "", interpreter: "",
+                        commando: "profiel", invoer: ["actie": "lees"])
+                    if let r, r.ok, r.data["bestaat"] as? Bool != true {
+                        toonOnboarding = true
+                    }
+                }
         }
         .commands {
             AppMenu(geselecteerd: $geselecteerd,
