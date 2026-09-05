@@ -26,11 +26,14 @@ def basis_url() -> str:
 
 def los_sleutel_op(sleutel_pad: str | None) -> str:
     """Sleutel-resolutie: expliciet pad → ~/.growkit/openrouter_key → omgeving.
-    Ontbreekt alles → ValueError (nette fout voor de mens)."""
+    Ontbreekt alles → ValueError (nette fout voor de mens).
+    GROWKIT_HOME_OVERRIDE: test-isolatie (vervangt de ~/.growkit-fallback)."""
     kandidaten: list[Path] = []
     if sleutel_pad:
         kandidaten.append(Path(sleutel_pad).expanduser())
-    kandidaten.append(Path.home() / ".growkit" / "openrouter_key")
+    home = os.environ.get("GROWKIT_HOME_OVERRIDE", "")
+    kandidaten.append(Path(home).expanduser() / ".growkit" / "openrouter_key"
+                      if home else Path.home() / ".growkit" / "openrouter_key")
     for pad in kandidaten:
         if pad.exists():
             waarde = pad.read_text(encoding="utf-8").strip()

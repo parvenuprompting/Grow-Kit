@@ -43,8 +43,9 @@ class SaldoBasis(unittest.TestCase):
         self.home.mkdir(parents=True)
         self._oude = {k: os.environ.get(k) for k in
                       ("GROWKIT_OERWOUD_STAAT", "OPENROUTER_API_KEY",
-                       "GROWKIT_TEST_OPENROUTER_URL")}
+                       "GROWKIT_TEST_OPENROUTER_URL", "GROWKIT_HOME_OVERRIDE")}
         os.environ["GROWKIT_OERWOUD_STAAT"] = str(self.home / "oerwoud.json")
+        os.environ["GROWKIT_HOME_OVERRIDE"] = str(self.home)
         os.environ.pop("OPENROUTER_API_KEY", None)
 
     def tearDown(self):

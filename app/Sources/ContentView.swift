@@ -61,6 +61,7 @@ struct ContentView: View {
 
     @State private var toonInstellingenTab = 0
     @State private var hoverModus: Modi? = nil
+    @State private var saldoTekst = ""
 
     var body: some View {
         NavigationSplitView {
@@ -69,8 +70,25 @@ struct ContentView: View {
         } detail: {
             detail
         }
-        .onAppear { Thema.registreerFonts() }
+        .onAppear { Thema.registreerFonts(); laadSaldo() }
         .sheet(isPresented: $toonInstellingen) { instellingenSheet }
+    }
+
+    // Saldo (Fase 2): één mini-regel boven Instellingen. Stille stippel:
+    // leeg = geen sleutel gevonden, dan toont de regel gewoon niet.
+    private var saldoRegel: String { saldoTekst }
+
+    private func laadSaldo() {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "saldo", invoer: [:])
+            await MainActor.run {
+                if let r, r.ok,
+                   let rest = r.data["resterend"] as? Double {
+                    saldoTekst = String(format: "€ %.2f", rest)
+                }
+            }
+        }
     }
 
     // MARK: - Zijbalk
@@ -114,6 +132,19 @@ struct ContentView: View {
             .scrollIndicators(.hidden)
 
             Spacer(minLength: 0)
+
+            if !saldoRegel.isEmpty {
+                HStack(spacing: 6) {
+                    Circle().fill(Thema.kleur(.inkt)).frame(width: 5, height: 5)
+                    Text("SALDO").font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    Spacer()
+                    Text(saldoRegel).font(Thema.tekst(10, gewicht: .medium))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+            }
 
             voet
                 .padding(.horizontal, 20)
@@ -252,7 +283,7 @@ struct ContentView: View {
                 Text("Zero-Trust Harnas")
             }
             Spacer()
-            Text("Editorial Monochrome · Fraunces & Inter (SIL OFL)")
+            Text("© Parvenu GrowKit 1.3.0")
         }
         .font(Thema.tekst(9, gewicht: .medium)).tracking(1)
         .foregroundStyle(Thema.kleur(.gedempt))
