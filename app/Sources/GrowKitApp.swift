@@ -17,7 +17,6 @@ struct GrowKitApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
             ContentView(geselecteerd: $geselecteerd,
                         toonInstellingen: $toonInstellingen,
                         toonOver: $toonOver)
@@ -39,17 +38,21 @@ struct GrowKitApp: App {
                         toonOnboarding = true
                     }
                 }
-            LaadScherm()
-                .opacity(laadSchermWeg ? 0 : 1)
-                .allowsHitTesting(!laadSchermWeg)
-                .task {
-                    // 2 seconden zichtbaar, dan 0.4s uitfaden, daarna uit de boom.
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                    withAnimation(.easeOut(duration: 0.4)) { laadSchermWeg = true }
-                    try? await Task.sleep(nanoseconds: 450_000_000)
-                    laadSchermWeg = true
+                // Laadscherm als overlay óp het venster: het venster wordt
+                // meteen de juiste grootte, geen kleine-groot-kleine-dans.
+                .overlay {
+                    if !laadSchermWeg {
+                        LaadScherm()
+                            .transition(.opacity)
+                            .task {
+                                // 2 seconden zichtbaar, dan 0.4s uitfaden.
+                                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                withAnimation(.easeOut(duration: 0.4)) {
+                                    laadSchermWeg = true
+                                }
+                            }
+                    }
                 }
-            }
         }
         .commands {
             AppMenu(geselecteerd: $geselecteerd,
@@ -64,10 +67,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var fullscreenToegepast = false
 
     func applicationDidBecomeActive(_ notification: Notification) {
-        guard !fullscreenToegepast, let venster = NSApp.windows.first else { return }
-        fullscreenToegepast = true
-        if !venster.styleMask.contains(.fullScreen) {
-            venster.toggleFullScreen(nil)
+        // Fullscreen pas ná het laadscherm (2,4s) — anders danst het venster.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) { [weak self] in
+            guard let self, self.fullscreenToegepast else { return }
+            if let venster = NSApp.windows.first,
+               !venster.styleMask.contains(.fullScreen) {
+                venster.toggleFullScreen(nil)
+            }
         }
+        fullscreenToegepast = true
     }
 }
