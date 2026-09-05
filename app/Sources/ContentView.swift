@@ -22,15 +22,23 @@ struct ContentView: View {
         var nummer: String {
             switch self {
             case .home: return "00"
-            case .rondleiding: return "07"
-            case .uitleg: return "08"
-            case .agentchat: return "B1"
-            case .skills: return "B2"
-            case .browser: return "B5"
-            case .ide: return "B6"
-            case .connectors: return "B4"
-            case .graaf: return "KG"
-            default: return String(format: "%02d", rawValue + 1)
+            case .status: return "01"
+            case .planten: return "02"
+            case .ratificatie: return "03"
+            case .dialoog: return "04"
+            case .agenten: return "05"
+            case .graaf: return "06"
+            case .vangnet: return "07"
+            case .audit: return "08"
+            case .hervatten: return "09"
+            case .taak: return "10"
+            case .rondleiding: return "11"
+            case .uitleg: return "12"
+            case .agentchat: return "13"
+            case .skills: return "14"
+            case .browser: return "15"
+            case .ide: return "16"
+            case .connectors: return "17"
             }
         }
         var naam: String {

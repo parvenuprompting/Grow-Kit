@@ -129,19 +129,52 @@ struct GraafView: View {
                     .background(Thema.kleur(.papier))
                     .overlay(alignment: .topTrailing) { bediening }
             } else if compactVoorbeeld {
-                graafCanvas
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Thema.kleur(.papier))
-                    .overlay(alignment: .topTrailing) { miniBediening }
+                ZStack(alignment: .topTrailing) {
+                    if store.knopen.isEmpty {
+                        VStack(spacing: 8) {
+                            if let fout = store.fout {
+                                Text(fout).font(Thema.tekst(11)).foregroundStyle(.red)
+                            }
+                            Text("Brein-graaf laden…")
+                                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
+                            PillKnop(titel: "Probeer opnieuw") {
+                                store.laad(runner: runner, repoPad: repoPad, interpreter: interpreter)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        graafCanvas
+                    }
+                    miniBediening
+                }
+                .background(Thema.kleur(.papier))
             } else {
                 kop
-                graafCanvas
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Thema.kleur(.papier))
-                    .overlay(alignment: .topTrailing) { bediening }
+                ZStack(alignment: .topTrailing) {
+                    if store.knopen.isEmpty {
+                        VStack(spacing: 8) {
+                            if let fout = store.fout {
+                                Text(fout).font(Thema.tekst(11)).foregroundStyle(.red)
+                            }
+                            Text(store.geladen
+                                 ? "Geen data gekregen van de adapter."
+                                 : "Brein-graaf laden…")
+                                .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
+                            PillKnop(titel: "Probeer opnieuw") {
+                                store.laad(runner: runner, repoPad: repoPad, interpreter: interpreter)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        graafCanvas
+                    }
+                    bediening
+                }
+                .background(Thema.kleur(.papier))
             }
         }
-        .onAppear {
+        .task {
+            // .task is betrouwbaarder dan onAppear in lazy containers
             if !store.geladen && store.knopen.isEmpty {
                 store.laad(runner: runner, repoPad: repoPad, interpreter: interpreter)
             }
