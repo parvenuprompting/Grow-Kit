@@ -124,9 +124,14 @@ def cmd_taak(invoer: dict) -> dict:
 
     from kern.growkit_review import laad_reviewconfig
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
+    governor_pad = doel / "governor.json"
+    agent = str(invoer.get("agent", "")).strip() or None
     growkit_oerwoud.log_run_latch(doel / "logboek.json", "gestart")
     with contextlib.redirect_stdout(sys.stderr):
-        geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+        geslaagd, bevindingen = voer_taak_uit(
+            doel, taak, reviewconfig=reviewconfig,
+            governor_pad=governor_pad if agent else None,
+            agent=agent)
     growkit_oerwoud.log_run_latch(doel / "logboek.json", "beeindigd")
     if bevindingen:
         raise AdapterFout("deze taak bestaat niet: " + "; ".join(bevindingen))

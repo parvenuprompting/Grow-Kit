@@ -10,6 +10,47 @@ from pathlib import Path
 from kern.growkit_poort import beoordeel_invoer
 
 
+# ---------------------------------------------------------------- governor
+def _governor_lees(pad: Path) -> dict:
+    """Governor-register lezen; afwezig/corrupt = vers leeg register
+    (fail-open richting leeg register, nooit auto-reparatie van inhoud)."""
+    from kern import growkit_agents as ag
+    try:
+        return json.loads(Path(pad).read_text(encoding="utf-8"))
+    except Exception:
+        return ag.nieuw_register()
+
+
+def _governor_bewaar(pad: Path, register: dict) -> None:
+    """Register wegschrijven; faalt stil (de taak-logboekregels blijven de
+    waarheid — het register is de governing-laag, niet het bewijs)."""
+    try:
+        pad = Path(pad)
+        pad.parent.mkdir(parents=True, exist_ok=True)
+        pad.write_text(json.dumps(register, indent=2, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _governor_afronden(pad: Path | None, agent: str | None, taak_id: str,
+                       geslaagd: bool) -> None:
+    """Na de motor: klaargemeld → 'wacht_op_controle' (mens keurt in de app)."""
+    if pad is None or not agent:
+        return
+    from kern import growkit_agents as ag
+    reg = _governor_lees(pad)
+    if geslaagd:
+        reg, _, _ = ag.taak_afgerond(reg, agent, taak_id,
+                                     bewijs="machine-bewijs (§3)")
+    else:
+        # gefaalde taak: afkeuren met reden zodat de agent hem herhaalt
+        if reg["taken"].get(taak_id, {}).get("status") == "wacht_op_controle":
+            reg, _, _ = ag.keur_taak(reg, taak_id, goed=False,
+                                     reden="motor faalde na alternatief")
+    _governor_bewaar(pad, reg)
+
+
 def laad_taken(pad: Path) -> list[dict]:
     """Lees de takenlijst; afwezig bestand is een lege lijst."""
     if not pad.exists():
@@ -47,19 +88,40 @@ def log_taakgebeurtenis(pad: Path, taak_id: str, status: str, bewijs: str) -> No
     pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None) -> tuple[bool, list[str]]:
+def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None,
+                  governor_pad: Path | None = None, agent: str | None = None,
+                  vereist_governor: bool = False) -> tuple[bool, list[str]]:
     """Poort → gebeurtenissen → motor: de volledige taak-uitvoering als kern.
 
     Geen prints — loop.py en de adapter geven zelf hun eigen vorm. Retourneert
     (geslaagd, bevindingen): bevindingen non-leeg = poort-weigering (niets
     uitgevoerd, gebeurtenis 'geweigerd' gelogd). Faalcontract van de motor
     staat onaangetast: één alternatief, dan de mens.
+
+    Governor-koppeling (slice 10): mét governor_pad + agent loopt de taak
+    door het governerspoor — aanmelden vóór uitvoering, afronden erna
+    (status 'wacht_op_controle'; de mens keurt in de app). Weigert de
+    governor (limiet, observer), dan start de motor niet: poortgetrouw.
+    Zonder governor_pad verandert het gedrag niet (achterwaarts compatibel).
     """
     import json as _json
     from kern import growkit_motor
 
     taak_id = taak.get("id", "onbekend")
     taken_logboek = doel / "taken-logboek.json"
+
+    # Governor vóór de poort: aanmelden (of weigeren) vóórdat iets draait.
+    reg = None
+    if governor_pad is not None and agent:
+        from kern import growkit_agents as ag
+        reg = _governor_lees(governor_pad)
+        reg, ok, reden = ag.meld_taak_aan(reg, agent, taak_id)
+        if not ok:
+            log_taakgebeurtenis(taken_logboek, taak_id, "geweigerd",
+                                "governor-weigering: " + reden)
+            return False, [f"governor-weigering: {reden}"]
+        _governor_bewaar(governor_pad, reg)
+
     bevindingen = valideer_taak(taak)
     if bevindingen:
         log_taakgebeurtenis(taken_logboek, taak_id, "geweigerd",
@@ -76,4 +138,5 @@ def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None) -> tuple[bool, list
         log_taakgebeurtenis(taken_logboek, taak_id, "geslaagd", "machine-bewijs (§3)")
     else:
         log_taakgebeurtenis(taken_logboek, taak_id, "gefaald", "motor-faalcontract — roep de mens")
+    _governor_afronden(governor_pad, agent, taak_id, geslaagd)
     return geslaagd, []

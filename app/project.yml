@@ -8,8 +8,8 @@ settings:
   base:
     DEVELOPMENT_TEAM: VJ9D2C765N
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: 0.9.0
-    CURRENT_PROJECT_VERSION: 4
+    MARKETING_VERSION: 1.1.0
+    CURRENT_PROJECT_VERSION: 5
     SWIFT_VERSION: "5.10"
 targets:
   GrowKit:
@@ -30,7 +30,7 @@ targets:
       path: Sources/Info.plist
       properties:
         CFBundleDisplayName: GrowKit
-        CFBundleShortVersionString: "0.9.0"
+        CFBundleShortVersionString: "1.1.0"
         CFBundleVersion: "3"
         CFBundleIconFile: AppIcon
         CFBundleIconName: AppIcon

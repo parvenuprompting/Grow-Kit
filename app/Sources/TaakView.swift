@@ -11,6 +11,7 @@ struct TaakView: View {
     var metScroll: Bool = true
 
     @State private var boomPad = ""
+    @State private var agentNaam = ""
     @State private var geladen = false
     @State private var fout: String?
     @State private var taken: [[String: Any]] = []
@@ -54,6 +55,15 @@ struct TaakView: View {
                     .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                     .foregroundStyle(Thema.kleur(.gedempt))
                 TextField("~/mijn-brein", text: $boomPad)
+                    .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+                    .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                    .background(Thema.kleur(.papierZacht))
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("AGENT (GOVERNOR)")
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                TextField("bijv. subagent-1 — leeg = zonder governor", text: $agentNaam)
                     .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                     .background(Thema.kleur(.papierZacht))
@@ -131,11 +141,13 @@ struct TaakView: View {
 
     private func voerUit(taak id: String) {
         let doel = boomPad.trimmingCharacters(in: .whitespaces)
+        let agent = agentNaam.trimmingCharacters(in: .whitespaces)
+        var invoer: [String: Any] = ["doel": doel, "bevestig": true, "taak_id": id]
+        if !agent.isEmpty { invoer["agent"] = agent }
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "taak",
-                                           invoer: ["doel": doel, "bevestig": true,
-                                                    "taak_id": id],
+                                           invoer: invoer,
                                            timeOut: 300)
             await MainActor.run {
                 if let fouttekst = r?.fout {
@@ -144,6 +156,7 @@ struct TaakView: View {
                 }
                 let st = (r?.data["status"] as? String) ?? "?"
                 uitslag = ((st == "geslaagd") ? "✓ " : "✕ ") + "taak \(id) — " + st
+                    + (agent.isEmpty ? "" : " · governor: wacht op controle (zie Agenten)")
             }
         }
     }

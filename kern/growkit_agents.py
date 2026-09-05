@@ -100,6 +100,10 @@ def meld_taak_aan(register: dict, agent: str, taak_id: str) -> tuple[dict, bool,
         return nieuw, False, (f"De observer neemt geen taken aan — die kijkt "
                               f"alleen en meldt bevindingen. Kies een andere agent.")
     if taak_id in nieuw["taken"]:
+        # Dubbele aanmelding van dezelfde taak bij dezelfde agent is geen
+        # weigering maar een no-op (herstart/herhaal-situaties in het harnas).
+        if nieuw["taken"][taak_id].get("agent") == agent:
+            return nieuw, True, f"Taak '{taak_id}' was al aangemeld bij {agent}."
         return nieuw, False, f"Taak '{taak_id}' bestaat al."
     if _open_taken(nieuw, agent) >= MAX_TAKEN_PER_AGENT:
         _log(nieuw, "geweigerd_limiet", agent, taak_id,
