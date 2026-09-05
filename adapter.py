@@ -714,6 +714,24 @@ def cmd_vangnet(invoer: dict) -> dict:
                                  "per_bron": per_bron, "recente": recente}}
 
 
+def cmd_audit(invoer: dict) -> dict:
+    """Goedkeurings-audit: wat hebben code-agenten gedaan, in simpele taal.
+    Begrensd (max) zodat de app-scan snel opent; kritieke acties apart."""
+    from kern import growkit_goedkeuring as gk
+    maximum = max(1, min(int(invoer.get("max", 5000)), 20000))
+    acties = gk.verzamel(None)[:maximum]
+    verrijkt = gk.verrijk(acties)
+    kritiek = [a for a in verrijkt if a["kritisch"]][:maximum]
+    compact = [{"bron": a["bron"], "tijdstip": (a.get("tijdstip") or "")[:16],
+                "soort": a["soort"], "risico": a["risico"],
+                "actie": a["actie"][:160], "uitleg": a["uitleg"]}
+               for a in kritiek]
+    return {"ok": True, "data": {"samenvatting": gk.samenvatting(acties),
+                                 "totaal": len(acties),
+                                 "kritiek_aantal": len(kritiek),
+                                 "kritiek": compact}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -725,6 +743,7 @@ COMMANDOS = {
     "governor": cmd_governor,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
+    "audit": cmd_audit,
     "bomen": cmd_bomen,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,

@@ -13,7 +13,7 @@ struct ContentView: View {
     @AppStorage("growkitInterpreter") private var interpreter = Runner.standaardInterpreter
 
     enum Modi: Int, CaseIterable, Identifiable {
-        case home = -1, status, planten, ratificatie, dialoog, agenten, vangnet, hervatten, taak, rondleiding, uitleg
+        case home = -1, status, planten, ratificatie, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
 
         var id: Int { rawValue }
         var nummer: String {
@@ -35,6 +35,7 @@ struct ContentView: View {
             case .dialoog: return "Dialoog"
             case .agenten: return "Agenten"
             case .vangnet: return "Vangnet"
+            case .audit: return "Audit"
             case .hervatten: return "Hervatten"
             case .taak: return "Taak"
             }
@@ -50,6 +51,7 @@ struct ContentView: View {
             case .dialoog: return "Gesprek met geïnstalleerde AI-agenten"
             case .agenten: return "Governor: taken, controle, observer"
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
+            case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .taak: return "Taken uit de groeilaag uitvoeren"
             }
@@ -84,7 +86,7 @@ struct ContentView: View {
 
             // WERK — de dagelijkse modi
             zijbalkSectie("WERK")
-            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet]) { modus in
+            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet, .audit]) { modus in
                 modusRij(modus)
             }
 
@@ -267,6 +269,8 @@ struct ContentView: View {
                     AgentsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .vangnet:
                     VangnetView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .audit:
+                    AuditView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .home:
                     HomeView(runner: runner, koppelingen: koppelingen,
                              repoPad: $repoPad, interpreter: $interpreter) { modus in
@@ -290,7 +294,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 0.9.0")
+                Text("© Parvenu GrowKit 1.0.0")
                 Text("·").foregroundStyle(Thema.kleur(.lijn))
                 Text("Zero-Trust Harnas")
             }

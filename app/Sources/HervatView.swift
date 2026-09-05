@@ -1,7 +1,7 @@
-// HervatView — crash-herstel in beeld: reconstructie uit het logboek,
-// restdraai tonen, met jouw bevestiging pas hervatten.
-// Bedienaar-principe: de app beslist niets — adapter `hervat` + de kern
-// (growkit_hervat + motor) bepalen wat er mag.
+// Hervat-scherm — restdraai vanuit het logboek, met poortjes.
+// Eerst tonen wat de reconstructie zegt (herstartpunt, per stap beslissing),
+// pas na menselijke bevestiging draait de motor verder. De app interpreteert
+// niets: alles via adapter `hervat`.
 
 import SwiftUI
 
@@ -9,146 +9,181 @@ struct HervatView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
-    @AppStorage("growkitBoomPad") private var boomPad = ""
+    var metScroll: Bool = true
 
-    @State private var scan: ScanResultaat?
-    @State private var bezig = false
-    @State private var draait = false
-    @State private var uitvoerTekst = ""
-
-    struct ScanResultaat {
-        var herstartpunt: String
-        var restdraai: [String]
-        var stappen: [String: Any]
-        var melding: String?
-    }
+    @State private var boomPad = ""
+    @State private var geladen = false
+    @State private var fout: String?
+    @State private var herstartpunt = ""
+    @State private var stappen: [[String: Any]] = []
+    @State private var restdraai: [String] = []
+    @State private var melding: String?
+    @State private var draaiLog: [String] = []
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                kop
-                boomPadVeld
-                if bezig { Text("Bezig…").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht)) }
-                if let scan { scanKaart(scan) }
-                if draait { uitvoerKaart }
-            }
-            .padding(24)
+        groep
+            .background(Thema.kleur(.papier))
+    }
+
+    @ViewBuilder private var groep: some View {
+        if metScroll { ScrollView { inhoudView } } else { inhoudView }
+    }
+
+    private var inhoudView: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            kop
+            padVeld
+            if let fout { foutKaart(fout) }
+            if geladen && fout == nil { overzicht }
+            if let melding { meldingKaart(melding) }
+            if !draaiLog.isEmpty { draaiKaart }
+            Spacer(minLength: 16)
         }
-        .background(Thema.kleur(.papier))
+        .padding(28)
     }
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Hervatten").font(Thema.display(30))
-            Text("Na een crash of stop bouwt het harnas de toestand opnieuw op uit het append-only logboek. Niet-idempotente stappen worden nooit opnieuw gedraaid — wat al bewezen is, blijft bewezen.")
+            Text("Na een crash of stilgevallen zet dit scherm de draai voort vanuit het logboek. De app stelt voor; jij bevestigt; de motor herhaalt nooit een niet-idempotente stap.")
                 .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private var boomPadVeld: some View {
-        Kaart(kop: "Boom", rechterKop: "DOEL-MAP") {
-            TextField("bijv. ~/mijn-brein", text: $boomPad)
-                .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
-                .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
-                .background(Thema.kleur(.papierZacht))
-            HStack {
-                PillKnop(titel: "1 · Analyseer", gevuld: false) { analyseer() }
-                PillKnop(titel: "2 · Hervat restdraai", gevuld: scan != nil) { hervat() }
-                if bezig { ProgressView().scaleEffect(0.7) }
+    private var padVeld: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("BOOM-PAD")
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                TextField("~/mijn-brein", text: $boomPad)
+                    .textFieldStyle(.plain).font(Thema.tekst(13)).padding(10)
+                    .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                    .background(Thema.kleur(.papierZacht))
             }
-            .padding(.top, 8)
+            PillKnop(titel: "Laad reconstructie") { laad() }
         }
     }
 
-    private func scanKaart(_ s: ScanResultaat) -> some View {
-        Kaart(kop: "Reconstructie", rechterKop: "UIT HET LOGBOEK") {
-            VStack(alignment: .leading, spacing: 10) {
-                if let melding = s.melding {
-                    Text(melding).font(Thema.tekst(13, gewicht: .semibold))
-                } else {
-                    HStack {
-                        Text("Herstartpunt").font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
-                        Spacer()
-                        StatusBadge(tekst: s.herstartpunt, stijl: .bewezen)
+    private var overzicht: some View {
+        Kaart(kop: "Reconstructie uit het logboek",
+              rechterKop: restdraai.isEmpty ? "NIETS TE HERVATTEN" : "\(restdraai.count) STAPPEN") {
+            VStack(alignment: .leading, spacing: 12) {
+                if !herstartpunt.isEmpty {
+                    Text("Herstartpunt: \(herstartpunt)").font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                }
+                ForEach(Array(stappen.enumerated()), id: \.offset) { _, s in
+                    stapRij(s)
+                }
+                if !restdraai.isEmpty {
+                    PillKnop(titel: "Restdraai bevestigen (\(restdraai.count) stappen)", gevuld: true) {
+                        hervat()
                     }
-                    if s.restdraai.isEmpty {
-                        Text("Niets te hervatten — alle stappen zijn geslaagd of wachten op ratificatie.")
-                            .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
-                    } else {
-                        Text("Restdraai (\(s.restdraai.count) stappen):").font(Thema.tekst(12, gewicht: .semibold))
-                        ForEach(s.restdraai, id: \.self) { id in
-                            HStack(spacing: 8) {
-                                StatusBadge(tekst: "HERAANBIEDEN", stijl: .herziening)
-                                Text(id).font(Thema.tekst(12))
-                            }
-                        }
-                        Text("Stap 2 hervat alleen deze stappen — met jouw bevestiging hierboven.")
-                            .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
-                    }
+                    Text("Pas na jouw bevestiging voert de motor iets uit — faalcontract onaangetast.")
+                        .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
                 }
             }
         }
     }
 
-    private var uitvoerKaart: some View {
-        Kaart(kop: "Uitvoering", rechterKop: "LIVE") {
-            Text(uitvoerTekst.isEmpty ? "gestart…" : uitvoerTekst)
-                .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
+    private func stapRij(_ s: [String: Any]) -> some View {
+        let id = (s["id"] as? String) ?? "?"
+        let beslissing = (s["beslissing"] as? String) ?? "?"
+        return HStack {
+            Text(id).font(Thema.tekst(12, gewicht: .semibold))
+            Spacer()
+            StatusBadge(tekst: beslissingLabel(beslissing), stijl: badge(beslissing))
         }
     }
 
-    // MARK: acties
+    private func beslissingLabel(_ b: String) -> String {
+        switch b {
+        case "geslaagd": return "GESLAAGD"
+        case "heraanbieden", "uitvoeren": return "HERAANBIEDEN"
+        case "wacht_ratificatie": return "WACHT RATIFICATIE"
+        case "overslaan": return "OVERSLAAN"
+        default: return b.uppercased()
+        }
+    }
 
-    private func analyseer() {
+    private func badge(_ b: String) -> BadgeStijl {
+        switch b {
+        case "geslaagd": return .bewezen
+        case "heraanbieden", "uitvoeren": return .mens
+        default: return .neutraal
+        }
+    }
+
+    private var draaiKaart: some View {
+        Kaart(kop: "Motor-uitvoer", rechterKop: "RESTDRAAI") {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(draaiLog.enumerated()), id: \.offset) { _, regel in
+                    Text(regel).font(Thema.tekst(11))
+                }
+            }
+        }
+    }
+
+    private func foutKaart(_ tekst: String) -> some View {
+        Kaart(kop: "Let op", gestippeld: true) {
+            Text(tekst).font(Thema.tekst(12))
+        }
+    }
+
+    private func meldingKaart(_ tekst: String) -> some View {
+        Kaart(kop: "Melding") {
+            Text(tekst).font(Thema.tekst(12))
+        }
+    }
+
+    // MARK: Acties — via de adapter, nooit eromheen
+
+    private func vul(_ data: [String: Any]) {
+        herstartpunt = data["herstartpunt"] as? String ?? ""
+        stappen = data["stappen"] as? [[String: Any]] ?? []
+        restdraai = data["restdraai"] as? [String] ?? []
+        melding = data["melding"] as? String
+    }
+
+    private func laad() {
         let doel = boomPad.trimmingCharacters(in: .whitespaces)
-        guard !doel.isEmpty else { return }
-        bezig = true; scan = nil
+        guard !doel.isEmpty else { fout = "Vul eerst het pad naar de boom."; return }
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "hervat", invoer: ["doel": doel])
+                                           commando: "hervat",
+                                           invoer: ["doel": doel, "bevestig": false])
             await MainActor.run {
-                bezig = false
+                geladen = true
                 guard let r, r.ok else {
-                    scan = ScanResultaat(herstartpunt: "fout", restdraai: [], stappen: [:],
-                                         melding: r?.fout ?? "adapter reageerde niet")
+                    fout = r?.fout ?? "adapter reageerde niet — controleer Instellingen"
                     return
                 }
-                if let m = r.data["melding"] as? String {
-                    scan = ScanResultaat(herstartpunt: "compleet", restdraai: [], stappen: [:], melding: m)
-                    return
-                }
-                scan = ScanResultaat(
-                    herstartpunt: r.data["herstartpunt"] as? String ?? "?",
-                    restdraai: r.data["restdraai"] as? [String] ?? [],
-                    stappen: r.data["stappen"] as? [String: Any] ?? [:],
-                    melding: nil)
+                fout = nil
+                vul(r.data)
             }
         }
     }
 
     private func hervat() {
         let doel = boomPad.trimmingCharacters(in: .whitespaces)
-        guard !doel.isEmpty, scan != nil, !(scan?.restdraai.isEmpty ?? true) else { return }
-        bezig = true; draait = true; uitvoerTekst = ""
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "hervat",
-                                           invoer: ["doel": doel, "bevestig": true],
-                                           timeOut: 600)
+                                           invoer: ["doel": doel, "bevestig": true])
             await MainActor.run {
-                bezig = false
-                if let data = r?.data["melding"] as? String {
-                    uitvoerTekst = data
-                } else if let stappen = r?.stappen, !stappen.isEmpty {
-                    uitvoerTekst = stappen.map { s in
-                        "[\(s["status"] as? String ?? "?")] \(s["stap"] as? String ?? "?") — \(s["bewijs"] as? String ?? "")"
-                    }.joined(separator: "\n")
-                } else {
-                    uitvoerTekst = r?.fout ?? "klaar"
+                guard let r else { fout = "adapter reageerde niet"; return }
+                if let m = r.data["melding"] as? String { melding = m; return }
+                if let fouttekst = r.fout { draaiLog.append("✕ " + fouttekst); return }
+                if let uitvoer = r.data["stappen"] as? [[String: Any]] {
+                    for st in uitvoer {
+                        let sid = (st["id"] as? String) ?? "?"
+                        let stt = (st["status"] as? String) ?? "?"
+                        draaiLog.append((stt == "geslaagd" ? "✓ " : "✕ ") + sid + " — " + stt)
+                    }
                 }
-                // na een hervat-draai opnieuw analyseren voor de actuele stand
-                analyseer()
+                laad()
             }
         }
     }
