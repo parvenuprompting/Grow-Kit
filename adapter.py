@@ -21,6 +21,7 @@ sys.path.insert(0, str(REPO))
 
 from kern import growkit_oerwoud  # noqa: E402
 from kern import growkit_prompts  # noqa: E402
+from kern import growkit_vault  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -612,6 +613,78 @@ def cmd_saldo(invoer: dict) -> dict:
     return {"ok": True, "data": data}
 
 
+def cmd_vaultvormen(invoer: dict) -> dict:
+    """De drie kluisvormen van Secure Vault (mens-leesbaar, voor de app)."""
+    return {"ok": True, "data": {"vormen": growkit_vault.KLUIS_VORMEN}}
+
+
+def cmd_vaultlijst(invoer: dict) -> dict:
+    """Gevonden kluizen op deze Mac (Spotlight) + nu-open mountpunten.
+
+    Puur lezend: geen paden-actie zonder expliciete opdracht.
+    """
+    try:
+        kluizen = growkit_vault.zoek_kluizen()
+    except OSError as e:
+        raise AdapterFout(f"kluiszoeker faalde: {e}")
+    return {"ok": True, "data": {"kluizen": kluizen,
+            "open": growkit_vault.open_kluizen()}}
+
+
+def cmd_vaultmaak(invoer: dict) -> dict:
+    """Nieuwe kluis: bron + doelmap + naam + wachtwoord + vorm verplicht.
+
+    Overschrijven alleen met expliciete toestemming (huisregel). Het
+    wachtwoord komt binnen via stdin-JSON en wordt nergens gelogd.
+    """
+    for veld in ("bron", "doelmap", "naam", "wachtwoord"):
+        if not invoer.get(veld):
+            raise AdapterFout(f"ontbrekend veld: {veld}")
+    ok, bericht = growkit_vault.maak_kluis(
+        bron=invoer["bron"],
+        doelmap=invoer["doelmap"],
+        naam=invoer["naam"],
+        wachtwoord=invoer["wachtwoord"],
+        vorm=invoer.get("vorm", "UDZO"),
+        overschrijven=bool(invoer.get("overschrijven")),
+    )
+    if not ok:
+        raise AdapterFout(bericht)
+    return {"ok": True, "data": {"kluis": bericht}}
+
+
+def cmd_vaultopen(invoer: dict) -> dict:
+    """Kluis openen met wachtwoord óf Sleutelhangar (keychain: true)."""
+    kluispad = invoer.get("kluis")
+    if not kluispad:
+        raise AdapterFout("ontbrekend veld: kluis")
+    wachtwoord = invoer.get("wachtwoord")
+    if invoer.get("keychain"):
+        wachtwoord = growkit_vault.keychain_lees(kluispad)
+        if not wachtwoord:
+            raise AdapterFout("geen wachtwoord in de Sleutelhangar voor deze kluis")
+    if not wachtwoord:
+        raise AdapterFout("ontbrekend veld: wachtwoord (of keychain: true)")
+    ok, bericht = growkit_vault.open_kluis(kluispad, wachtwoord)
+    if not ok:
+        raise AdapterFout(bericht)
+    return {"ok": True, "data": {"mount": bericht}}
+
+
+def cmd_vaultsluit(invoer: dict) -> dict:
+    """Kluis sluiten op mountpunt; met alles: true → alle open kluizen dicht."""
+    if invoer.get("alles"):
+        gesloten = [m for m in growkit_vault.open_kluizen()
+                    if growkit_vault.sluit_kluis(m)]
+        return {"ok": True, "data": {"gesloten": gesloten}}
+    mount = invoer.get("mount")
+    if not mount:
+        raise AdapterFout("ontbrekend veld: mount (of alles: true)")
+    if not growkit_vault.sluit_kluis(mount):
+        raise AdapterFout(f"ontkoppelen mislukt: {mount}")
+    return {"ok": True, "data": {"gesloten": [mount]}}
+
+
 def cmd_verbruik(invoer: dict) -> dict:
     """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
     from kern import growkit_openrouter
@@ -1058,6 +1131,11 @@ COMMANDOS = {
     "nachtstatus": cmd_nachtstatus,
     "saldo": cmd_saldo,
     "verbruik": cmd_verbruik,
+    "vaultvormen": cmd_vaultvormen,
+    "vaultlijst": cmd_vaultlijst,
+    "vaultmaak": cmd_vaultmaak,
+    "vaultopen": cmd_vaultopen,
+    "vaultsluit": cmd_vaultsluit,
 }
 
 def main(argv: list[str]) -> int:

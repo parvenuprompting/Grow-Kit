@@ -15,7 +15,7 @@ from pathlib import Path
 
 PROFILES_DIR = Path(__file__).parent / "profielen"
 SLIJPER_LOG = Path(__file__).parent / "groei" / "slijper-logboek.json"
-VERSIE = "1.3.1"
+VERSIE = "1.4.0"
 
 
 def _log_slijper(ruwe_invoer: str, geschuurd: str, beslissing: str) -> None:

@@ -418,7 +418,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 1.3.1 · Zero-Trust Harnas — ontwikkeld door Tiëndo Welles")
+                Text("© Parvenu GrowKit 1.4.0 · Zero-Trust Harnas — ontwikkeld door Tiëndo Welles")
             }
             Spacer()
         }

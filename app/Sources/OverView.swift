@@ -16,7 +16,7 @@ struct OverView: View {
                         Text("Kit").font(Thema.display(28, cursief: true))
                             .foregroundStyle(Thema.kleur(.zacht))
                     }
-                    Text("VERSIE 1.3.1 · BOUW 10 · EDITORIAL MONOCHROME")
+                    Text("VERSIE 1.4.0 · BOUW 11 · EDITORIAL MONOCHROME")
                         .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.6)
                         .foregroundStyle(Thema.kleur(.gedempt))
                 }
