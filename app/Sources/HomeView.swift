@@ -15,6 +15,7 @@ struct HomeView: View {
     @State private var leeft: [String: String] = [:]
     @State private var saldoTekst: String = ""
     @State private var saldoLaag: Bool = false
+    @State private var gebruikersNaam: String = "Tiëndo"
 
     var body: some View {
         ScrollView {
@@ -40,7 +41,7 @@ struct HomeView: View {
                 .foregroundStyle(Thema.kleur(.zacht))
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text("Goed om je te zien, ").font(Thema.display(30))
-                Text("curator.").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+                Text(gebruikersNaam + ".").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
             }
         }
     }
@@ -156,6 +157,8 @@ struct HomeView: View {
 
     private func laadDashboard() {
         Task {
+            let p = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "profiel", invoer: ["actie": "lees"])
             let f = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "familie", invoer: ["actie": "status"])
             let s = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
@@ -163,6 +166,10 @@ struct HomeView: View {
             let g = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "saldo", invoer: [:])
             await MainActor.run {
+                if let p, p.ok, let profiel = p.data["profiel"] as? [String: Any],
+                   let naam = profiel["naam"] as? String, !naam.isEmpty {
+                    gebruikersNaam = naam
+                }
                 if let f, f.ok, let fam = f.data["familie"] as? [[String: Any]] {
                     familie = fam
                 }

@@ -96,6 +96,7 @@ struct ContentView: View {
         NavigationSplitView {
             zijbalk
                 .navigationSplitViewColumnWidth(min: 250, ideal: 280)
+                .navigationTitle("Grow Kit")
         } detail: {
             detail
         }
@@ -246,8 +247,10 @@ struct ContentView: View {
         HStack(alignment: .center, spacing: 10) {
             BoomIcoon(formaat: 24)
 
-            Text("Grow").font(Thema.display(20))
-            Text("Kit").font(Thema.display(20, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+            // App-font (Inter), met spatie: "Grow Kit"
+            Text("Grow Kit").font(Thema.tekst(17, gewicht: .semibold))
+                .tracking(0.3)
+                .foregroundStyle(Thema.kleur(.inkt))
         }
     }
 
