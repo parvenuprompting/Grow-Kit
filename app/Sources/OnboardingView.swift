@@ -1,6 +1,6 @@
 // OnboardingView (slice H) — het geboortemoment van het geheugen.
 //
-// Geen formulier: de eerste ratificatie. Concept → mens bekrachtigt →
+// Geen formulier: de eerste goedkeuringen. Concept → mens bekrachtigt →
 // pas dán opslag (regel 6). Alles mag leeg blijven ("Later invullen").
 // De opslag gebeurt via de adapter (kern/growkit_profiel.py) — append-only.
 
@@ -51,7 +51,7 @@ struct OnboardingView: View {
             Text("GEHEUGEN · GEBOORTEMOMENT").font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
                 .foregroundStyle(Thema.kleur(.gedempt))
             Text("Wie ben ik, curator?").font(Thema.display(30))
-            Text("Dit is de eerste ratificatie: wat GrowKit over je weet, begint hier — met jouw toestemming. Alles mag leeg blijven.")
+            Text("Dit is de eerste goedkeuringen: wat GrowKit over je weet, begint hier — met jouw toestemming. Alles mag leeg blijven.")
                 .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
         }

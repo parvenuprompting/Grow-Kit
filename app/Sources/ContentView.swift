@@ -13,9 +13,10 @@ struct ContentView: View {
     @AppStorage("growkitInterpreter") private var interpreter = Runner.standaardInterpreter
 
     enum Modi: Int, CaseIterable, Identifiable {
-        case home = -1, status, planten, ratificatie, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
+        case home = -1, status, planten, goedkeuringen, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
+        case graaf = 110
 
         var id: Int { rawValue }
         var nummer: String {
@@ -28,6 +29,7 @@ struct ContentView: View {
             case .browser: return "B5"
             case .ide: return "B6"
             case .connectors: return "B4"
+            case .graaf: return "KG"
             default: return String(format: "%02d", rawValue + 1)
             }
         }
@@ -38,7 +40,7 @@ struct ContentView: View {
             case .uitleg: return "Uitleg"
             case .status: return "Status"
             case .planten: return "Planten"
-            case .ratificatie: return "Ratificatie"
+            case .goedkeuringen: return "Goedkeuringen"
             case .dialoog: return "Dialoog"
             case .agenten: return "Agenten"
             case .vangnet: return "Vangnet"
@@ -50,6 +52,7 @@ struct ContentView: View {
             case .browser: return "Browser"
             case .ide: return "IDE"
             case .connectors: return "Connectors"
+            case .graaf: return "Knowledge Graph"
             }
         }
         var beschrijving: String {
@@ -59,7 +62,7 @@ struct ContentView: View {
             case .uitleg: return "Zes regels · de engine room"
             case .status: return "Identiteit, register, tellers, logboek"
             case .planten: return "Concept → bevestiging → motor met bewijs"
-            case .ratificatie: return "Mens-momenten in bulk goedkeuren of afkeuren"
+            case .goedkeuringen: return "Mens-momenten in bulk goedkeuren of afkeuren"
             case .dialoog: return "Gesprek met geïnstalleerde AI-agenten"
             case .agenten: return "Governor: taken, controle, observer"
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
@@ -71,11 +74,13 @@ struct ContentView: View {
             case .browser: return "Ingebouwde browser voor het web"
             case .ide: return "Mini-IDE voor de projectmappen"
             case .connectors: return "Google Drive en andere bronnen koppelen"
+            case .graaf: return "Het hele brein in één soepele kaart"
             }
         }
         var isMock: Bool {
             switch self {
             case .agentchat, .skills, .browser, .ide, .connectors: return true
+            case .graaf: return false   // live functie
             default: return false
             }
         }
@@ -96,6 +101,7 @@ struct ContentView: View {
         }
         .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer(); statusbalkStore.start() }
         .sheet(isPresented: $toonInstellingen) { instellingenSheet }
+        .background(SneltoetsBeheerder()) // ⌘\ = zijbalk in/uitklappen
     }
 
     // Saldo (Fase 2): één mini-regel boven Instellingen. Stille stippel:
@@ -150,7 +156,7 @@ struct ContentView: View {
 
                     // WERK — de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet, .audit]) { modus in
+                    ForEach([Modi.status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .vangnet, .audit]) { modus in
                         modusRij(modus)
                     }
 
@@ -318,13 +324,15 @@ struct ContentView: View {
                     StatusView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .planten:
                     PlantView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
-                case .ratificatie:
-                    RatificeerView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .goedkeuringen:
+                    GoedkeuringsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .dialoog:
                     ChatView(runner: runner, koppelingen: koppelingen,
                              repoPad: $repoPad, interpreter: $interpreter)
                 case .agenten:
                     AgentsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .graaf:
+                    GraafView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .vangnet:
                     VangnetView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .audit:

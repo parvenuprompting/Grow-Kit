@@ -291,7 +291,7 @@ struct PlantView: View {
         switch status {
         case "geslaagd": return "✓ Bewezen"
         case "wacht_op_mens": return "Mens-moment"
-        case "review_ok_wacht_ratificatie": return "Review OK"
+        case "review_ok_wacht_goedkeuringen": return "Review OK"
         case "lopend": return "⏳ Lopend"
         case "gefaald": return "Gefaald"
         default: return status
@@ -301,7 +301,7 @@ struct PlantView: View {
     private func badgeStijlVoor(_ status: String) -> BadgeStijl {
         switch status {
         case "geslaagd": return .bewezen
-        case "wacht_op_mens", "review_ok_wacht_ratificatie": return .mens
+        case "wacht_op_mens", "review_ok_wacht_goedkeuringen": return .mens
         case "lopend": return .lopend
         case "gefaald": return .herziening
         default: return .neutraal

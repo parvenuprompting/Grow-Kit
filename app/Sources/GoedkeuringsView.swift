@@ -1,9 +1,9 @@
-// Ratificatie-scherm — wachtende stappen in bulk goedkeuren of afkeuren mét reden.
+// Goedkeuringen-scherm — wachtende stappen in bulk goedkeuren of afkeuren mét reden.
 // Editorial Monochrome · Zero-Trust Harnas
 
 import SwiftUI
 
-struct RatificeerView: View {
+struct GoedkeuringsView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
@@ -39,10 +39,10 @@ struct RatificeerView: View {
             if let fout { foutKaart(fout) }
 
             if !heeftGeladen && wachtend.isEmpty && verwerkt.isEmpty {
-                LegeStaat(kop: "Curatie & Ratificatie (§9)",
+                LegeStaat(kop: "Curatie & Goedkeuringen (§9)",
                           tekst: "De AI kan voorstellen doen of stappen uitvoeren, maar beslist nooit zelf over de definitieve afronding. Vul een boompad in om openstaande mens-momenten op te vragen.",
-                          regels: ["stappen met status 'review_ok_wacht_ratificatie' wachten op bekrachtiging",
-                                   "niet-afgekeurde stappen worden in één klik geratificeerd",
+                          regels: ["stappen met status 'review_ok_wacht_goedkeuring' wachten op bekrachtiging",
+                                   "niet-afgekeurde stappen worden in één klik goedgekeurd",
                                    "afkeuring vereist altijd een inhoudelijke reden conform het faalcontract",
                                    "afkeuring leidt tot 'herziening_nodig' in het append-only logboek, nooit rollback"])
             }
@@ -75,7 +75,7 @@ struct RatificeerView: View {
                 Text("De mens heeft de ").font(Thema.display(30))
                 Text("laatste stem.").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
             }
-            Text("De machine stelt voor of toetst; alleen de mens ratificeert of wijst af mét reden.")
+            Text("De machine stelt voor of toetst; alleen de mens keurt goed of wijst af mét reden.")
                 .font(Thema.tekst(12))
                 .foregroundStyle(Thema.kleur(.zacht))
         }
@@ -115,7 +115,7 @@ struct RatificeerView: View {
     // MARK: - Wachtende Stappen
 
     private var wachtendeKaart: some View {
-        Kaart(kop: "Wacht op ratificatie (§9)", rechterKop: "\(wachtend.count) wachtend") {
+        Kaart(kop: "Wacht op goedkeuring (§9)", rechterKop: "\(wachtend.count) wachtend") {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(wachtend, id: \.self) { stap in
                     let isAfgekeurd = afgekeurd.contains(stap)
@@ -164,10 +164,10 @@ struct RatificeerView: View {
                 }
 
                 HStack(spacing: 14) {
-                    PillKnop(titel: afgekeurd.isEmpty ? "Ratificeer alle stappen" : "Verwerk curatie",
+                    PillKnop(titel: afgekeurd.isEmpty ? "Keur alles goed" : "Verwerk curatie",
                              gevuld: true) { verwerk() }
 
-                    Text(afgekeurd.isEmpty ? "alle stappen worden gemarkeerd als 'geratificeerd'" : "geselecteerde stappen krijgen 'herziening_nodig'")
+                    Text(afgekeurd.isEmpty ? "alle stappen worden gemarkeerd als 'goedgekeurd'" : "geselecteerde stappen krijgen 'herziening_nodig'")
                         .font(Thema.tekst(11))
                         .foregroundStyle(Thema.kleur(.gedempt))
                 }
@@ -190,8 +190,8 @@ struct RatificeerView: View {
                             .font(Thema.tekst(13, gewicht: .medium))
                             .monospacedDigit()
                         Spacer()
-                        StatusBadge(tekst: status == "geratificeerd" ? "✓ Geratificeerd" : "Herziening nodig",
-                                    stijl: status == "geratificeerd" ? .bewezen : .herziening)
+                        StatusBadge(tekst: status == "goedgekeurd" ? "✓ Goedgekeurd" : "Herziening nodig",
+                                    stijl: status == "goedgekeurd" ? .bewezen : .herziening)
                     }
                     .padding(.vertical, 10)
                     .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1) }

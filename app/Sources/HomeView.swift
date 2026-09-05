@@ -22,7 +22,7 @@ struct HomeView: View {
                 kop
                 watIsGrowKit
                 dashboard
-                startpunten
+                graafSectie
                 Spacer(minLength: 12)
             }
             .padding(28)
@@ -48,7 +48,7 @@ struct HomeView: View {
     private var watIsGrowKit: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("GrowKit is jouw huis voor AI-agenten.").font(Thema.display(17))
-            Text("Je plant bomen (projecten), de familie-agents voeren taken uit met machine-bewijs, en jij behoudt de laatste stem: elke belangrijke stap wacht op jouw ratificatie. Alles loopt via de adapter — de poort, motor en het faalcontract blijven de bewakers. Tests zijn wet; secrets blijven op de doelmachine; de geschiedenis is append-only.")
+            Text("Je plant bomen (projecten), de familie-agents voeren taken uit met machine-bewijs, en jij behoudt de laatste stem: elke belangrijke stap wacht op jouw goedkeuringen. Alles loopt via de adapter — de poort, motor en het faalcontract blijven de bewakers. Tests zijn wet; secrets blijven op de doelmachine; de geschiedenis is append-only.")
                 .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -94,14 +94,35 @@ struct HomeView: View {
         .padding(.horizontal, 18)
     }
 
-    // MARK: Startpunten
+    // MARK: Knowledge-graaf op de landing
+
+    private var graafSectie: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Knowledge Graph").font(Thema.display(20))
+                Text("· het hele brein in één kaart — scroll, zoom, klik en lees")
+                    .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+                Spacer()
+                Button("Openen") { onNavigeer(.graaf) }
+                    .buttonStyle(.plain)
+                    .font(Thema.tekst(11, gewicht: .medium))
+                    .foregroundStyle(Thema.kleur(.zacht))
+            }
+            GraafView(runner: runner, repoPad: $repoPad, interpreter: $interpreter,
+                      compactVoorbeeld: true)
+                .frame(height: 420)
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Thema.kleur(.lijn)))
+        }
+    }
+
+    // MARK: Startpunten (verplaatst naar de graaf en het zijmenu)
 
     private var startpunten: some View {
         Kaart(kop: "Direct aan de slag") {
             VStack(alignment: .leading, spacing: 0) {
                 startpunt("01", "Status", "De staat van je boom — identiteit, register, tellers", .status)
                 startpunt("02", "Nieuwe boom planten", "Kies een profiel, bekijk het concept, bevestig", .planten)
-                startpunt("03", "Ratificatie", "Wachtende mens-momenten in bulk beoordelen", .ratificatie)
+                startpunt("03", "Goedkeuringen", "Wachtende mens-momenten in bulk beoordelen", .goedkeuringen)
                 startpunt("05", "Agenten", "De familie: taken, controle, observer", .agenten)
             }
         }

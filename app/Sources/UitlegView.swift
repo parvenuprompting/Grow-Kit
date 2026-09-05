@@ -53,7 +53,7 @@ struct UitlegView: View {
                 uitlegItem(5, "Hard machine-bewijs, geen gevoel.",
                            "De AI mag nooit zelf concluderen \u{201C}ik denk dat het werkt\u{201D}. Een onafhankelijk controleprogramma voert harde technische tests uit: bestaat het bestand? Is de inhoud identiek aan het sjabloon (digitale vingerafdruk)? Is de JSON geldig?")
                 uitlegItem(6, "De mens heeft de laatste stem.",
-                           "De AI bouwt autonoom, maar publiceert nooit zomaar definitief. Alles landt als voorstel in een digitale inbox; jij als menselijke curator geeft de definitieve goedkeuring (ratificatie). Een tweede AI-model mag vooraf meekijken — maar bij twijfel wordt altijd jij geroepen.")
+                           "De AI bouwt autonoom, maar publiceert nooit zomaar definitief. Alles landt als voorstel in een digitale inbox; jij als menselijke curator geeft de definitieve goedkeuring (goedkeuringen). Een tweede AI-model mag vooraf meekijken — maar bij twijfel wordt altijd jij geroepen.")
             }
         }
     }
@@ -114,7 +114,7 @@ struct UitlegView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Bij falen: precies één alternatief_commando, dan stop, exit-code 2, de mens. Geen retries — oneindige herstellussen zijn structureel onmogelijk.")
                         .font(Thema.tekst(12.5))
-                    Text("De reviewer is een rol in reviewconfig.json (model/provider-velden zijn een schema-fout); payloads via stdin, shell=False; het oordeel is exact-match — twijfel is altijd de mens. Ratificatie in bulk, nooit auto-rollback.")
+                    Text("De reviewer is een rol in reviewconfig.json (model/provider-velden zijn een schema-fout); payloads via stdin, shell=False; het oordeel is exact-match — twijfel is altijd de mens. Goedkeuringen in bulk, nooit auto-rollback.")
                         .font(Thema.tekst(12.5))
                     Text("Crash? growkit_hervat.py reconstrueert de staat uit het logboek: niet-idempotent geslaagde stappen worden nooit herdraaid, de laatste bevestigde mijlpaal is het herstartpunt.")
                         .font(Thema.tekst(12.5))
@@ -138,7 +138,7 @@ struct UitlegView: View {
       → growkit_motor.py      (stappen-motor, append-only logboek.json)
       → growkit_bewijs.py     (5 checktypes — de LLM claimt nooit succes)
       → growkit_review.py     (alleen mens_verificatie; stdin, shell=False)
-      → ratificatie in bulk   (de mens keurt; geen auto-rollback)
+      → goedkeuringen in bulk   (de mens keurt; geen auto-rollback)
       ↳ crash? growkit_hervat.py leest het logboek en bouwt de restdraai
     """
 

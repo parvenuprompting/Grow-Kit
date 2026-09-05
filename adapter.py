@@ -952,6 +952,22 @@ def cmd_contract(invoer: dict) -> dict:
     raise AdapterFout("onbekende contract-actie — kies: maak, markdown")
 
 
+def cmd_graaf(invoer: dict) -> dict:
+    """Knowledge-graaf (fase A+): het hele brein als kaart.
+    Acties: graaf | document (één bestand alleen-lezen)."""
+    from kern import growkit_graaf as gg
+
+    actie = str(invoer.get("actie", "graaf")).strip()
+    if actie == "graaf":
+        return gg.haal_graaf()
+    if actie == "document":
+        pad = str(invoer.get("pad", "")).strip()
+        if not pad:
+            raise AdapterFout("document vereist pad")
+        return gg.lees_document(pad)
+    raise AdapterFout("onbekende graaf-actie — kies: graaf, document")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -969,6 +985,7 @@ COMMANDOS = {
     "profiel": cmd_profiel,
     "harnas": cmd_harnas,
     "contract": cmd_contract,
+    "graaf": cmd_graaf,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

@@ -63,6 +63,38 @@ struct GrowKitApp: App {
     }
 }
 
+// ⌘\ klapt de navigatie-zijbalk in en uit.
+struct SneltoetsBeheerder: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let v = NSView()
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.modifierFlags.contains(.command),
+               event.charactersIgnoringModifiers == "\\",
+               let venster = NSApp.windows.first,
+               let split = venster.contentView?.findSplitView() {
+                // subview verbergen/toon = collapsen van de zijbalkkolom
+                let zijbalk = split.arrangedSubviews.first
+                zijbalk?.isHidden.toggle()
+                split.adjustSubviews()
+                return nil
+            }
+            return event
+        }
+        return v
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+fileprivate extension NSView {
+    func findSplitView() -> NSSplitView? {
+        if let split = self as? NSSplitView { return split }
+        for sub in subviews {
+            if let gevonden = sub.findSplitView() { return gevonden }
+        }
+        return nil
+    }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var fullscreenToegepast = false
 

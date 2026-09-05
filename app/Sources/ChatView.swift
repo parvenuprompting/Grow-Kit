@@ -423,7 +423,7 @@ struct ChatView: View {
                 let oordeel = (s["review_oordeel"] as? String) ?? "onduidelijk"
                 berichten.append(ChatBericht(
                     afzender: "Reviewer", rol: .reviewer, tijdstip: tijd,
-                    tekst: "Stap \(s["id"] as? String ?? "?"): rol '\(s["review_rol"] as? String ?? "reviewer")' oordeelde '\(oordeel)'. \(oordeel == "geslaagd" ? "De motor ging door; ratificatie door jou volgt nog." : "De motor is gestopt — jij beslist.")",
+                    tekst: "Stap \(s["id"] as? String ?? "?"): rol '\(s["review_rol"] as? String ?? "reviewer")' oordeelde '\(oordeel)'. \(oordeel == "geslaagd" ? "De motor ging door; goedkeuringen door jou volgt nog." : "De motor is gestopt — jij beslist.")",
                     bewijsRef: "reviewconfig-rol", isVoorstel: false))
             }
             wachtMijlpaal = false

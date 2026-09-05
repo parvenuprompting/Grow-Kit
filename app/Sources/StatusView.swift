@@ -95,7 +95,7 @@ struct StatusView: View {
                           tekst: "Vul hierboven het pad naar een geplante boom in — bijv. ~/mijn-brein — en druk op 'Laad status' om de machine-feiten op te vragen.",
                           regels: ["de identiteit komt rechtstreeks uit het geboortebewijs.json van de boom",
                                    "het register toont of de boom verbonden is met een oerwoud-brein",
-                                   "de tellers tonen VOORSTELLEN: wachtend op ratificatie of reeds verzonden",
+                                   "de tellers tonen VOORSTELLEN: wachtend op goedkeuringen of reeds verzonden",
                                    "de tijdlijn toont de append-only historie zodra een boom is geladen"])
             }
             Spacer(minLength: 16)
@@ -199,7 +199,7 @@ struct StatusView: View {
                     StatusBadge(tekst: "\(g.verzonden) Verzonden", stijl: g.verzonden > 0 ? .bewezen : .neutraal)
                     Spacer()
                 }
-                Text("Voorstellen worden pas actief na menselijke ratificatie.")
+                Text("Voorstellen worden pas actief na menselijke goedkeuringen.")
                     .font(Thema.tekst(11))
                     .foregroundStyle(Thema.kleur(.gedempt))
             }
@@ -225,7 +225,7 @@ struct StatusView: View {
                                     titel: "\(entry["stap"] as? String ?? "?")",
                                     detail: detail,
                                     statusTekst: status,
-                                    stijl: status == "geslaagd" ? .bewezen : (status == "wacht_op_mens" || status == "review_ok_wacht_ratificatie" ? .mens : .neutraal),
+                                    stijl: status == "geslaagd" ? .bewezen : (status == "wacht_op_mens" || status == "review_ok_wacht_goedkeuringen" ? .mens : .neutraal),
                                     isEerste: index == 0,
                                     isLaatste: index == gegevens.tijdlijn.count - 1)
                     }

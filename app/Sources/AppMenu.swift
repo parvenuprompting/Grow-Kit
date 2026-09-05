@@ -49,7 +49,7 @@ struct AppMenu: Commands {
                 .keyboardShortcut("2", modifiers: .command)
             Button("Planten") { geselecteerd = .planten }
                 .keyboardShortcut("3", modifiers: .command)
-            Button("Ratificatie") { geselecteerd = .ratificatie }
+            Button("Goedkeuringen") { geselecteerd = .goedkeuringen }
                 .keyboardShortcut("4", modifiers: .command)
             Button("Dialoog") { geselecteerd = .dialoog }
                 .keyboardShortcut("5", modifiers: .command)

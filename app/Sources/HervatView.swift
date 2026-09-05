@@ -102,7 +102,7 @@ struct HervatView: View {
         switch b {
         case "geslaagd": return "GESLAAGD"
         case "heraanbieden", "uitvoeren": return "HERAANBIEDEN"
-        case "wacht_ratificatie": return "WACHT RATIFICATIE"
+        case "wacht_goedkeuringen": return "WACHT RATIFICATIE"
         case "overslaan": return "OVERSLAAN"
         default: return b.uppercased()
         }
