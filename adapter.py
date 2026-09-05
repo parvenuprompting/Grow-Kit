@@ -811,8 +811,9 @@ def cmd_agenttaak(invoer: dict) -> dict:
     register_pad.write_text(json.dumps(nieuw, indent=2, ensure_ascii=False) + "\n",
                             encoding="utf-8")
 
-    # 2) transport naar de wachtrij
-    r = at.verstuur(agent, taak_id, titel)
+    # 2) transport naar de wachtrij (met contract als dat er is)
+    contract = invoer.get("contract") if isinstance(invoer.get("contract"), dict) else None
+    r = at.verstuur(agent, taak_id, titel, contract=contract)
     if not r["ok"]:
         # terugrollen in het register — een aangemelde taak die niet aankomt
         # mag niet blijven hangen als 'open'
@@ -929,6 +930,28 @@ def cmd_harnas(invoer: dict) -> dict:
     raise AdapterFout("onbekende harnas-actie — kies: check, registreer")
 
 
+def cmd_contract(invoer: dict) -> dict:
+    """Taak-contract (Fase 3): de zes Automatiek-bouwblokken als compleet
+    contract. Acties: maak | markdown. Secrets worden geweigerd —
+    authenticatie hoort op de doelmachine."""
+    from kern import growkit_contract as gc
+
+    actie = str(invoer.get("actie", "maak")).strip()
+    if actie == "maak":
+        return gc.maak(doel=str(invoer.get("doel", "")),
+                       bronnen=str(invoer.get("bronnen", "")),
+                       stappen=str(invoer.get("stappen", "")),
+                       verificatie=str(invoer.get("verificatie", "")),
+                       planning=str(invoer.get("planning", "")),
+                       privacy=str(invoer.get("privacy", "")))
+    if actie == "markdown":
+        doc = invoer.get("contract")
+        if not isinstance(doc, dict):
+            raise AdapterFout("markdown vereist contract (document)")
+        return {"ok": True, "data": {"markdown": gc.markdown(doc)}}
+    raise AdapterFout("onbekende contract-actie — kies: maak, markdown")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -945,6 +968,7 @@ COMMANDOS = {
     "observaties": cmd_observaties,
     "profiel": cmd_profiel,
     "harnas": cmd_harnas,
+    "contract": cmd_contract,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

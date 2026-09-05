@@ -70,13 +70,15 @@ struct ContentView: View {
         } detail: {
             detail
         }
-        .onAppear { Thema.registreerFonts(); laadSaldo() }
+        .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer() }
         .sheet(isPresented: $toonInstellingen) { instellingenSheet }
     }
 
     // Saldo (Fase 2): één mini-regel boven Instellingen. Stille stippel:
     // leeg = geen sleutel gevonden, dan toont de regel gewoon niet.
+    // Verversen: elke 60 seconden (timer) + bij opstart.
     private var saldoRegel: String { saldoTekst }
+    @State private var saldoURL: String = ""
 
     private func laadSaldo() {
         Task {
@@ -86,8 +88,15 @@ struct ContentView: View {
                 if let r, r.ok,
                    let rest = r.data["resterend"] as? Double {
                     saldoTekst = String(format: "€ %.2f", rest)
+                    saldoURL = r.data["credits_url"] as? String ?? ""
                 }
             }
+        }
+    }
+
+    private func startSaldoTimer() {
+        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+            laadSaldo()
         }
     }
 
@@ -134,14 +143,21 @@ struct ContentView: View {
             Spacer(minLength: 0)
 
             if !saldoRegel.isEmpty {
-                HStack(spacing: 6) {
-                    Circle().fill(Thema.kleur(.inkt)).frame(width: 5, height: 5)
-                    Text("SALDO").font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
-                        .foregroundStyle(Thema.kleur(.gedempt))
-                    Spacer()
-                    Text(saldoRegel).font(Thema.tekst(10, gewicht: .medium))
-                        .foregroundStyle(Thema.kleur(.zacht))
+                Button(action: {
+                    if let url = URL(string: saldoURL) { NSWorkspace.shared.open(url) }
+                }) {
+                    HStack(spacing: 6) {
+                        Circle().fill(Thema.kleur(.inkt)).frame(width: 5, height: 5)
+                        Text("SALDO").font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                        Spacer()
+                        Text(saldoRegel).font(Thema.tekst(10, gewicht: .medium))
+                            .foregroundStyle(Thema.kleur(.zacht))
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .help("Open credits-pagina bij \(saldoURL.isEmpty ? "de provider" : "OpenRouter")")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
             }

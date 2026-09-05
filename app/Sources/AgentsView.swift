@@ -41,6 +41,13 @@ struct AgentsView: View {
     @State private var nieuwAgent = ""
     @State private var nieuwTaak = ""
     @State private var nieuwTitel = ""
+    @State private var toonContract = false
+    @State private var cDoel = ""
+    @State private var cBronnen = ""
+    @State private var cStappen = ""
+    @State private var cVerificatie = ""
+    @State private var cPlanning = ""
+    @State private var cPrivacy = ""
     @State private var bezig = false
 
     var body: some View {
@@ -420,8 +427,59 @@ struct AgentsView: View {
                 }
                 .transition(.opacity)
             }
+
+            Button(action: { withAnimation { toonContract.toggle() } }) {
+                HStack(spacing: 6) {
+                    Image(systemName: toonContract ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                    Text("Taak-contract — de zes bouwblokken (aanbevolen)")
+                        .font(Thema.tekst(10, gewicht: .medium)).tracking(0.5)
+                        .foregroundStyle(Thema.kleur(.zacht))
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if toonContract {
+                VStack(alignment: .leading, spacing: 10) {
+                    contractVeld("01 · Doel & trigger *", tekst: $cDoel,
+                                 placeholder: "Wat moet er gebeuren, wat zet het in gang?")
+                    contractVeld("02 · Bronnen & data", tekst: $cBronnen,
+                                 placeholder: "Welke diensten, bestanden, API's?")
+                    contractVeld("03 · Stappen", tekst: $cStappen,
+                                 placeholder: "Genummerde acties in gewone taal")
+                    contractVeld("04 · Kwaliteit & verificatie *", tekst: $cVerificatie,
+                                 placeholder: "Hoe weten we dat het gelukt is?")
+                    contractVeld("05 · Planning & uitvoering", tekst: $cPlanning,
+                                 placeholder: "Waar, hoe vaak, wat bij falen?")
+                    contractVeld("06 · Randvoorwaarden & privacy", tekst: $cPrivacy,
+                                 placeholder: "Randgevallen, privacy-eisen")
+                    Text("* verplicht · secrets worden geweigerd — authenticatie hoort op de doelmachine")
+                        .font(Thema.tekst(9))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                .padding(10)
+                .background(Thema.kleur(.papierZacht))
+                .transition(.opacity)
+            }
         }
         .padding(.top, 6)
+    }
+
+    private func contractVeld(_ label: String, tekst: Binding<String>,
+                              placeholder: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label.uppercased())
+                .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.2)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            TextField(placeholder, text: tekst)
+                .textFieldStyle(.plain).font(Thema.tekst(11))
+                .padding(.bottom, 3)
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 0.5)
+                }
+        }
     }
 
     private var geladenAgent: [String: Any]? {
@@ -439,11 +497,38 @@ struct AgentsView: View {
         guard !a.isEmpty, !t.isEmpty, !titel.isEmpty else {
             status.laatsteActie = "Vul agent, taak-id en titel in."; return
         }
+        // Contract opstellen als de sectie open staat — de adapter weigert
+        // het hele verzoek als blok 01/04 ontbreekt of er een secret in zit.
+        if toonContract {
+            Task {
+                let c = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                               commando: "contract",
+                                               invoer: ["actie": "maak",
+                                                        "doel": cDoel, "bronnen": cBronnen,
+                                                        "stappen": cStappen,
+                                                        "verificatie": cVerificatie,
+                                                        "planning": cPlanning,
+                                                        "privacy": cPrivacy])
+                await MainActor.run {
+                    guard let c, c.ok, let contract = c.data as? [String: Any] else {
+                        status.laatsteActie = "✕ " + (c?.fout ?? "contract geweigerd")
+                        return
+                    }
+                    verstuurMetContract(agent: a, taakId: t, titel: titel, contract: contract)
+                }
+            }
+        } else {
+            verstuurMetContract(agent: a, taakId: t, titel: titel, contract: nil)
+        }
+    }
+
+    private func verstuurMetContract(agent: String, taakId: String, titel: String,
+                                     contract: [String: Any]?) {
         Task {
+            var invoer: [String: Any] = ["agent": agent, "taak_id": taakId, "titel": titel]
+            if let contract { invoer["contract"] = contract }
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "agenttaak",
-                                           invoer: ["agent": a, "taak_id": t,
-                                                    "titel": titel])
+                                           commando: "agenttaak", invoer: invoer)
             await MainActor.run {
                 if let res = r?.data["resultaat"] as? [String: Any] {
                     status.laatsteActie = (res["ok"] as? Bool == true ? "✓ " : "✕ ")
@@ -455,6 +540,7 @@ struct AgentsView: View {
         }
         nieuwTaak = ""
         nieuwTitel = ""
+        cDoel = ""; cBronnen = ""; cStappen = ""; cVerificatie = ""; cPlanning = ""; cPrivacy = ""
     }
 
     // MARK: Taken

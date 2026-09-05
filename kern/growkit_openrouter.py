@@ -75,7 +75,8 @@ def saldo(sleutel: str) -> dict:
         raise ValueError("OpenRouter /credits gaf onverwachte velden — nooit gokken")
     return {"totaal": float(totaal), "gebruikt": float(gebruikt),
             "resterend": round(float(totaal) - float(gebruikt), 6),
-            "bron": "openrouter", "opgevraagd": _nu()}
+            "bron": "openrouter", "opgevraagd": _nu(),
+            "credits_url": "https://openrouter.ai/settings/credits"}
 
 
 def verbruik(sleutel: str, dagen: int | None = None) -> dict:
