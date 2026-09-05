@@ -294,7 +294,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 1.1.0")
+                Text("© Parvenu GrowKit 1.2.0")
                 Text("·").foregroundStyle(Thema.kleur(.lijn))
                 Text("Zero-Trust Harnas")
             }

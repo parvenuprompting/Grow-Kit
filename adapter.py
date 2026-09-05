@@ -501,6 +501,12 @@ def cmd_nachtronde(invoer: dict) -> dict:
     from kern.growkit_taken import laad_taken, valideer_taak, voer_taak_uit
     import contextlib
 
+    # Slice 11: nachtronde óók onder de governor — één agent draagt alle
+    # nachtelijke taken binnen de gouverneursregels; zonder 'agent' verandert
+    # het gedrag niet.
+    nacht_agent = str(invoer.get("agent", "")).strip() or None
+    governor_pad = doel / "governor.json" if nacht_agent else None
+
     taken = {t.get("id"): t for t in laad_taken(doel / "takenlijst.json")}
     reviewconfig = laad_reviewconfig(REPO / "reviewconfig.json")
     logboek = doel / "logboek.json"
@@ -522,7 +528,9 @@ def cmd_nachtronde(invoer: dict) -> dict:
                 ronde_geslaagd = False
                 break
             with contextlib.redirect_stdout(sys.stderr):
-                geslaagd, bevindingen = voer_taak_uit(doel, taak, reviewconfig=reviewconfig)
+                geslaagd, bevindingen = voer_taak_uit(
+                    doel, taak, reviewconfig=reviewconfig,
+                    governor_pad=governor_pad, agent=nacht_agent)
             status = "geslaagd" if geslaagd else "gefaald"
             verslag_taken.append({"taak": tid, "status": status,
                                   "bewijs": "; ".join(bevindingen) or "bewijs gecontroleerd"})
@@ -553,8 +561,26 @@ def cmd_nachtstatus(invoer: dict) -> dict:
         signaal = growkit_oerwoud.levensignaal(doel)
     except ValueError as e:
         raise AdapterFout(str(e))
+    # Slice 11: ochtendrapport bevat de governor-uitslag van de nacht —
+    # welke taken wachten op controle, welke zijn goedgekeurd.
+    governor_pad = doel / "governor.json"
+    governor = None
+    if governor_pad.exists():
+        try:
+            reg = json.loads(governor_pad.read_text(encoding="utf-8"))
+            wachtend = [{"taak": tid, "agent": t.get("agent", "?")}
+                        for tid, t in reg.get("taken", {}).items()
+                        if t.get("status") == "wacht_op_controle"]
+            goedgekeurd = sum(1 for t in reg.get("taken", {}).values()
+                              if t.get("status") == "goedgekeurd")
+            meldingen = reg.get("observer_meldingen", [])[-5:]
+            governor = {"wacht_op_controle": wachtend,
+                        "goedgekeurd_totaal": goedgekeurd,
+                        "observer_meldingen": meldingen}
+        except Exception:
+            governor = None
     return {"ok": True, "data": {"plan": plan, "rondes": rondes,
-                                 "levensignaal": signaal}}
+                                 "levensignaal": signaal, "governor": governor}}
 
 
 def cmd_saldo(invoer: dict) -> dict:
