@@ -1,0 +1,6 @@
+{
+  "images" : [
+    { "idiom" : "universal", "filename" : "LogoIcon.png" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}
