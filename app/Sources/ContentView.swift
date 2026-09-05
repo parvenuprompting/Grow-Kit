@@ -24,7 +24,7 @@ struct ContentView: View {
             case .home: return "00"
             case .status: return "01"
             case .planten: return "02"
-            case .ratificatie: return "03"
+            case .goedkeuringen: return "03"
             case .dialoog: return "04"
             case .agenten: return "05"
             case .graaf: return "06"
@@ -147,9 +147,8 @@ struct ContentView: View {
     private var zijbalk: some View {
         VStack(alignment: .leading, spacing: 0) {
             merk
-                .padding(.horizontal, 20)
-                .padding(.top, 24)
-                .padding(.bottom, 18)
+                .padding(.top, 4)
+                .padding(.bottom, 10)
 
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
@@ -256,7 +255,7 @@ struct ContentView: View {
         HStack(alignment: .center, spacing: 10) {
             Image("LogoIcon")
                 .resizable().scaledToFit()
-                .frame(width: 40, height: 40)
+                .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
 
@@ -264,6 +263,8 @@ struct ContentView: View {
                 .tracking(0.3)
                 .foregroundStyle(Thema.kleur(.inkt))
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
     }
 
     private func modusRij(_ modus: Modi) -> some View {
@@ -412,7 +413,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 1.3.0 · Zero-Trust Harnas — ontwikkeld door Tiëndo Welles")
+                Text("© Parvenu GrowKit 1.3.1 · Zero-Trust Harnas — ontwikkeld door Tiëndo Welles")
             }
             Spacer()
         }

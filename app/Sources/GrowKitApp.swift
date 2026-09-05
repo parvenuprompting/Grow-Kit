@@ -16,7 +16,7 @@ struct GrowKitApp: App {
     @State private var laadSchermWeg = false
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Grow Kit") {
             ContentView(geselecteerd: $geselecteerd,
                         toonInstellingen: $toonInstellingen,
                         toonOver: $toonOver)
