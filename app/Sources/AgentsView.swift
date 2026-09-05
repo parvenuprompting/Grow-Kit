@@ -68,7 +68,10 @@ struct AgentsView: View {
             .padding(24)
         }
         .background(Thema.kleur(.papier))
-        .onAppear { laadStatus() }
+        .onAppear {
+            vulUitVoorlader()
+            if !status.geladen { laadStatus() }
+        }
     }
 
     // MARK: Kop
@@ -584,6 +587,20 @@ struct AgentsView: View {
     }
 
     // MARK: Acties (alles via de adapter — de app beslist niets)
+
+    /// Vul de status direct uit de voorlader — geen wachttijd bij openen.
+    private func vulUitVoorlader() {
+        let v = AgentVoorlader.gedeeld
+        guard v.geladen, !status.geladen else { return }
+        status.fout = v.fout
+        status.limieten = v.limieten
+        status.agents = v.agents
+        status.taken = v.taken
+        status.meldingen = v.meldingen
+        status.familie = v.familie
+        status.voorstellen = v.voorstellen
+        status.geladen = true
+    }
 
     private func laadStatus() {
         bezig = true

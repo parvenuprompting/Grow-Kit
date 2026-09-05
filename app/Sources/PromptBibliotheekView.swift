@@ -3,6 +3,9 @@
 // Zoeken, filteren op domein/sectie, openen in detail; kopiëren met
 // variabelen ingevuld. Curation gebeurt in de bron-repo — hier niets
 // schrijven, conform de zero-trust-werkwijze.
+//
+// Editorial Monochrome — geen NavigationSplitView (die dwingt donkere
+// sidebar op macOS). Twee kolommen in HStack met witte achtergrond.
 
 import SwiftUI
 
@@ -57,23 +60,29 @@ struct PromptBibliotheekView: View {
     @State private var gekopieerd = false
 
     var body: some View {
-        NavigationSplitView {
-            // Lijst-kolom
+        HStack(alignment: .top, spacing: 0) {
+            // Linkerkolom: zoeken + promptlijst
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
+                    kopKlein
                     zoekveld
                     sectieFilter
                     if fout.isEmpty {
                         ForEach(gefilterd) { p in
                             promptRij(p)
                         }
+                    } else if !geladen {
+                        HStack { Spacer(); ProgressView().scaleEffect(0.7); Spacer() }
+                            .padding(.top, 40)
                     }
                 }
-                .padding(16)
+                .padding(20)
             }
-            .navigationSplitViewColumnWidth(min: 280, ideal: 320)
-        } detail: {
-            // Detail-kolom
+            .frame(width: 320)
+            .background(Thema.kleur(.papier))
+            .overlay(alignment: .trailing) { Rectangle().fill(Thema.kleur(.lijn)).frame(width: 1) }
+
+            // Rechterkolom: detail
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     if let p = geselecteerd {
@@ -82,21 +91,36 @@ struct PromptBibliotheekView: View {
                         leeg
                     }
                 }
-                .padding(24)
+                .padding(28)
             }
+            .background(Thema.kleur(.papier))
         }
         .background(Thema.kleur(.papier))
         .onAppear { if !geladen { laad() } }
     }
 
+    // MARK: - Kop (klein, voor de lijst)
+
+    private var kopKlein: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("18 PROMPTS").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            Text("Gecureerde bibliotheek").font(Thema.display(22))
+        }
+    }
+
     private var kopBalk: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Prompt-bibliotheek").font(Thema.display(30))
-            Text("De gecureerde audit-prompts — letterlijk uit de privé-bibliotheek, alleen te lezen. Kies een prompt, vul de variabelen in en kopieer hem naar je agent.")
+        VStack(alignment: .leading, spacing: 4) {
+            Text("18 PROMPTS · GECUREERDE BIBLIOTHEEK").font(Thema.tekst(9, gewicht: .semibold)).tracking(2.5)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            Text("Gecureerde bibliotheek").font(Thema.display(28))
+            Text("Letterlijk uit de privé-bibliotheek, alleen te lezen. Kies een prompt, vul de variabelen in en kopieer hem naar je agent.")
                 .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
+
+    // MARK: - Zoekveld & filters
 
     private var zoekveld: some View {
         HStack(spacing: 8) {
@@ -112,8 +136,8 @@ struct PromptBibliotheekView: View {
             }
         }
         .padding(8)
-        .background(RoundedRectangle(cornerRadius: 6).fill(Thema.kleur(.papierZacht)))
-        .overlay(RoundedRectangle(cornerRadius: 6).stroke(Thema.kleur(.lijn)))
+        .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+        .background(Thema.kleur(.papierZacht))
     }
 
     private var sectieFilter: some View {
@@ -137,6 +161,8 @@ struct PromptBibliotheekView: View {
         }
     }
 
+    // MARK: - Filtering
+
     private var gefilterd: [PromptItem] {
         var lijst = prompts
         if gekozenSectie != "alles" {
@@ -153,26 +179,33 @@ struct PromptBibliotheekView: View {
         return lijst
     }
 
+    // MARK: - Lijst
+
     private func promptRij(_ p: PromptItem) -> some View {
         let gekozen = geselecteerd?.id == p.id
         return Button(action: { kies(p) }) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(p.title).font(Thema.tekst(12, gewicht: .semibold))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(p.title)
+                    .font(Thema.tekst(12, gewicht: .semibold))
                     .foregroundStyle(Thema.kleur(gekozen ? .inkt : .zacht))
                     .lineLimit(1)
-                Text(p.domainTitle).font(Thema.tekst(9)).tracking(0.6)
-                    .foregroundStyle(Thema.kleur(.gedempt))
+                Text(p.domainTitle)
+                    .font(Thema.tekst(9)).tracking(0.6)
+                    .foregroundStyle(Thema.kleur(gekozen ? .inkt : .gedempt))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(RoundedRectangle(cornerRadius: 6)
-                .fill(gekozen ? Thema.kleur(.lijn).opacity(0.4) : Thema.kleur(.papierZacht)))
-            .overlay(RoundedRectangle(cornerRadius: 6)
-                .stroke(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.lijn)))
+            .padding(.vertical, 8).padding(.horizontal, 12)
+            .background(gekozen ? Thema.kleur(.inkt).opacity(0.06) : Thema.kleur(.papier))
+            .overlay(alignment: .leading) {
+                if gekozen { Rectangle().fill(Thema.kleur(.inkt)).frame(width: 2) }
+            }
+            .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 0.5) }
         }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Lege staat
 
     private var leeg: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -183,59 +216,77 @@ struct PromptBibliotheekView: View {
                 }
             } else if geladen {
                 Text("Kies links een prompt — \(prompts.count) gecureerde prompts beschikbaar.")
-                    .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                    .font(Thema.tekst(13)).foregroundStyle(Thema.kleur(.zacht))
             } else if bezig {
-                ProgressView().scaleEffect(0.8)
+                HStack { ProgressView().scaleEffect(0.8) }
             }
         }
     }
 
+    // MARK: - Detail
+
     private func detailPrompt(_ p: PromptItem) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             kopBalk
-            VStack(alignment: .leading, spacing: 4) {
-                Text(p.title).font(Thema.display(22))
-                Text("\(p.domainTitle) · \(p.complexity) · rol: \(p.role)")
-                    .font(Thema.tekst(10)).tracking(0.5)
-                    .foregroundStyle(Thema.kleur(.gedempt))
+
+            // Metadata-regel
+            HStack(spacing: 0) {
+                Text(p.domainTitle).font(Thema.tekst(11, gewicht: .medium))
+                Text(" · ").foregroundStyle(Thema.kleur(.gedempt))
+                Text(p.complexity).font(Thema.tekst(11))
+                    .foregroundStyle(Thema.kleur(.zacht))
+                Text(" · rol: ").foregroundStyle(Thema.kleur(.gedempt))
+                Text(p.role).font(Thema.tekst(11))
+                    .foregroundStyle(Thema.kleur(.zacht))
             }
+
+            // Bereik
             if !p.scope.isEmpty {
                 Kaart(kop: "Bereik", rechterKop: p.targetAudience.uppercased()) {
-                    Text(p.scope).font(Thema.tekst(12)).lineSpacing(3)
+                    Text(p.scope)
+                        .font(Thema.tekst(13)).lineSpacing(4)
+                        .foregroundStyle(Thema.kleur(.inkt))
                 }
             }
+
+            // Variabelen
             if !p.variables.isEmpty {
                 Kaart(kop: "Variabelen", rechterKop: "\(p.variables.count) VELDEN") {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         ForEach(p.variables.indices, id: \.self) { i in
                             let v = p.variables[i]
                             if let key = v["key"] as? String {
-                                VStack(alignment: .leading, spacing: 3) {
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(v["label"] as? String ?? key)
                                         .font(Thema.tekst(10, gewicht: .semibold))
                                         .tracking(0.5)
                                         .foregroundStyle(Thema.kleur(.gedempt))
                                     Veld(placeholder: v["placeholder"] as? String ?? "",
-                                                                                          tekst: Binding(
-                                                                                            get: { variabelen[key] ?? "" },
-                                                                                            set: { variabelen[key] = $0 }),
-                                                                                          lettergrootte: 12, breed: true)
-                                                                                    .padding(6)
-                                                                                    .background(RoundedRectangle(cornerRadius: 4)
-                                                                                        .fill(Thema.kleur(.papier)))
-                                                                                    .overlay(RoundedRectangle(cornerRadius: 4)
-                                                                                        .stroke(Thema.kleur(.lijn)))
+                                         tekst: Binding(
+                                            get: { variabelen[key] ?? "" },
+                                            set: { variabelen[key] = $0 }),
+                                         lettergrootte: 12, breed: true)
+                                        .padding(8)
+                                        .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                                        .background(Thema.kleur(.papierZacht))
                                 }
                             }
                         }
                     }
                 }
             }
+
+            // De prompttekst
             Kaart(kop: "De prompt", rechterKop: gekopieerd ? "GEKOPIEERD ✓" : "LETTERLIJK") {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(ingevuld(p))
-                        .font(Thema.tekst(12)).lineSpacing(3)
-                        .textSelection(.enabled)
+                VStack(alignment: .leading, spacing: 12) {
+                    ScrollView {
+                        Text(ingevuld(p))
+                            .font(Thema.tekst(13)).lineSpacing(5)
+                            .foregroundStyle(Thema.kleur(.inkt))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(maxHeight: 400)
                     HStack {
                         PillKnop(titel: "Kopieer prompt", gevuld: true) {
                             kopieer(ingevuld(p))
@@ -243,6 +294,19 @@ struct PromptBibliotheekView: View {
                         Spacer()
                         Text("Bron: audit-prompt-bibliotheek (privé-repo)")
                             .font(Thema.tekst(9)).foregroundStyle(Thema.kleur(.gedempt))
+                    }
+                }
+            }
+
+            // Tags onderaan
+            if !p.tags.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(p.tags, id: \.self) { tag in
+                        Text(tag)
+                            .font(Thema.tekst(10))
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .overlay(Capsule().stroke(Thema.kleur(.lijn)))
+                            .foregroundStyle(Thema.kleur(.gedempt))
                     }
                 }
             }
