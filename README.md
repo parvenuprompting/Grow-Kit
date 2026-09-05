@@ -9,6 +9,9 @@
 > **Het eerste zaadje dat jij controleert — niet de agent.**
 > En inmiddels veel meer dan een zaadje: Grow Kit is een **huis**. Een native macOS-app waarin een hele agent-familie woont, werkt en groeit — met machine-bewijs voor elke stap, een gouverneur die grenzen afdwingt, en de mens met de laatste stem.
 
+![Thuis — de landingspagina](docs/screenshots/thuis.png)
+*Thuis — de landingspagina: welkom, mini-dashboard (familie, saldo, harnas, geschiedenis) en de Knowledge Graph van het brein.*
+
 ## Wat het is
 
 Grow Kit is een **zelfstandig product**: een repo ("zaadje") die een AI-agent samen met de gebruiker tot leven brengt. De gebruiker plant met één actie; de agent leest de geboortebrief (`SEED.md`), laat de gebruiker via een klikbaar formulier kiezen wat er moet groeien, voert een vast stappenplan uit — en bewijst elke stap machinaal. Niets wordt uitgevoerd zonder bewijs, niets wordt definitief zonder bevestiging.
@@ -136,26 +139,43 @@ Fase 5 maakt van één boom een ecosysteem (spec §13):
 
 ## De app — navigatie
 
-Het zijmenu (editorial monochrome, versie 1.3.1):
+Het zijmenu (editorial monochrome, versie 1.3.1). **Agent Chat is bewust 01 — direct na Thuis — als hoofdfunctie van het huis:**
 
 ```
 00  Thuis              — landingspagina met mini-dashboard
-01  Status             — identiteit, register, tellers, logboek
-02  Planten            — profiel kiezen → concept → motor met bewijs
-03  Goedkeuringen      — ratificatie: mens keurt goed of wijst af met reden
-04  Dialoog            — AI — scope-poort, prompt-slijper, ronde tafel
-05  Agenten            — agent-roster, taak-contract, gouverneur
-06  Knowledge Graph    — brein-verbanden, tabs per sectie, platte tekst
-18  Prompts            — gecureerde bibliotheek, variabelen invullen
-07  Vangnet            — opgevangen review-aanroepen en stap-uitkomsten
-08  Audit              — volledig logboek, append-only
-───
-09  Hervatten          — crash-herstel: reconstructie uit het logboek
-10  Taak               — boom-pad + governor → takenlijst met bewijs
-───
-11  Rondleiding        — de vijf schermen van het ontwerp
-12  Uitleg             — zes regels · de engine room
+    WERK
+01  Agent Chat         — praat met de familie; bericht = taak via de wachtrij
+02  Status             — identiteit, register, tellers, logboek
+03  Planten            — profiel kiezen → concept → motor met bewijs
+04  Goedkeuringen      — ratificatie: mens keurt goed of wijst af met reden
+05  Dialoog            — AI — scope-poort, prompt-slijper, ronde tafel
+06  Agenten            — agent-roster, taak-contract, gouverneur
+07  Knowledge Graph    — brein-verbanden, tabs per sectie, platte tekst
+08  Prompts            — gecureerde bibliotheek, variabelen invullen
+09  Vangnet            — opgevangen review-aanroepen en stap-uitkomsten
+10  Audit              — volledig logboek, append-only
+    SYSTEEM
+11  Hervatten          — crash-herstel: reconstructie uit het logboek
+12  Taak               — boom-pad + governor → takenlijst met bewijs
+    LEREN
+13  Rondleiding        — de vijf schermen van het ontwerp
+14  Uitleg             — zes regels · de engine room
 ```
+
+### Rondleiding — van vage prompt tot geplante boom
+
+![Rondleiding — de groeiketen](docs/screenshots/rondleiding.png)
+*Rondleiding (13): de vijf schermen van het ontwerp — hier stap 1 (Kiemkeuze) en 2 (Schuring), met het vragenformulier dat opties aanbiedt in plaats van invulvelden.*
+
+### Planten — de scope-poort in drie vragen
+
+![Planten — scope-poort](docs/screenshots/planten.png)
+*Planten (03): kiemkeuze, doelmap en oerwoud-registratie in één scherm; elke keuze wordt bevestigd en elk resultaat machine-gecontroleerd.*
+
+### Prompts — de gecureerde bibliotheek
+
+![Prompts — gecureerde bibliotheek](docs/screenshots/prompts.png)
+*Prompts (08): 125 gecureerde audit-prompts uit de privé-bibliotheek — zoeken, filteren op domein, variabelen invullen en de prompt letterlijk kopiëren naar je agent.*
 
 ## Structuur
 
@@ -182,6 +202,7 @@ growkit/
 │   └── project.yml          ← XcodeGen-specificatie
 ├── docs/
 │   ├── HOE-HET-WERKT.md     ← de complete uitleg
+│   ├── screenshots/         ← app-screenshots (Thuis, Planten, Prompts, Rondleiding)
 │   ├── superpowers/specs/   ← ontwerpdocument (bron van waarheid)
 │   ├── superpowers/plans/   ← implementatieplannen fase 1-5
 │   ├── superpowers/bewijs/  ← zelfreviews + E2E-bewijzen per fase
@@ -226,7 +247,9 @@ Het idee bleek ouder dan deze repo: het leefde al in notities en concept-documen
 - **Fase 1-6 bewezen** (3-4 september 2026).
 - **Het vlaggenschip-tijdperk (5 september 2026, v1.3.1):** de app is het huis van de Parvenu Agent Family. Familie-register met live VPS-status, gouverneur-loop in beeld, taak-contract met secrets-scanner, PTS-bewijs-slot, observaties uit de brein-inbox, saldo live, geheugen-geboorte, landingspagina en laadscherm. Drie losse projecten ingebouwd: Parvenu Test Harnas, Saldo, Automatiek.
 - **Prompt-bibliotheek (5 september):** 125 gecureerde prompts uit de privé-auditbibliotheek, 26 domeinen, variabelen invullen en kopiëren.
-- **Nieuwe identiteit (5 september):** groen logo (G met blaadjes), editorial-monochrome invoervelden met leesbare placeholders.
+- **Agent Chat live (5 september, bouw 13):** het grote chatvenster met de familie is geen mock meer — item 01 in het zijmenu, direct na Thuis, als hoofdfunctie. Bericht = taak via de bewezen wachtrij; de agent antwoordt met zijn eigen profiel; gouverneur en faalcontract blijven de bewakers.
+- **Zijmenu gehernummereerd (5 september):** Agent Chat = 01 (bewust bovenaan, als hoofdfunctie), alle paginakoppen meeverplaatst (02 Status … 08 Prompts). Navigatie en koppen sluiten weer op elkaar aan.
+- **Nieuwe identiteit (5 september):** groen logo (G met blaadjes), editorial-monochrome invoervelden met leesbare placeholders, app forceert lichte modus (titels blijven altijd zichtbaar).
 
 **Op de plank (ontworpen, wacht op beurt):**
 - Fase 4 inbouw: SecureVault + Amnesia
