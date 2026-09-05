@@ -1,13 +1,13 @@
-# GrowKit 🌱
+# GrowKit 🌳
 
 [![Visibility](https://img.shields.io/badge/visibility-private-red)]()
-[![Status](https://img.shields.io/badge/status-fase_1_–_6_bewezen-brightgreen?style=flat-square)]()
+[![Status](https://img.shields.io/badge/status-vlaggenschip_·_v1.3.0_huis_bewezen-brightgreen?style=flat-square)]()
 [![Taal](https://img.shields.io/badge/inhoud-Nederlands-blue?style=flat-square)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-geen_(stdlib_only)-success?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-224_unit_+_7_E2E_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-404_unit_+_7_E2E_groen-success?style=flat-square)]()
 
 > **Het eerste zaadje dat jij controleert — niet de agent.**
-> Een repo die na installatie vanzelf ontkiemt: jouw AI-agent leest de geboortebrief, jij kiest de boom, de agent plant mét machine-geverifieerd bewijs, en daarna groeit het door — met een eigen harnas dat zonder AI-agent draait, en een oerwoud van bomen onder één gedeeld brein.
+> En inmiddels veel meer dan een zaadje: GrowKit is een **huis**. Een native macOS-app waarin een hele agent-familie woont, werkt en groeit — met machine-bewijs voor elke stap, een gouverneur die grenzen afdwingt, en de mens met de laatste stem.
 
 ## Wat het is
 
@@ -75,7 +75,30 @@ De volledige uitleg — gewone mens én techneut — staat in **[`docs/HOE-HET-W
 | `profielen/` | De bomen: JSON-stappenplannen met gecodeerd bewijs + sjablonen. |
 | `groei/` | Groeilaag-documentatie (`SETUP.md`) en het slijper-logboek. |
 
-## Het Oerwoud — één brein, vele bomen
+## Het huis — het vlaggenschip-tijdperk (5 september 2026)
+
+Sinds 5 september is GrowKit het vlaggenschip: het huis waarin de **Parvenu Agent Family** (7 Telegram-agents) verhuist van de groepschat naar een eigen, ontworpen omgeving. Alles wat daarvoor losse projecten waren, wordt één voor één ingebouwd — gefaseerd, één bedreigingsmodel per slice, met het faalcontract per slice.
+
+**Wat er nu in het huis woont:**
+
+| Onderdeel | Wat het doet |
+|---|---|
+| **Familie-register** | 7 agents met rol en LIVE-status, rechtstreeks gelezen van de VPS |
+| **Gouverneur** | max 2 taken/agent, 8 agents, controle vóór vrijlating — de mens beslist |
+| **Taak-koppeling** | taken vanuit de app naar de wachtrij van de agent op de VPS (één poort, JSON via stdin) |
+| **Taak-contract** | de zes Automatiek-bouwblokken; secrets-scanner weigert keys in taken |
+| **PTS-slot** | kadertests zijn wet: SHA256-manifest; gewijzigde test blokkeert goedkeuring |
+| **Controle & goedkeuring** | afgeronde taken → mens-moment → goedgekeurd/afgekeurd, append-only |
+| **Observaties** | voorstellen uit de brein-inbox, alleen-lezen in beeld |
+| **Saldo** | OpenRouter-saldo live in het zijmenu (60s verversing, rood onder €10, klik naar credits) |
+| **Geheugen-geboorte** | onboarding als eerste ratificatie: append-only profiel met datum per regel, vergeten-recht |
+| **Landingspagina** | rustige Home met mini-dashboard (familie live, saldo, harnas, geschiedenis) |
+| **Statusbalk** | lokale tijd, datum, weer (Open-Meteo) — in het zijmenu, het scherm blijft leeg |
+| **Laadscherm** | 2s animatie bij opstart, geen vensterdans |
+
+**Ingebouwde projecten:** Parvenu Test Harnas (bewijs-slot), Saldo (saldo-kern), Automatiek (taak-contract).
+**Vijf mock-schermen** tonen de visie voor wat komt: Agent Chat, Skills (met evals-per-stap), Browser, IDE, Connectors.
+
 
 Fase 5 maakt van één boom een ecosysteem (spec §13):
 
@@ -131,10 +154,11 @@ Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-H
 
 ## Tests en bewijs
 
-- **224 unit-tests** (unittest, stdlib, python3.13) + **7 end-to-end-scripts** — allemaal groen.
+- **404 unit-tests** (unittest, stdlib) + **7 end-to-end-scripts** — allemaal groen (5 september 2026).
 - Bewijs per fase, letterlijk vastgelegd: `docs/superpowers/bewijs/` (fase-2-test1/2, fase-3-test3, fase-4-test4, fase-5-test5 + zelfreviews).
 - Test 4 bewijst de agent-onafhankelijkheid: het harnas plant, crasht (`kill -9`), hervat uit het logboek en ratificeert — met alleen python3 en gepijpte antwoorden.
 - Test 5 bewijst het oerwoud: register, doorstroom, drift-guard en corrupt-register-afhandeling op een schone plek.
+- **Fase-A-bewijs (5 sept):** elke nieuwe slice TDD (eerst rood, dan groen); end-to-end bewezen tegen de echte VPS — taak van Mac arriveert in de agent-wachtrij, controle-cyclus afgerond van afgerond → controle → goedgekeurd; harnas-check blokkeert goedgekeuring bij gewijzigde kadertests.
 
 ## Ontstaan
 
@@ -143,6 +167,6 @@ Het idee bleek ouder dan deze repo: het leefde al in notities en concept-documen
 ## Status
 
 - **Fase 1-6 bewezen** (3-4 september 2026). Zelfreviews met letterlijke evidence: `docs/superpowers/bewijs/fase-4-zelfreview.md`, `fase-5-zelfreview.md` en `fase-6-zelfreview.md`.
-- **Waar de app nu staat (fase 6.2)**: het Dialoog-scherm is functioneel — elke opdracht gaat via de adapter (`slijp`) door de Scope-poort, met vragenronde en planten vanuit de chat. Status toont de echte append-only tijdlijn. Spraakmemo werkt lokaal (geen cloud). Reviewer-uitslagen verschijnen in beeld. Nog schets: bijlagen in de chat.
-- **Volgende stappen** (voorstellen, nog niet afgesproken): fase 5.1 (cross-machine sync via git — eigen bewijsronde), de nachtfabriek (autonome-fabriek-profiel binnen de bewezen kaders), of de eerste echte gebruiker (distributie-beslissing: git-kloon vs. PyPI — naamcheck §2 herhalen bij een PyPI-release).
+- **Het vlaggenschip-tijdperk (5 september 2026, v1.3.0):** de app is nu het huis van de Parvenu Agent Family — familie-register met live VPS-status, gouverneur-loop (aanmelden → uitvoeren → controle → vrijlating) in beeld, taak-contract met secrets-scanner, PTS-bewijs-slot op elke goedkeuring, observaties uit de brein-inbox, saldo live, geheugen-geboorte als onboarding, landingspagina en laadscherm. Drie losse projecten ingebouwd: Parvenu Test Harnas, Saldo, Automatiek. Zie **[Het huis](#het-huis---het-vlaggenschip-tijdperk-5-september-2026)** hierboven.
+- **Op de plank (ontworpen, wacht op beurt):** Fase 4 inbouw (SecureVault + Amnesia), PAC-inbouw (fabriek-tellers → Brain Index → Proof Coverage → Brain Graph), Context-Rot bouwstenen (schema-dwang → hash-lock → tool-isolatie → context-cap → harde ratificatie), Tailscale-bouwplan (5 bouwstenen + read-only Gids-rol), wizard-hervatvlag (generiek: kieming + Tailscale), profiel-sjabloon met de drie research-lessen (evals-per-stap, herleidbare frontmatter, append-only JSONL), B-functies uit de mocks (Agent Chat, Skills, Browser, IDE, Connectors, handleiding, extensie-builder), fase 5.1 (cross-machine sync), packaging-beslissing.
 - Repo privé opzettelijk (ontwerpfase); openbaarmeming wordt een bewuste beslissing.
