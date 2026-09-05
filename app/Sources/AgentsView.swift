@@ -359,28 +359,48 @@ struct AgentsView: View {
     }
 
     private var nieuweTaakRij: some View {
-        HStack(spacing: 10) {
-            Picker("", selection: $nieuwAgent) {
-                Text("Agent…").tag("")
-                ForEach(familieNamen, id: \.self) { naam in
-                    Text(naam).tag(naam.lowercased())
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Picker("", selection: $nieuwAgent) {
+                    Text("Agent…").tag("")
+                    ForEach(familieNamen, id: \.self) { naam in
+                        Text(naam).tag(naam.lowercased())
+                    }
+                }
+                .font(Thema.tekst(12))
+                .frame(width: 130)
+
+                Text("Taak-id (bijv. taak-001)")
+                    .font(Thema.tekst(11))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                    .frame(width: 150, alignment: .leading)
+                TextField("", text: $nieuwTaak)
+                    .textFieldStyle(.plain)
+                    .font(Thema.tekst(12))
+                    .frame(width: 110)
+                TextField("Wat moet er gedaan worden?", text: $nieuwTitel)
+                    .textFieldStyle(.plain)
+                    .font(Thema.tekst(12))
+                PillKnop(titel: "Taak koppelen", gevuld: true) {
+                    koppelTaak()
                 }
             }
-            .font(Thema.tekst(12))
-            .frame(width: 130)
-
-            TextField("Taak-id (bijv. taak-001)", text: $nieuwTaak)
-                .textFieldStyle(.plain)
-                .font(Thema.tekst(12))
-                .frame(width: 160)
-            TextField("Wat moet er gedaan worden?", text: $nieuwTitel)
-                .textFieldStyle(.plain)
-                .font(Thema.tekst(12))
-            PillKnop(titel: "Taak koppelen", gevuld: true) {
-                koppelTaak()
+            if !nieuwAgent.isEmpty, let gekozen = geladenAgent {
+                HStack(spacing: 6) {
+                    Circle().fill(Thema.kleur(.inkt)).frame(width: 6, height: 6)
+                    Text("Geladen: \(gekozen["naam"] as? String ?? nieuwAgent) — \(gekozen["beschrijving"] as? String ?? "")")
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                    Spacer()
+                }
+                .transition(.opacity)
             }
         }
         .padding(.top, 6)
+    }
+
+    private var geladenAgent: [String: Any]? {
+        status.familie.first { ($0["naam"] as? String ?? "").lowercased() == nieuwAgent }
     }
 
     private var familieNamen: [String] {
