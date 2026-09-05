@@ -51,6 +51,22 @@ final class Runner: ObservableObject {
         proces.standardError = stderr
         proces.standardInput = stdin
 
+        // CRITIEK: stdout asynchroon lezen terwijl het proces draait.
+        // Grote antwoorden (graaf = 145 KB) vullen de 64 KB pipe-buffer;
+        // zonder dit leest de runner pas ná afloop en deadlockt het proces.
+        var uitBuffer = Data()
+        let uitGroep = DispatchGroup()
+        uitGroep.enter()
+        stdout.fileHandleForReading.readabilityHandler = { handle in
+            let chunk = handle.availableData
+            if chunk.isEmpty {
+                handle.readabilityHandler = nil
+                uitGroep.leave()
+            } else {
+                uitBuffer.append(chunk)
+            }
+        }
+
         try proces.run()
         stdin.fileHandleForWriting.write(stdinData.data(using: .utf8)!)
         stdin.fileHandleForWriting.closeFile()
@@ -61,10 +77,13 @@ final class Runner: ObservableObject {
         }
         if proces.isRunning {
             proces.terminate()
+            stdout.fileHandleForReading.readabilityHandler = nil
             throw AdapterFout.proces("time-out na \(Int(timeOut))s")
         }
+        // wacht tot de pipe volledig gelezen is (max 2s)
+        _ = uitGroep.wait(timeout: .now() + 2)
 
-        let uitData = stdout.fileHandleForReading.readDataToEndOfFile()
+        let uitData = uitBuffer
         guard let tekst = String(data: uitData, encoding: .utf8),
               let json = try? JSONSerialization.jsonObject(with: uitData) as? [String: Any] else {
             let voorproef = String(data: uitData.prefix(200), encoding: .utf8) ?? "<niet-tekst>"
