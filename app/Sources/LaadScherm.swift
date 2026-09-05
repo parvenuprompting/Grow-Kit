@@ -11,25 +11,14 @@ struct LaadScherm: View {
     var body: some View {
         ZStack {
             Thema.kleur(.papier).ignoresSafeArea()
-            VStack(spacing: 18) {
-                ZStack {
-                    Circle()
-                        .stroke(Thema.kleur(.lijn), lineWidth: 1)
-                        .frame(width: 74, height: 74)
-                        .scaleEffect(verschenen ? 1.0 : 0.7)
-                    Image(systemName: "leaf")
-                        .font(.system(size: 30, weight: .light))
-                        .foregroundStyle(Thema.kleur(.inkt))
-                        .scaleEffect(verschenen ? 1.0 : 0.5)
-                        .opacity(verschenen ? 1 : 0)
-                }
-                HStack(spacing: 0) {
-                    Text("Grow").font(Thema.display(18))
-                    Text("Kit").font(Thema.display(18, cursief: true))
-                        .foregroundStyle(Thema.kleur(.zacht))
-                }
-                .opacity(verschenen ? 1 : 0)
-                .offset(y: verschenen ? 0 : 6)
+            VStack(spacing: 16) {
+                Image("LogoVolledig")
+                    .resizable().scaledToFit()
+                    .frame(width: 190, height: 190)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .shadow(color: .black.opacity(0.2), radius: 8, y: 3)
+                    .scaleEffect(verschenen ? 1.0 : 0.75)
+                    .opacity(verschenen ? 1 : 0)
             }
         }
         .opacity(vervaagd ? 0 : 1)
@@ -38,8 +27,8 @@ struct LaadScherm: View {
             withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
                 verschenen = true
             }
-            // Na één seconde zacht uitfaden (0.4s), daarna volledig weg.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Na twee seconden zacht uitfaden (0.4s), daarna volledig weg.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 withAnimation(.easeOut(duration: 0.4)) { vervaagd = true }
             }
         }

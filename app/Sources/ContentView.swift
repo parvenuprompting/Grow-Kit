@@ -245,9 +245,12 @@ struct ContentView: View {
 
     private var merk: some View {
         HStack(alignment: .center, spacing: 10) {
-            BoomIcoon(formaat: 24)
+            Image("LogoIcon")
+                .resizable().scaledToFit()
+                .frame(width: 30, height: 30)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
 
-            // App-font (Inter), met spatie: "Grow Kit"
             Text("Grow Kit").font(Thema.tekst(17, gewicht: .semibold))
                 .tracking(0.3)
                 .foregroundStyle(Thema.kleur(.inkt))
