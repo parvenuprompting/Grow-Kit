@@ -107,9 +107,9 @@ struct AgentsView: View {
         let rol = agent["rol"] as? String ?? ""
         let beschrijving = agent["beschrijving"] as? String ?? ""
         let isObserver = rol == "observer"
-        let leeftStatus = status.leeft[naam.lowercased()] ?? "onbekend"
-        let leeftKleur: Color = leeftStatus == "active" ? .green
-            : (leeftStatus == "onbekend" ? .gray : .red)
+        let weergave = FamilieStatusStore.gedeeld.weergave(naam)
+        let leeftStatus = weergave.tekst
+        let leeftKleur: Color = weergave.kleur
 
         return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text(naam).font(Thema.display(16))
@@ -124,7 +124,7 @@ struct AgentsView: View {
             Spacer()
             HStack(spacing: 5) {
                 Circle().fill(leeftKleur).frame(width: 7, height: 7)
-                Text(leeftStatus == "active" ? "LIVE" : leeftStatus.uppercased())
+                Text(leeftStatus == "online" ? "LIVE" : leeftStatus.uppercased())
                     .font(Thema.tekst(9, gewicht: .semibold)).tracking(1)
                     .foregroundStyle(Thema.kleur(.gedempt))
             }
@@ -613,6 +613,7 @@ struct AgentsView: View {
                             kaart[naam] = st
                         }
                     }
+                    FamilieStatusStore.gedeeld.leeft = kaart
                     status.leeft = kaart
                 }
                 vulStatus(r)

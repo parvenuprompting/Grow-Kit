@@ -100,7 +100,8 @@ struct ContentView: View {
         } detail: {
             detail
         }
-        .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer(); statusbalkStore.start() }
+        .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer(); statusbalkStore.start()
+            FamilieStatusStore.gedeeld.start(repoPad: repoPad, interpreter: interpreter, runner: runner) }
         .sheet(isPresented: $toonInstellingen) { instellingenSheet }
         .background(SneltoetsBeheerder()) // ⌘\ = zijbalk in/uitklappen
     }

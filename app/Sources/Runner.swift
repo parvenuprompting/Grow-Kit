@@ -80,18 +80,33 @@ final class Runner: ObservableObject {
     }
 
     /// Adapter-aanroep: leest JSON, retourneert het resultaat of gooit een fout.
+    /// Draait bewust op een achtergrond-queue — de main thread blijft vrij,
+    /// en meerdere aanroepen lopen naast elkaar in plaats van elkaar op te
+    /// wachten (was de oorzaak van bevriezende UI en lege kaarten).
     func roep(repoPad: String, interpreter: String,
               commando: String, invoer: [String: Any],
               timeOut: TimeInterval = 120) async throws -> AdapterResultaat {
         await MainActor.run { self.bezig = true; self.laatsteFout = nil }
         defer { Task { await MainActor.run { self.bezig = false } } }
-        let resultaat = try voerUit(repoPad: repoPad, interpreter: interpreter,
-                                    arguments: [adapterPath(repoPad: repoPad), commando],
-                                    stdinData: jsonToString(invoer), timeOut: timeOut)
-        if !resultaat.ok, let fout = resultaat.fout {
-            await MainActor.run { self.laatsteFout = fout }
+        let argumenten = [adapterPath(repoPad: repoPad), commando]
+        let stdin = jsonToString(invoer)
+        let pad = repoPad
+        let interp = interpreter
+        return try await withCheckedThrowingContinuation { cont in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let resultaat = try self.voerUit(repoPad: pad, interpreter: interp,
+                                                     arguments: argumenten,
+                                                     stdinData: stdin, timeOut: timeOut)
+                    if !resultaat.ok, let fout = resultaat.fout {
+                        Task { await MainActor.run { self.laatsteFout = fout } }
+                    }
+                    cont.resume(returning: resultaat)
+                } catch {
+                    cont.resume(throwing: error)
+                }
+            }
         }
-        return resultaat
     }
 
     private func adapterPath(repoPad: String) -> String {

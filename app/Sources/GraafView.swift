@@ -146,6 +146,13 @@ struct GraafView: View {
                 store.laad(runner: runner, repoPad: repoPad, interpreter: interpreter)
             }
         }
+        .onChange(of: store.geladen) { _ in
+            // compact-voorbeeld op Home: begin ingezoomd zodat de hubs zichtbaar zijn
+            if store.geladen && compactVoorbeeld {
+                zoom = 0.42
+                pan = .zero
+            }
+        }
     }
 
     private var miniBediening: some View {
