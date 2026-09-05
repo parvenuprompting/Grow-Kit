@@ -13,9 +13,11 @@ struct GrowKitApp: App {
     @State private var toonOver = false
     @State private var toonOnboarding = false
     @State private var onboardingGecheckt = false
+    @State private var laadSchermWeg = false
 
     var body: some Scene {
         WindowGroup {
+            ZStack {
             ContentView(geselecteerd: $geselecteerd,
                         toonInstellingen: $toonInstellingen,
                         toonOver: $toonOver)
@@ -37,6 +39,17 @@ struct GrowKitApp: App {
                         toonOnboarding = true
                     }
                 }
+            LaadScherm()
+                .opacity(laadSchermWeg ? 0 : 1)
+                .allowsHitTesting(!laadSchermWeg)
+                .task {
+                    // 1 seconde zichtbaar, dan 0.4s uitfaden, daarna uit de boom.
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    withAnimation(.easeOut(duration: 0.4)) { laadSchermWeg = true }
+                    try? await Task.sleep(nanoseconds: 450_000_000)
+                    laadSchermWeg = true
+                }
+            }
         }
         .commands {
             AppMenu(geselecteerd: $geselecteerd,

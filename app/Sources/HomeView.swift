@@ -1,5 +1,6 @@
-// Homescherm — minimalistisch, met directe startpunten en een middelgroot
-// chatvenster. De thuisbasis van de tuinier: één blik, één klik, aan het werk.
+// Homescherm — de rustige landingspagina: wat is GrowKit, en een klein
+// dashboard met de info die overzichtelijk bij de hand moet zijn.
+// Minimalistisch bij de les: één blik, één klik, aan het werk.
 
 import SwiftUI
 
@@ -10,32 +11,90 @@ struct HomeView: View {
     @Binding var interpreter: String
     var onNavigeer: (ContentView.Modi) -> Void
 
+    @State private var familie: [[String: Any]] = []
+    @State private var leeft: [String: String] = [:]
+    @State private var saldoTekst: String = ""
+    @State private var saldoLaag: Bool = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 kop
+                watIsGrowKit
+                dashboard
                 startpunten
-                chatVenster
                 Spacer(minLength: 12)
             }
             .padding(28)
         }
         .background(Thema.kleur(.papier))
+        .onAppear { laadDashboard() }
     }
+
+    // MARK: Kop — wie je bent, wat dit huis is
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("THUIS · DE TUINIER AAN HET WERK")
+            Text("THUIS · LANDINGSPAGINA")
                 .font(Thema.tekst(10, gewicht: .semibold)).tracking(3)
                 .foregroundStyle(Thema.kleur(.zacht))
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Text("Goed om je te zien, ").font(Thema.display(30))
                 Text("curator.").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
             }
-            Text("Alles hieronder loopt via de adapter — de poort, motor en het faalcontract blijven de bewakers.")
-                .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
         }
     }
+
+    private var watIsGrowKit: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("GrowKit is jouw huis voor AI-agenten.").font(Thema.display(17))
+            Text("Je plant bomen (projecten), de familie-agents voeren taken uit met machine-bewijs, en jij behoudt de laatste stem: elke belangrijke stap wacht op jouw ratificatie. Alles loopt via de adapter — de poort, motor en het faalcontract blijven de bewakers. Tests zijn wet; secrets blijven op de doelmachine; de geschiedenis is append-only.")
+                .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(Rectangle().fill(Thema.kleur(.lijn)).frame(width: 2), alignment: .leading)
+    }
+
+    // MARK: Klein dashboard — de vier dingen die je wilt zien
+
+    private var dashboard: some View {
+        HStack(alignment: .top, spacing: 0) {
+            dashCel(titel: "FAMILIE", waarde: liveTeller, sub: "van \(familie.count) live")
+            verticaleLijn
+            dashCel(titel: "SALDO", waarde: saldoTekst.isEmpty ? "—" : saldoTekst,
+                    sub: saldoLaag ? "onder €10 — bijvullen" : "OpenRouter",
+                    rood: saldoLaag)
+            verticaleLijn
+            dashCel(titel: "HARNAS", waarde: "wet", sub: "kadertests verankerd")
+            verticaleLijn
+            dashCel(titel: "GESCHIEDENIS", waarde: "append-only", sub: "niets wordt gewist")
+            Spacer()
+        }
+    }
+
+    private var liveTeller: String {
+        let actief = leeft.values.filter { $0 == "active" }.count
+        return familie.isEmpty ? "—" : "\(actief)"
+    }
+
+    private var verticaleLijn: some View {
+        Rectangle().fill(Thema.kleur(.lijn)).frame(width: 1, height: 54)
+    }
+
+    private func dashCel(titel: String, waarde: String, sub: String, rood: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(titel).font(Thema.tekst(8, gewicht: .semibold)).tracking(1.5)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            Text(waarde).font(Thema.display(22))
+                .foregroundStyle(rood ? Color.red : Thema.kleur(.inkt))
+            Text(sub).font(Thema.tekst(9)).foregroundStyle(Thema.kleur(.gedempt))
+        }
+        .padding(.horizontal, 18)
+    }
+
+    // MARK: Startpunten
 
     private var startpunten: some View {
         Kaart(kop: "Direct aan de slag") {
@@ -43,7 +102,7 @@ struct HomeView: View {
                 startpunt("01", "Status", "De staat van je boom — identiteit, register, tellers", .status)
                 startpunt("02", "Nieuwe boom planten", "Kies een profiel, bekijk het concept, bevestig", .planten)
                 startpunt("03", "Ratificatie", "Wachtende mens-momenten in bulk beoordelen", .ratificatie)
-                startpunt("05", "Hervatten", "Een onderbroken plant verder uitvoeren", .hervatten)
+                startpunt("05", "Agenten", "De familie: taken, controle, observer", .agenten)
             }
         }
     }
@@ -72,23 +131,33 @@ struct HomeView: View {
         .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1) }
     }
 
-    private var chatVenster: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Dialoog").font(Thema.display(20))
-                Text("· de dialoog loopt nu écht via de adapter; spraakmemo en bijlagen zijn nog schets")
-                    .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
-                Spacer()
-                Button("Volledig scherm") { onNavigeer(.dialoog) }
-                    .buttonStyle(.plain)
-                    .font(Thema.tekst(11, gewicht: .medium))
-                    .foregroundStyle(Thema.kleur(.zacht))
-            }
-            Kaart(kop: "Tuinier · Reviewer · Architect") {
-                ChatView(runner: runner, koppelingen: koppelingen,
-                         repoPad: $repoPad, interpreter: $interpreter,
-                         metScroll: true, compact: true)
-                    .frame(height: 320)
+    // MARK: Data
+
+    private func laadDashboard() {
+        Task {
+            let f = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "familie", invoer: ["actie": "status"])
+            let s = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentstatus", invoer: [:])
+            let g = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "saldo", invoer: [:])
+            await MainActor.run {
+                if let f, f.ok, let fam = f.data["familie"] as? [[String: Any]] {
+                    familie = fam
+                }
+                if let s, let agents = s.data["agents"] as? [[String: Any]] {
+                    var kaart: [String: String] = [:]
+                    for a in agents {
+                        if let naam = a["agent"] as? String, let st = a["status"] as? String {
+                            kaart[naam] = st
+                        }
+                    }
+                    leeft = kaart
+                }
+                if let g, g.ok, let rest = g.data["resterend"] as? Double {
+                    saldoTekst = String(format: "€ %.2f", rest)
+                    saldoLaag = rest < 10.0
+                }
             }
         }
     }

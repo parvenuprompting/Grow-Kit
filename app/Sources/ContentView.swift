@@ -14,6 +14,8 @@ struct ContentView: View {
 
     enum Modi: Int, CaseIterable, Identifiable {
         case home = -1, status, planten, ratificatie, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
+        // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
+        case agentchat = 100, skills, browser, ide, connectors
 
         var id: Int { rawValue }
         var nummer: String {
@@ -21,6 +23,11 @@ struct ContentView: View {
             case .home: return "00"
             case .rondleiding: return "07"
             case .uitleg: return "08"
+            case .agentchat: return "B1"
+            case .skills: return "B2"
+            case .browser: return "B5"
+            case .ide: return "B6"
+            case .connectors: return "B4"
             default: return String(format: "%02d", rawValue + 1)
             }
         }
@@ -38,6 +45,11 @@ struct ContentView: View {
             case .audit: return "Audit"
             case .hervatten: return "Hervatten"
             case .taak: return "Taak"
+            case .agentchat: return "Agent Chat"
+            case .skills: return "Skills"
+            case .browser: return "Browser"
+            case .ide: return "IDE"
+            case .connectors: return "Connectors"
             }
         }
         var beschrijving: String {
@@ -54,9 +66,20 @@ struct ContentView: View {
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .taak: return "Taken uit de groeilaag uitvoeren"
+            case .agentchat: return "Agents ondernemen direct actie — groot venster"
+            case .skills: return "Welke skills draaien er op jouw GrowKit?"
+            case .browser: return "Ingebouwde browser voor het web"
+            case .ide: return "Mini-IDE voor de projectmappen"
+            case .connectors: return "Google Drive en andere bronnen koppelen"
             }
         }
-        var actiefInV1: Bool { true }
+        var isMock: Bool {
+            switch self {
+            case .agentchat, .skills, .browser, .ide, .connectors: return true
+            default: return false
+            }
+        }
+        var actiefInV1: Bool { !isMock }
     }
 
     @State private var toonInstellingenTab = 0
@@ -79,6 +102,7 @@ struct ContentView: View {
     // Verversen: elke 60 seconden (timer) + bij opstart.
     private var saldoRegel: String { saldoTekst }
     @State private var saldoURL: String = ""
+    @State private var saldoLaag: Bool = false
 
     private func laadSaldo() {
         Task {
@@ -88,6 +112,7 @@ struct ContentView: View {
                 if let r, r.ok,
                    let rest = r.data["resterend"] as? Double {
                     saldoTekst = String(format: "€ %.2f", rest)
+                    saldoLaag = rest < 10.0
                     saldoURL = r.data["credits_url"] as? String ?? ""
                 }
             }
@@ -147,12 +172,12 @@ struct ContentView: View {
                     if let url = URL(string: saldoURL) { NSWorkspace.shared.open(url) }
                 }) {
                     HStack(spacing: 6) {
-                        Circle().fill(Thema.kleur(.inkt)).frame(width: 5, height: 5)
+                        Circle().fill(saldoLaag ? Color.red : Thema.kleur(.inkt)).frame(width: 5, height: 5)
                         Text("SALDO").font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
                             .foregroundStyle(Thema.kleur(.gedempt))
                         Spacer()
                         Text(saldoRegel).font(Thema.tekst(10, gewicht: .medium))
-                            .foregroundStyle(Thema.kleur(.zacht))
+                            .foregroundStyle(saldoLaag ? Color.red : Thema.kleur(.zacht))
                     }
                     .contentShape(Rectangle())
                 }
@@ -284,9 +309,55 @@ struct ContentView: View {
                     HervatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .agentchat:
+                    MockScherm(icoon: "bubble.left.and.text.bubble.right",
+                               titel: "Agent Chat",
+                               belofte: "Eén groot venster waarin de familie-agents direct actie ondernemen — zoals Hermes, maar dan in jouw huis. Elke agent blijft binnen zijn rol en het gouverneur-plafond.",
+                               komendeStappen: [
+                                "Groot chatvenster met agent-keuze (de zeven familieleden)",
+                                "Agents voeren acties uit via de adapter — poort en faalcontract blijven bewaken",
+                                "Ronde Tafel-modus: Tuinier, Reviewer en Architect luisteren mee",
+                                "Context-cap en ref-lookups zodat lange sessies betaalbaar blijven",
+                                "Elke agent beheert zijn eigen domein in de app"])
+                case .skills:
+                    MockScherm(icoon: "square.stack.3d.up",
+                               titel: "Skills",
+                               belofte: "Zie in één oogopslag welke skills er op jouw GrowKit draaien — met per skill de machine-controles (evals) die bewijzen dat ze doen wat ze beloven.",
+                               komendeStappen: [
+                                "Lokale skills-browser: alle geïnstalleerde skills, leesbaar in gewone taal",
+                                "Skills-triade: instructie + referenties + evals als data bij de stap",
+                                "Machine-controles per stap, niet als vrije tekst ernaast",
+                                "Skills aan- of uitzetten zonder de kern te raken"])
+                case .browser:
+                    MockScherm(icoon: "globe",
+                               titel: "Browser",
+                               belofte: "Een ingebouwde browser voor het web — documentatie bekijken, live previews van je boom en provider-dashboards, zonder GrowKit te verlaten.",
+                               komendeStappen: [
+                                "Ingebouwde webweergave met adresbalk",
+                                "Bladwijzers voor de plekken die de familie vaak gebruikt",
+                                "Agent mag lezen wat jij laat lezen — zero-trust blijft gelden"])
+                case .ide:
+                    MockScherm(icoon: "chevron.left.forwardslash.chevron.right",
+                               titel: "IDE",
+                               belofte: "Een mini-ontwikkelomgeving voor de projectmappen: bestanden bekijken, kleine aanpassingen, met de browser ernaast. Voor de momenten dat je zelf even tussen de code wilt staan.",
+                               komendeStappen: [
+                                "Bestandsverkenner voor de projectmappen",
+                                "Leesbare weergave van bronbestanden met zoekfunctie",
+                                "Kleine bewerkingen via de adapter — elke wijziging een gebeurtenis in het register",
+                                "Browser-paneel ernaast voor live previews"])
+                case .connectors:
+                    MockScherm(icoon: "link",
+                               titel: "Connectors",
+                               belofte: "Koppel de bronnen die de familie nodig heeft — Google Drive eerst — met duidelijke, in te trekken bevoegdheden per connector.",
+                               komendeStappen: [
+                                "Google Drive: documenten lezen voor de brein-sync",
+                                "Per connector een vaste, tonbare bevoegdhedenlijst",
+                                "Verbreek de koppeling met één klik — niets blijft achter",
+                                "Meer connectors volgen hetzelfde patroon"])
                 }
             }
             .frame(maxHeight: .infinity)
+            StatusBalk()
             schermVoet
         }
     }
@@ -299,7 +370,6 @@ struct ContentView: View {
                 Text("Zero-Trust Harnas")
             }
             Spacer()
-            Text("© Parvenu GrowKit 1.3.0")
         }
         .font(Thema.tekst(9, gewicht: .medium)).tracking(1)
         .foregroundStyle(Thema.kleur(.gedempt))
