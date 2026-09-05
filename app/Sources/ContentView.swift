@@ -14,6 +14,7 @@ struct ContentView: View {
 
     enum Modi: Int, CaseIterable, Identifiable {
         case home = -1, status, planten, goedkeuringen, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
+        case securevault = 90
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -34,9 +35,10 @@ struct ContentView: View {
             case .vangnet: return "09"
             case .audit: return "10"
             case .hervatten: return "11"
-            case .taak: return "12"
-            case .rondleiding: return "13"
-            case .uitleg: return "14"
+            case .securevault: return "12"
+            case .taak: return "13"
+            case .rondleiding: return "14"
+            case .uitleg: return "15"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -56,6 +58,7 @@ struct ContentView: View {
             case .vangnet: return "Vangnet"
             case .audit: return "Audit"
             case .hervatten: return "Hervatten"
+            case .securevault: return "Secure Vault"
             case .taak: return "Taak"
             case .agentchat: return "Agent Chat"
             case .skills: return "Skills"
@@ -79,6 +82,7 @@ struct ContentView: View {
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .hervatten: return "Restdraai vanuit het logboek"
+            case .securevault: return "Echte macOS-kluizen — AES-256 via hdiutil"
             case .taak: return "Taken uit de groeilaag uitvoeren"
             case .agentchat: return "Agents ondernemen direct actie — groot venster"
             case .skills: return "Welke skills draaien er op jouw GrowKit?"
@@ -176,9 +180,9 @@ struct ContentView: View {
 
                     Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
-                    // SYSTEEM — herstel en taken
+                    // SYSTEEM — Secure Vault eerst (privacy-fundering), dan herstel en taken
                     zijbalkSectie("SYSTEEM")
-                    ForEach([Modi.hervatten, .taak]) { modus in
+                    ForEach([Modi.securevault, .hervatten, .taak]) { modus in
                         modusRij(modus)
                     }
 
@@ -369,6 +373,8 @@ struct ContentView: View {
                     UitlegView()
                 case .hervatten:
                     HervatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .securevault:
+                    SecureVaultView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:
