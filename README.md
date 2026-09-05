@@ -1,4 +1,4 @@
-# GrowKit 🌳
+# Grow Kit 🌳
 
 [![Visibility](https://img.shields.io/badge/visibility-private-red)]()
 [![Status](https://img.shields.io/badge/status-vlaggenschip_·_v1.3.0_huis_bewezen-brightgreen?style=flat-square)]()
@@ -7,15 +7,15 @@
 [![Tests](https://img.shields.io/badge/tests-404_unit_+_7_E2E_groen-success?style=flat-square)]()
 
 > **Het eerste zaadje dat jij controleert — niet de agent.**
-> En inmiddels veel meer dan een zaadje: GrowKit is een **huis**. Een native macOS-app waarin een hele agent-familie woont, werkt en groeit — met machine-bewijs voor elke stap, een gouverneur die grenzen afdwingt, en de mens met de laatste stem.
+> En inmiddels veel meer dan een zaadje: Grow Kit is een **huis**. Een native macOS-app waarin een hele agent-familie woont, werkt en groeit — met machine-bewijs voor elke stap, een gouverneur die grenzen afdwingt, en de mens met de laatste stem.
 
 ## Wat het is
 
-GrowKit is een **zelfstandig product**: een repo ("zaadje") die een AI-agent samen met de gebruiker tot leven brengt. De gebruiker plant met één actie; de agent leest de geboortebrief (`SEED.md`), laat de gebruiker via een klikbaar formulier kiezen wat er moet groeien, voert een vast stappenplan uit — en bewijst elke stap machinaal. Niets wordt uitgevoerd zonder bewijs, niets wordt definitief zonder bevestiging.
+Grow Kit is een **zelfstandig product**: een repo ("zaadje") die een AI-agent samen met de gebruiker tot leven brengt. De gebruiker plant met één actie; de agent leest de geboortebrief (`SEED.md`), laat de gebruiker via een klikbaar formulier kiezen wat er moet groeien, voert een vast stappenplan uit — en bewijst elke stap machinaal. Niets wordt uitgevoerd zonder bewijs, niets wordt definitief zonder bevestiging.
 
-GrowKit gaat er vanuit dat de AI fouten kan maken — **zero-trust**. De interpretatie van "is het gelukt?" ligt nooit bij het model, maar bij een deterministische controlelaag die de AI niet kan omzeilen. De AI is de tuinier; de mens is de curator.
+Grow Kit gaat er vanuit dat de AI fouten kan maken — **zero-trust**. De interpretatie van "is het gelukt?" ligt nooit bij het model, maar bij een deterministische controlelaag die de AI niet kan omzeilen. De AI is de tuinier; de mens is de curator.
 
-Geïnspireerd op de bewezen vorm van een tweede brein (agent leest en stelt voor, mens keurt goed, alleen toevoegen nooit overschrijven) — maar volledig generiek: GrowKit schrijft nooit terug naar bestaande systemen van de gebruiker.
+Geïnspireerd op de bewezen vorm van een tweede brein (agent leest en stelt voor, mens keurt goed, alleen toevoegen nooit overschrijven) — maar volledig generiek: Grow Kit schrijft nooit terug naar bestaande systemen van de gebruiker.
 
 **De invoerketen** (hoe een "domme prompt" alsnog een boom wordt):
 
@@ -77,7 +77,7 @@ De volledige uitleg — gewone mens én techneut — staat in **[`docs/HOE-HET-W
 
 ## Het huis — het vlaggenschip-tijdperk (5 september 2026)
 
-Sinds 5 september is GrowKit het vlaggenschip: het huis waarin de **Parvenu Agent Family** (7 Telegram-agents) verhuist van de groepschat naar een eigen, ontworpen omgeving. Alles wat daarvoor losse projecten waren, wordt één voor één ingebouwd — gefaseerd, één bedreigingsmodel per slice, met het faalcontract per slice.
+Sinds 5 september is Grow Kit het vlaggenschip: het huis waarin de **Parvenu Agent Family** (7 Telegram-agents) verhuist van de groepschat naar een eigen, ontworpen omgeving. Alles wat daarvoor losse projecten waren, wordt één voor één ingebouwd — gefaseerd, één bedreigingsmodel per slice, met het faalcontract per slice.
 
 **Wat er nu in het huis woont:**
 
