@@ -111,8 +111,17 @@ struct AgentsView: View {
         let beschrijving = agent["beschrijving"] as? String ?? ""
         let isObserver = rol == "observer"
         let weergave = FamilieStatusStore.gedeeld.weergave(naam)
-        let leeftStatus = weergave.tekst
-        let leeftKleur: Color = weergave.kleur
+        var leeftStatus = weergave.tekst
+        var leeftKleur: Color = weergave.kleur
+        // Fallback: als de gedeelde store nog leeg is, check de lokale status.leeft
+        if leeftStatus == "onbekend", let lok = status.leeft[naam.lowercased()] {
+            switch lok {
+            case "active": leeftStatus = "online"; leeftKleur = .green
+            case "inactive": leeftStatus = "uitgeschakeld"; leeftKleur = .orange
+            case "failed": leeftStatus = "fout"; leeftKleur = .red
+            default: break
+            }
+        }
 
         return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text(naam).font(Thema.display(16))
@@ -599,6 +608,12 @@ struct AgentsView: View {
         status.meldingen = v.meldingen
         status.familie = v.familie
         status.voorstellen = v.voorstellen
+        // Kopieer ook de live-status naar de lokale store én de gedeelde store
+        status.leeft = FamilieStatusStore.gedeeld.leeft
+        if status.leeft.isEmpty {
+            // Voorlader is klaar maar agentstatus kwam nog niet terug — start een eigen poll
+            FamilieStatusStore.gedeeld.laad(repoPad: repoPad, interpreter: interpreter, runner: runner)
+        }
         status.geladen = true
     }
 
