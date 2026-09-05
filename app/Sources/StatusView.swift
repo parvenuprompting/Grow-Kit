@@ -126,7 +126,7 @@ struct StatusView: View {
                     .foregroundStyle(Thema.kleur(.gedempt))
                 TextField("Pad naar de boom, bijv. ~/mijn-brein", text: $boomPad,
                           prompt: Text("Pad naar de boom, bijv. ~/mijn-brein")
-                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.zacht)))
+                              .font(Thema.tekst(13)).foregroundColor(Thema.kleur(.inkt)))
                     .textFieldStyle(.plain)
                     .font(Thema.tekst(13))
                     .foregroundStyle(Thema.kleur(.inkt))
