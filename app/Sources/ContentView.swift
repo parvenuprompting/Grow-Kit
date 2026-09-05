@@ -124,19 +124,19 @@ struct ContentView: View {
 
     private func zijbalkSectie(_ titel: String) -> some View {
         Text(titel)
-            .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+            .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.8)
             .foregroundStyle(Thema.kleur(.gedempt))
             .padding(.horizontal, 20)
-            .padding(.top, 14)
-            .padding(.bottom, 6)
+            .padding(.top, 12)
+            .padding(.bottom, 4)
     }
 
     private var merk: some View {
-        HStack(alignment: .center, spacing: 12) {
-            BoomIcoon(formaat: 30)
+        HStack(alignment: .center, spacing: 10) {
+            BoomIcoon(formaat: 24)
 
-            Text("Grow").font(Thema.display(24))
-            Text("Kit").font(Thema.display(24, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+            Text("Grow").font(Thema.display(20))
+            Text("Kit").font(Thema.display(20, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
         }
     }
 
@@ -144,47 +144,42 @@ struct ContentView: View {
         let gekozen = geselecteerd == modus
         let isHovered = hoverModus == modus
         return Button(action: { if modus.actiefInV1 { geselecteerd = modus } }) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
                 Text(modus.nummer)
-                    .font(Thema.display(15, cursief: !modus.actiefInV1))
+                    .font(Thema.tekst(10, gewicht: .semibold)).tracking(0.5)
                     .foregroundStyle(Thema.kleur(gekozen ? .inkt : .gedempt))
-                    .frame(width: 26, alignment: .leading)
+                    .frame(width: 22, alignment: .leading)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(modus.naam).font(Thema.display(17))
-                        .foregroundStyle(Thema.kleur(gekozen ? .inkt : .zacht))
-                    Text(modus.beschrijving)
-                        .font(Thema.tekst(10))
-                        .foregroundStyle(Thema.kleur(.gedempt))
-                        .lineLimit(1)
-                }
+                Text(modus.naam).font(Thema.tekst(12, gewicht: .medium))
+                    .foregroundStyle(Thema.kleur(gekozen ? .inkt : .zacht))
+                    .lineLimit(1)
 
                 Spacer()
 
                 if !modus.actiefInV1 {
                     Text("6.1")
-                        .font(Thema.tekst(9, gewicht: .semibold))
+                        .font(Thema.tekst(8, gewicht: .semibold))
                         .tracking(1)
-                        .padding(.horizontal, 7).padding(.vertical, 3)
+                        .padding(.horizontal, 5).padding(.vertical, 2)
                         .overlay(Capsule().stroke(Thema.kleur(.lijn)))
                         .foregroundStyle(Thema.kleur(.gedempt))
                 } else if modus == .dialoog {
                     Text("AI")
-                        .font(Thema.tekst(9, gewicht: .semibold))
+                        .font(Thema.tekst(8, gewicht: .semibold))
                         .tracking(1)
-                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .padding(.horizontal, 5).padding(.vertical, 2)
                         .overlay(Capsule().stroke(Thema.kleur(gekozen ? .inkt : .lijn)))
                         .foregroundStyle(Thema.kleur(gekozen ? .inkt : .gedempt))
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 13)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
             .background(gekozen ? Thema.kleur(.papierZacht) : (isHovered ? Thema.kleur(.papierZacht).opacity(0.5) : Thema.kleur(.papier)))
             .overlay(alignment: .leading) {
-                if gekozen { Rectangle().fill(Thema.kleur(.inkt)).frame(width: 3) }
+                if gekozen { Rectangle().fill(Thema.kleur(.inkt)).frame(width: 2) }
             }
-            .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1) }
+            .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 0.5) }
         }
         .buttonStyle(.plain)
         .onHover { hover in
