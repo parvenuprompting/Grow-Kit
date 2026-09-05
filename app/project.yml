@@ -21,7 +21,6 @@ targets:
         buildPhase: resources
       - path: Resources
         buildPhase: resources
-    assets:
       - path: Assets.xcassets
     settings:
       base:
