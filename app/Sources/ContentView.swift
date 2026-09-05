@@ -84,37 +84,36 @@ struct ContentView: View {
 
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
-            // WERK — de dagelijkse modi
-            zijbalkSectie("WERK")
-            ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet, .audit]) { modus in
-                modusRij(modus)
+            // Menu in een scrollbare kolom — Instellingen blijft altijd bereikbaar,
+            // ook op een klein venster.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    // WERK — de dagelijkse modi
+                    zijbalkSectie("WERK")
+                    ForEach([Modi.status, .planten, .ratificatie, .dialoog, .agenten, .vangnet, .audit]) { modus in
+                        modusRij(modus)
+                    }
+
+                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
+                    // SYSTEEM — herstel en taken
+                    zijbalkSectie("SYSTEEM")
+                    ForEach([Modi.hervatten, .taak]) { modus in
+                        modusRij(modus)
+                    }
+
+                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+
+                    // LEREN — rondleiding en uitleg
+                    zijbalkSectie("LEREN")
+                    ForEach([Modi.rondleiding, .uitleg]) { modus in
+                        modusRij(modus)
+                    }
+                }
             }
+            .scrollIndicators(.hidden)
 
-            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-            // SYSTEEM — herstel en taken
-            zijbalkSectie("SYSTEEM")
-            ForEach([Modi.hervatten, .taak]) { modus in
-                modusRij(modus)
-            }
-
-            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-            // LEREN — rondleiding en uitleg
-            zijbalkSectie("LEREN")
-            ForEach([Modi.rondleiding, .uitleg]) { modus in
-                modusRij(modus)
-            }
-
-            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-            Spacer()
-
-            statusRegels
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-
-            Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+            Spacer(minLength: 0)
 
             voet
                 .padding(.horizontal, 20)
@@ -132,42 +131,12 @@ struct ContentView: View {
             .padding(.bottom, 6)
     }
 
-    // Levende statusregels onderin de zijbalk — het enterprise-gevoel:
-    // de zijbalk vertelt altijd waar je staat.
-    private var statusRegels: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            statusRegel("HARNAS", tekst: "zero-trust · adapter-gebonden")
-            statusRegel("GRENZEN", tekst: "2 taken/agent · 8 agents · 16 taken")
-            statusRegel("VERSIE", tekst: "0.8.0 (bouw 3)")
-        }
-    }
-
-    private func statusRegel(_ label: String, tekst: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(label)
-                .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.4)
-                .foregroundStyle(Thema.kleur(.gedempt))
-                .frame(width: 52, alignment: .leading)
-            Text(tekst)
-                .font(Thema.tekst(10))
-                .foregroundStyle(Thema.kleur(.zacht))
-                .lineLimit(1)
-        }
-    }
-
     private var merk: some View {
         HStack(alignment: .center, spacing: 12) {
             BoomIcoon(formaat: 30)
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    Text("Grow").font(Thema.display(24))
-                    Text("Kit").font(Thema.display(24, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
-                }
-                Text("EDITORIAL MONOCHROME · ZERO-TRUST")
-                    .font(Thema.tekst(8, gewicht: .semibold)).tracking(1.8)
-                    .foregroundStyle(Thema.kleur(.gedempt))
-            }
+            Text("Grow").font(Thema.display(24))
+            Text("Kit").font(Thema.display(24, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
         }
     }
 
@@ -225,17 +194,6 @@ struct ContentView: View {
 
     private var voet: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Circle().fill(Thema.kleur(.inkt)).frame(width: 7, height: 7)
-                Text("ADAPTER GEREED")
-                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
-                    .foregroundStyle(Thema.kleur(.zacht))
-                Spacer()
-                Text("PROCESS")
-                    .font(Thema.tekst(8, gewicht: .medium)).tracking(1)
-                    .foregroundStyle(Thema.kleur(.gedempt))
-            }
-
             Button(action: { toonInstellingen = true }) {
                 HStack(spacing: 6) {
                     Image(systemName: "gearshape")
@@ -294,7 +252,7 @@ struct ContentView: View {
     private var schermVoet: some View {
         HStack {
             HStack(spacing: 6) {
-                Text("© Parvenu GrowKit 1.2.0")
+                Text("© Parvenu GrowKit 1.3.0")
                 Text("·").foregroundStyle(Thema.kleur(.lijn))
                 Text("Zero-Trust Harnas")
             }
