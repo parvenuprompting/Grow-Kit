@@ -358,15 +358,7 @@ struct ContentView: View {
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:
-                    MockScherm(icoon: "bubble.left.and.text.bubble.right",
-                               titel: "Agent Chat",
-                               belofte: "Eén groot venster waarin de familie-agents direct actie ondernemen — zoals Hermes, maar dan in jouw huis. Elke agent blijft binnen zijn rol en het gouverneur-plafond.",
-                               komendeStappen: [
-                                "Groot chatvenster met agent-keuze (de zeven familieleden)",
-                                "Agents voeren acties uit via de adapter — poort en faalcontract blijven bewaken",
-                                "Ronde Tafel-modus: Tuinier, Reviewer en Architect luisteren mee",
-                                "Context-cap en ref-lookups zodat lange sessies betaalbaar blijven",
-                                "Elke agent beheert zijn eigen domein in de app"])
+                    AgentChatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .skills:
                     MockScherm(icoon: "square.stack.3d.up",
                                titel: "Skills",

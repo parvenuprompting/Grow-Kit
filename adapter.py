@@ -990,6 +990,20 @@ def cmd_hervatvlag(invoer: dict) -> dict:
     raise AdapterFout("onbekende hervatvlag-actie — kies: hervat, rond_af")
 
 
+def cmd_agentchat(invoer: dict) -> dict:
+    """Agentchat (ronde 3): praat met de familie via de wachtrij.
+    Acties: stuur (agent + bericht) | draad (agent)."""
+    from kern import growkit_agentchat as ac
+
+    actie = str(invoer.get("actie", "draad")).strip()
+    agent = str(invoer.get("agent", "")).strip()
+    if actie == "stuur":
+        return ac.stuur(agent, str(invoer.get("bericht", "")))
+    if actie == "draad":
+        return ac.draad(agent)
+    raise AdapterFout("onbekende agentchat-actie — kies: stuur, draad")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1009,6 +1023,7 @@ COMMANDOS = {
     "contract": cmd_contract,
     "graaf": cmd_graaf,
     "hervatvlag": cmd_hervatvlag,
+    "agentchat": cmd_agentchat,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,
