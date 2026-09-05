@@ -903,6 +903,32 @@ def cmd_profiel(invoer: dict) -> dict:
                       "bekrachtig, vergeten, context")
 
 
+def cmd_harnas(invoer: dict) -> dict:
+    """Harnas (Fase 1, PTS): tests zijn wet. Acties:
+    - check: verifieer kadertests tegen het manifest (alleen-lezen)
+    - registreer: één test bewust registreren/her-registreren — mens-handeling
+    Corrupt manifest = nette fout, nooit auto-herstel."""
+    from kern import growkit_pts as pts
+
+    actie = str(invoer.get("actie", "check")).strip()
+    basis = Path(str(invoer.get("basis", "")).strip()
+                 or Path.home() / "growkit-governor")
+    manifest = Path(str(invoer.get("manifest_pad", "")).strip() or basis / "manifest.json")
+    if actie == "check":
+        r = pts.check_tests(basis, manifest)
+        return {"ok": True, "data": r}
+    if actie == "registreer":
+        test = str(invoer.get("test", "")).strip()
+        if not test:
+            raise AdapterFout("registreer vereist test (pad t.o.v. basis)")
+        try:
+            pts.registreer_test(manifest, basis / test, basis)
+        except FileNotFoundError:
+            raise AdapterFout(f"testbestand niet gevonden: {test}")
+        return {"ok": True, "data": {"geregistreerd": test}}
+    raise AdapterFout("onbekende harnas-actie — kies: check, registreer")
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -918,6 +944,7 @@ COMMANDOS = {
     "agentcontrole": cmd_agentcontrole,
     "observaties": cmd_observaties,
     "profiel": cmd_profiel,
+    "harnas": cmd_harnas,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

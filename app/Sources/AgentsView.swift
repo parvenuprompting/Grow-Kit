@@ -21,6 +21,7 @@ final class GovernorStatus: ObservableObject {
     @Published var leeft: [String: String] = [:]
     @Published var controleWachtrij: [[String: Any]] = []
     @Published var voorstellen: [[String: Any]] = []
+    @Published var harnasStatus: String? = nil
     @Published var laatsteActie: String?
 
     var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
@@ -182,6 +183,14 @@ struct AgentsView: View {
                             .foregroundStyle(Thema.kleur(.zacht))
                     }
                 }
+                if let harnas = status.harnasStatus {
+                    Text("🛡 " + harnas)
+                        .font(Thema.tekst(11, gewicht: .semibold))
+                        .foregroundStyle(.red)
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Thema.kleur(.papierZacht))
+                }
             }
         }
     }
@@ -228,19 +237,35 @@ struct AgentsView: View {
     }
 
     private func doeBesluit(agent: String, taakId: String, goed: Bool) {
+        // Eérst het harnas: tests zijn wet. Gewijzigde kadertests blokkeren
+        // goedkeuring — ongeacht hoe groen het bewijs eruitziet.
         Task {
-            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "agentcontrole",
-                                           invoer: ["actie": "besluit", "agent": agent,
-                                                    "taak_id": taakId, "goed": goed])
+            let h = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "harnas",
+                                           invoer: ["actie": "check"])
             await MainActor.run {
-                if let r, r.ok {
-                    status.controleWachtrij.removeAll {
-                        ($0["taak_id"] as? String) == taakId
+                if let h, let data = h.data as? [String: Any],
+                   let ok = data["ok"] as? Bool, !ok {
+                    status.harnasStatus = "GEBOLOKKEERD: " +
+                        ((data["fouten"] as? [String])?.joined(separator: " · ") ?? "tests gewijzigd")
+                    return
+                }
+                status.harnasStatus = nil
+                Task {
+                    let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                                   commando: "agentcontrole",
+                                                   invoer: ["actie": "besluit", "agent": agent,
+                                                            "taak_id": taakId, "goed": goed])
+                    await MainActor.run {
+                        if let r, r.ok {
+                            status.controleWachtrij.removeAll {
+                                ($0["taak_id"] as? String) == taakId
+                            }
+                            status.laatsteActie = (goed ? "✓ Goedgekeurd: " : "✕ Afgekeurd: ") + taakId
+                        } else {
+                            status.laatsteActie = "✕ " + (r?.fout ?? "controle onbereikbaar")
+                        }
                     }
-                    status.laatsteActie = (goed ? "✓ Goedgekeurd: " : "✕ Afgekeurd: ") + taakId
-                } else {
-                    status.laatsteActie = "✕ " + (r?.fout ?? "controle onbereikbaar")
                 }
             }
         }
