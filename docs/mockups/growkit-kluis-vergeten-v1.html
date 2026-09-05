@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrowKit — Mockup: Kluis & Vergeten</title>
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --paper-soft: #F8F8F8;
+    --ink: #000000;
+    --ink-soft: #555555;
+    --ink-muted: #888888;
+    --line: rgba(0, 0, 0, 0.12);
+    --font-display: 'Fraunces', Georgia, 'Iowan Old Style', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); }
+  .serif { font-family: var(--font-display); }
+
+  header { border-bottom: 1px solid var(--line); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--paper); z-index: 10; }
+  .brand { font-family: var(--font-display); font-size: 20px; font-weight: 500; }
+  .brand em { font-style: italic; font-weight: 300; color: var(--ink-soft); }
+  .fase { font-size: 11px; color: var(--ink-muted); letter-spacing: 0.1em; }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.25em; color: var(--ink-soft); font-weight: 500; }
+
+  /* ===== Zijmenu (context) ===== */
+  .huis { display: grid; grid-template-columns: 230px 1fr; border: 1px solid var(--line); margin: 40px 0; }
+  .menu { border-right: 1px solid var(--line); padding: 20px 0; background: var(--paper-soft); }
+  .menu .merk { font-family: var(--font-display); font-size: 17px; padding: 0 20px 18px; }
+  .menu .sectie { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-muted); padding: 14px 20px 6px; }
+  .menu-item { display: flex; gap: 10px; padding: 7px 20px; font-size: 12.5px; color: var(--ink-soft); }
+  .menu-item .nr { font-family: var(--font-display); font-size: 11px; color: var(--ink-muted); font-variant-numeric: tabular-nums; width: 20px; }
+  .menu-item.nieuw { color: var(--ink); font-weight: 600; background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .menu-item.nieuw .nr { color: var(--ink); }
+
+  .inhoud { padding: 36px 40px 44px; }
+  .paginakop { font-family: var(--font-display); font-weight: 300; font-size: 30px; letter-spacing: -0.01em; margin: 6px 0 6px; }
+  .pagina-sub { font-size: 13px; color: var(--ink-soft); line-height: 1.65; max-width: 560px; margin-bottom: 26px; }
+
+  /* ===== Panelen ===== */
+  .paneel { border: 1px solid var(--line); background: var(--paper); }
+  .paneel + .paneel { margin-top: 22px; }
+  .paneel-kop { border-bottom: 1px solid var(--line); padding: 11px 18px; display: flex; justify-content: space-between; align-items: center; }
+  .paneel-kop .titel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-muted); font-weight: 600; }
+  .paneel-kop .badge { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .paneel-inhoud { padding: 20px 18px; }
+
+  .label-mini { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-muted); font-weight: 600; display: block; margin: 18px 0 8px; }
+  .label-mini:first-child { margin-top: 0; }
+
+  /* Rijen / tabellen */
+  .rij { display: flex; justify-content: space-between; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); padding: 10px 2px; font-size: 13px; }
+  .rij:last-child { border-bottom: none; }
+  .rij .naam { font-weight: 500; }
+  .rij .meta { font-size: 11px; color: var(--ink-muted); }
+  .status { display: inline-block; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-soft); }
+  .status.open { border-style: dashed; }
+  .status.bewezen { border-color: var(--ink); color: var(--ink); }
+
+  .knop { border: none; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-sans); font-size: 12px; font-weight: 500; padding: 8px 18px; cursor: pointer; }
+  .knop-sec { border: 1px solid var(--ink); background: transparent; color: var(--ink); font-family: var(--font-sans); font-size: 12px; font-weight: 500; padding: 8px 18px; border-radius: 999px; cursor: pointer; }
+  .knop-dun { border: none; background: none; color: var(--ink-soft); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .actierij { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+
+  /* Velden (de centrale Veld-component: donkere placeholder-look in een omlijnd veld) */
+  .veld { border: 1px solid var(--ink); padding: 10px 12px; font-size: 13px; color: var(--ink); background: var(--paper); }
+  .veld .placeholder { color: var(--ink-muted); font-style: italic; }
+  textarea.demo { width: 100%; border: 1px solid var(--ink); padding: 12px; font-family: var(--font-sans); font-size: 13px; line-height: 1.6; color: var(--ink); background: var(--paper); resize: none; min-height: 96px; outline: none; }
+
+  /* Optie-keuzes */
+  .optie { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 10px 2px; font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+  .optie:hover { color: var(--ink); }
+  .optie .bron { font-size: 10px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .optie input { accent-color: var(--ink); }
+
+  /* ===== Amnesia: kandidaten ===== */
+  .kandidaat { display: grid; grid-template-columns: 90px 1fr auto; gap: 12px; align-items: center; border-bottom: 1px solid var(--line); padding: 9px 2px; font-size: 12.5px; }
+  .kandidaat:last-child { border-bottom: none; }
+  .type { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; text-align: center; }
+  .waarde { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12px; color: var(--ink); }
+  .keuzes { display: flex; gap: 8px; }
+  .keuze { font-size: 10.5px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: var(--ink-soft); cursor: pointer; background: transparent; }
+  .keuze.goed { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .marker-uitleg { background: var(--paper-soft); border-left: 2px solid var(--ink-muted); padding: 12px 14px; font-size: 12.5px; line-height: 1.7; color: var(--ink-soft); margin-top: 14px; }
+  .marker-uitleg code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; color: var(--ink); background: var(--paper); border: 1px solid var(--line); padding: 1px 5px; font-size: 11px; }
+
+  .kolom2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 780px) { .kolom2 { grid-template-columns: 1fr; } }
+
+  /* Uitleg-blok tussen de schermen */
+  .toelichting { border-top: 1px solid var(--line); margin: 56px 0 0; padding: 26px 0 8px; }
+  .toelichting h3 { font-family: var(--font-display); font-weight: 300; font-size: 22px; margin: 4px 0 10px; }
+  .toelichting p { font-size: 13px; color: var(--ink-soft); line-height: 1.7; max-width: 640px; }
+  .toelichting ul { margin: 10px 0 0 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.8; }
+
+  footer { border-top: 1px solid var(--line); margin-top: 56px; padding: 22px 32px; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-muted); letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Grow<em>Kit</em></div>
+  <div class="fase">MOCKUP · KLUIS &amp; VERGETEN · V1 · 6 SEPT 2026</div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ SCHERM 1: DE KLUIS ============ -->
+  <div class="huis">
+    <div class="menu">
+      <div class="merk">Grow<em>Kit</em></div>
+      <div class="sectie">Werk</div>
+      <div class="menu-item"><span class="nr">01</span> Agent Chat</div>
+      <div class="menu-item"><span class="nr">02</span> Status</div>
+      <div class="menu-item"><span class="nr">03</span> Planten</div>
+      <div class="menu-item"><span class="nr">04</span> Goedkeuringen</div>
+      <div class="menu-item"><span class="nr">05</span> Dialoog</div>
+      <div class="menu-item"><span class="nr">06</span> Agenten</div>
+      <div class="menu-item"><span class="nr">07</span> Knowledge Graph</div>
+      <div class="menu-item"><span class="nr">08</span> Prompts</div>
+      <div class="menu-item"><span class="nr">09</span> Vangnet</div>
+      <div class="menu-item"><span class="nr">10</span> Audit</div>
+      <div class="sectie">Systeem</div>
+      <div class="menu-item nieuw"><span class="nr">11</span> Kluis</div>
+      <div class="menu-item"><span class="nr">12</span> Hervatten</div>
+      <div class="menu-item"><span class="nr">13</span> Taak</div>
+      <div class="sectie">Leren</div>
+      <div class="menu-item"><span class="nr">14</span> Rondleiding</div>
+      <div class="menu-item"><span class="nr">15</span> Uitleg</div>
+    </div>
+
+    <div class="inhoud">
+      <div class="eyebrow">11 · Systeem</div>
+      <h1 class="paginakop">Kluis</h1>
+      <p class="pagina-sub">Gevoelige mappen in een versleutelde kluis. De encryptie doet macOS zelf (AES-256 via hdiutil) — GrowKit is de hand, niet het slot. Wachtwoorden mogen in de Sleutelhangar.</p>
+
+      <!-- Kluis-overzicht -->
+      <div class="paneel">
+        <div class="paneel-kop">
+          <span class="titel">Kluizen op deze Mac</span>
+          <span class="badge">3 gevonden</span>
+        </div>
+        <div class="paneel-inhoud">
+          <div class="rij">
+            <div>
+              <div class="naam">dossier-klant-A.dmg</div>
+              <div class="meta">~/Documenten/Kluizen · 84 MB · alleen-lezen archief</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span class="status bewezen">Vergrendeld</span>
+              <button class="knop">Ontgrendel via Sleutelhangar</button>
+            </div>
+          </div>
+          <div class="rij">
+            <div>
+              <div class="naam">financien-2026.sparsebundle</div>
+              <div class="meta">~/Documenten/Kluizen · 312 MB gebruikt · meegroeiend</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span class="status">Open in Finder</span>
+              <button class="knop-sec">Vergrendel</button>
+            </div>
+          </div>
+          <div class="rij">
+            <div>
+              <div class="naam">archief-oude-bomen.dmg</div>
+              <div class="meta">/Volumes/Backup · 1,2 GB · alleen-lezen archief</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span class="status bewezen">Vergrendeld</span>
+              <button class="knop">Ontgrendel met wachtwoord</button>
+            </div>
+          </div>
+          <div class="actierij">
+            <button class="knop">Nieuwe kluis maken</button>
+            <button class="knop-sec">Zoek kluizen op deze Mac</button>
+            <button class="knop-dun">Vergrendel alle open kluizen</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nieuwe kluis -->
+      <div class="paneel">
+        <div class="paneel-kop">
+          <span class="titel">Nieuwe kluis — map veilig opsluiten</span>
+          <span class="badge">AES-256 · APFS · via macOS</span>
+        </div>
+        <div class="paneel-inhoud">
+          <span class="label-mini">1 · Welke map gaat in de kluis?</span>
+          <div class="veld"><span class="placeholder">Kies een map…</span></div>
+
+          <span class="label-mini">2 · Naam en plek van de kluis</span>
+          <div class="kolom2">
+            <div class="veld">dossier-klant-B</div>
+            <div class="veld"><span class="placeholder">~/Documenten/Kluizen</span></div>
+          </div>
+
+          <span class="label-mini">3 · Soort kluis</span>
+          <label class="optie"><span>📦 Gecomprimeerd — vast, klein, alleen-lezen (archief)</span><span class="bron">UDZO</span></label>
+          <label class="optie"><span>📝 Lees &amp; schrijf — bestanden erin en eruit via Finder</span><span class="bron">UDRW</span></label>
+          <label class="optie"><span>🚀 Meegroeiend — groeit mee met wat je erin stopt</span><span class="bron">UDSB</span></label>
+
+          <span class="label-mini">4 · Wachtwoord</span>
+          <div class="kolom2">
+            <div class="veld">••••••••••••••••</div>
+            <div class="actierij" style="margin-top:0;">
+              <button class="knop-sec">Genereer sterk wachtwoord</button>
+              <span class="meta" style="font-size:11px; color:var(--ink-muted);">Sterkte: sterk · mag in de Sleutelhangar</span>
+            </div>
+          </div>
+
+          <span class="label-mini">5 · Automatische vergrendeling</span>
+          <label class="optie"><span>Na 15 minuten inactiviteit</span><span class="bron">Aanbevolen</span></label>
+          <label class="optie"><span>Na 30 of 60 minuten</span><span class="bron">Rustiger</span></label>
+          <label class="optie"><span>Nooit — ik vergrendel zelf</span><span class="bron">Handmatig</span></label>
+
+          <div class="actierij">
+            <button class="knop">Kluis maken</button>
+            <span class="meta" style="font-size:11.5px; color:var(--ink-muted);">Bestaande kluis met dezelfde naam wordt nooit stilletjes overschreven.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regels -->
+      <div class="marker-uitleg">
+        <b>De regels van de Kluis (zelfde zero-trust als de rest van het huis):</b><br>
+        · Encryptie door macOS <code>hdiutil</code> — GrowKit doet het slotwerk niet zelf.<br>
+        · Geheimen van de kluis reizen <b>nooit</b> mee in taken, chatberichten of logboeken (de secrets-scanner controleert dat).<br>
+        · Klembord met een wachtwoord wordt na 60 seconden gewist — maar alleen als het nog precies het gekopieerde wachtwoord bevat.<br>
+        · Elke actie (maken, openen, vergrendelen) komt in het append-only logboek.
+      </div>
+    </div>
+  </div>
+
+  <!-- Toelichting scherm 1 -->
+  <div class="toelichting">
+    <div class="eyebrow">Wat dit scherm is</div>
+    <h3>Dit is SecureVault v2, als kamer in het huis</h3>
+    <p>Niet de losse app, maar dezelfde motor — <span class="serif">vault_engine</span> uit SecureVault — achter GrowKit's eigen scherm en regels. Het zijmenu-item staat onder Systeem, direct vóór Hervatten. De kluiszoeker (via Spotlight), de drie kluisvormen, Sleutelhangar-opslag, sterktemeter en auto-lock zijn allemaal overgenomen zoals ze in SecureVault werken.</p>
+  </div>
+
+  <!-- ============ SCHERM 2: VERGETEN ============ -->
+  <div class="huis" style="margin-top: 48px;">
+    <div class="menu">
+      <div class="merk">Grow<em>Kit</em></div>
+      <div class="sectie">Werk</div>
+      <div class="menu-item"><span class="nr">01</span> Agent Chat</div>
+      <div class="menu-item"><span class="nr">02</span> Status</div>
+      <div class="menu-item"><span class="nr">03</span> Planten</div>
+      <div class="menu-item"><span class="nr">04</span> Goedkeuringen</div>
+      <div class="menu-item"><span class="nr">05</span> Dialoog</div>
+      <div class="menu-item"><span class="nr">06</span> Agenten</div>
+      <div class="menu-item"><span class="nr">07</span> Knowledge Graph</div>
+      <div class="menu-item"><span class="nr">08</span> Prompts</div>
+      <div class="menu-item"><span class="nr">09</span> Vangnet</div>
+      <div class="menu-item"><span class="nr">10</span> Audit</div>
+      <div class="sectie">Systeem</div>
+      <div class="menu-item"><span class="nr">11</span> Kluis</div>
+      <div class="menu-item nieuw"><span class="nr">11½</span> Vergeten</div>
+      <div class="menu-item"><span class="nr">12</span> Hervatten</div>
+      <div class="menu-item"><span class="nr">13</span> Taak</div>
+      <div class="sectie">Leren</div>
+      <div class="menu-item"><span class="nr">14</span> Rondleiding</div>
+      <div class="menu-item"><span class="nr">15</span> Uitleg</div>
+    </div>
+
+    <div class="inhoud">
+      <div class="eyebrow">11½ · Systeem</div>
+      <h1 class="paginakop">Vergeten</h1>
+      <p class="pagina-sub">Tekst met gevoelige gegevens veilig maken vóórdat die een ander venster of een AI bereikt. Alles gebeurt lokaal op deze Mac — jij keurt per vondst.</p>
+
+      <div class="kolom2">
+        <!-- Laag 1 -->
+        <div class="paneel">
+          <div class="paneel-kop">
+            <span class="titel">Laag 1 · Review</span>
+            <span class="badge">plak je tekst</span>
+          </div>
+          <div class="paneel-inhoud">
+            <textarea class="demo">Contact: j.van der berg@klantbedrijf.nl, 06-12345678
+Klantnummer 883746, transactie TX-2026-0041
+API-key: sk-or-v1-8f2a…c91d (niet delen!)
+Server: https://intern.klantbedrijf.nl/api/v2
+Adres: Laan van Nieuw-Oost 41, 2593 JG Den Haag</textarea>
+            <div class="actierij">
+              <button class="knop">Kopieer veilige tekst</button>
+              <button class="knop-sec">Accepteer openstaande</button>
+              <button class="knop-dun">Forceer alle (aparte bevestiging)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kandidaten -->
+        <div class="paneel">
+          <div class="paneel-kop">
+            <span class="titel">Gevonden kandidaten</span>
+            <span class="badge">6 · jij beslist</span>
+          </div>
+          <div class="paneel-inhoud" style="padding-top:8px;">
+            <div class="kandidaat">
+              <span class="type">E-mail</span>
+              <span class="waarde">j.vanderberg@klantbedrijf.nl</span>
+              <span class="keuzes"><button class="keuze goed">Genereer token</button><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="kandidaat">
+              <span class="type">Telefoon</span>
+              <span class="waarde">06-12345678</span>
+              <span class="keuzes"><button class="keuze goed">Genereer token</button><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="kandidaat">
+              <span class="type">API-key</span>
+              <span class="waarde">sk-or-v1-8f2a…c91d</span>
+              <span class="keuzes"><button class="keuze goed">Genereer token</button><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="kandidaat">
+              <span class="type">Klantnr.</span>
+              <span class="waarde">883746</span>
+              <span class="keuzes"><button class="keuze goed">Genereer token</button><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="kandidaat">
+              <span class="type">Transactie</span>
+              <span class="waarde">TX-2026-0041</span>
+              <span class="keuzes"><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="kandidaat">
+              <span class="type">Adres</span>
+              <span class="waarde">Laan van Nieuw-Oost 41, 2593 JG</span>
+              <span class="keuzes"><button class="keuze">Waarde aanpassen</button><button class="keuze">Negeren</button></span>
+            </div>
+            <div class="actierij">
+              <button class="knop-sec">＋ Handmatig toevoegen</button>
+              <span class="meta" style="font-size:11px; color:var(--ink-muted);">Detectie mist nooit garant — daarom keur jij.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marker-resultaat -->
+      <div class="paneel" style="margin-top:22px;">
+        <div class="paneel-kop">
+          <span class="titel">Dezelfde tekst, veilig gemaakt</span>
+          <span class="badge">markers i.p.v. gevoelige waarden</span>
+        </div>
+        <div class="paneel-inhoud">
+          <div style="font-size:12.5px; line-height:1.8; border-left:2px solid var(--ink); padding-left:14px;">Contact: <code style="font-family:ui-monospace,monospace;">EMAIL_1</code>, <code style="font-family:ui-monospace,monospace;">PHONE_1</code><br>
+          Klantnummer <code style="font-family:ui-monospace,monospace;">CUSTOMER_1</code>, transactie <code style="font-family:ui-monospace,monospace;">TRANSACTION_1</code><br>
+          API-key: <code style="font-family:ui-monospace,monospace;">API_KEY_1</code> (niet delen!)<br>
+          Server: <code style="font-family:ui-monospace,monospace;">LINK_1</code><br>
+          Adres: <code style="font-family:ui-monospace,monospace;">ADDRESS_1</code></div>
+          <div class="marker-uitleg">
+            <b>Hoe het werkt (uit Amnesia Protocol Lite):</b><br>
+            · Dezelfde waarde krijgt in deze sessie altijd hetzelfde token; de koppeling verdwijnt zodra je de app sluit.<br>
+            · Laag 2 ontvangt alleen markers en <b>nooit</b> de oorspronkelijke waarden — de brontekst verlaat dit scherm niet.<br>
+            · Kopiëren gebeurt pas ná readback-controle; het klembord wordt na 60 seconden gewist.
+          </div>
+        </div>
+      </div>
+
+      <!-- Laag 2 -->
+      <div class="kolom2" style="margin-top:22px;">
+        <div class="paneel">
+          <div class="paneel-kop">
+            <span class="titel">Laag 2 · Synthetisch</span>
+            <span class="badge">plak hier zelf de veilige tekst</span>
+          </div>
+          <div class="paneel-inhoud">
+            <span class="label-mini">Fictieve vervangers, lokaal gegenereerd</span>
+            <div class="rij"><span class="meta">EMAIL_1</span><span class="waarde">piet.jansen@voorbeeldmail.nl</span></div>
+            <div class="rij"><span class="meta">PHONE_1</span><span class="waarde">06-87654321</span></div>
+            <div class="rij"><span class="meta">CUSTOMER_1</span><span class="waarde">447291</span></div>
+            <div class="rij"><span class="meta">API_KEY_1</span><span class="waarde">demo-key-9f3b7a21</span></div>
+            <div class="rij"><span class="meta">LINK_1</span><span class="waarde">https://voorbeeldbedrijf.nl/api/v2</span></div>
+            <div class="rij"><span class="meta">ADDRESS_1</span><span class="waarde">Dorpsstraat 12, 1234 AB</span></div>
+            <div class="actierij">
+              <button class="knop">Genereer standaardvervangers</button>
+              <button class="knop-sec">Kopieer synthetische tekst</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="paneel">
+          <div class="paneel-kop">
+            <span class="titel">Terminal-uitvoer opschonen</span>
+            <span class="badge">speciaal voor logs</span>
+          </div>
+          <div class="paneel-inhoud">
+            <p style="font-size:12.5px; color:var(--ink-soft); line-height:1.7;">Plak terminaluitvoer en de detectoren letten specifiek op wat daarin verstopt zit: API-sleutels, tokens, private keys, inlog-URL's, accountpaden en Git-remotes. Daarna beoordeel je elke vondst zoals hierboven.</p>
+            <div class="actierij">
+              <button class="knop-sec">Terminal-tekst plakken</button>
+            </div>
+            <div class="marker-uitleg" style="margin-top:16px;">
+              <b>De regels van Vergeten:</b><br>
+              · Detectie, review en vervanging draaien 100% lokaal — geen cloud, geen telemetrie.<br>
+              · Jij keurt per vondst; niets wordt automatisch vervangen.<br>
+              · De mapping leeft alleen in deze sessie — sluiten = vergeten.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toelichting scherm 2 -->
+  <div class="toelichting">
+    <div class="eyebrow">Wat dit scherm is</div>
+    <h3>Dit is Amnesia Protocol Lite, als kamer in het huis</h3>
+    <p>Niet de losse Tauri-app, maar de kern — de 25 detectoren, de review-flow met accepteren/negeren/aanpassen, de marker-tokens, de synthetische tweede laag en de clipboard-controle — als GrowKit-kernmodule met een eigen scherm. "Vergeten" hoort bij Systeem, want het is een gereedschap van het huis zelf, geen chatfunctie.</p>
+  </div>
+
+</div>
+
+<footer>
+  <span>GrowKit · mockup v1 · 6 september 2026</span>
+  <span>Editorial Monochrome — papier, inkt, dunne lijnen</span>
+</footer>
+
+</body>
+</html>

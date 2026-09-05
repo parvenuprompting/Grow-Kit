@@ -15,7 +15,7 @@ struct HomeView: View {
     @State private var leeft: [String: String] = [:]
     @State private var saldoTekst: String = ""
     @State private var saldoLaag: Bool = false
-    @State private var gebruikersNaam: String = "Tiëndo"
+    @State private var gebruikersNaam: String = "Gebruiker"
 
     var body: some View {
         ScrollView {

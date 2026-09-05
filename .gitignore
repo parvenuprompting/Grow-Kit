@@ -13,3 +13,6 @@ __pycache__/
 # App-buildartefacten (gegenereerd)
 app/GrowKit.xcodeproj/
 app/.build/
+
+# Lokaal configuratiebestand (kan secrets bevatten)
+.env
