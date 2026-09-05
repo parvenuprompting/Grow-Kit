@@ -278,7 +278,7 @@ struct ContentView: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 6)
+            .frame(height: 30)  // vaste hoogte: selectie kan niets laten schuiven
             .contentShape(Rectangle())
             .background(gekozen ? Thema.kleur(.papierZacht) : (isHovered ? Thema.kleur(.papierZacht).opacity(0.5) : Thema.kleur(.papier)))
             .overlay(alignment: .leading) {

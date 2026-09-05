@@ -43,8 +43,8 @@ struct GrowKitApp: App {
                 .opacity(laadSchermWeg ? 0 : 1)
                 .allowsHitTesting(!laadSchermWeg)
                 .task {
-                    // 1 seconde zichtbaar, dan 0.4s uitfaden, daarna uit de boom.
-                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    // 2 seconden zichtbaar, dan 0.4s uitfaden, daarna uit de boom.
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
                     withAnimation(.easeOut(duration: 0.4)) { laadSchermWeg = true }
                     try? await Task.sleep(nanoseconds: 450_000_000)
                     laadSchermWeg = true
