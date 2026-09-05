@@ -776,6 +776,14 @@ def cmd_familie(invoer: dict) -> dict:
     return {"ok": True, "data": fam.familie_register()}
 
 
+def cmd_agentstatus(invoer: dict) -> dict:
+    """Agentstatus (slice B): leeft de familie? Alleen-lezen SSH-diagnostiek
+    naar de VPS — status is geen macht."""
+    from kern import growkit_agentstatus as gs
+
+    return gs.verzamel_status()
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -786,6 +794,7 @@ COMMANDOS = {
     "slijp": cmd_slijp,
     "governor": cmd_governor,
     "familie": cmd_familie,
+    "agentstatus": cmd_agentstatus,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

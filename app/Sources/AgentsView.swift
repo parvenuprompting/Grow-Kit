@@ -18,6 +18,7 @@ final class GovernorStatus: ObservableObject {
     @Published var taken: [String: Any] = [:]
     @Published var meldingen: [[String: Any]] = []
     @Published var familie: [[String: Any]] = []
+    @Published var leeft: [String: String] = [:]
     @Published var laatsteActie: String?
 
     var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
@@ -93,6 +94,9 @@ struct AgentsView: View {
         let rol = agent["rol"] as? String ?? ""
         let beschrijving = agent["beschrijving"] as? String ?? ""
         let isObserver = rol == "observer"
+        let leeftStatus = status.leeft[naam.lowercased()] ?? "onbekend"
+        let leeftKleur: Color = leeftStatus == "active" ? .green
+            : (leeftStatus == "onbekend" ? .gray : .red)
 
         return HStack(alignment: .firstTextBaseline, spacing: 14) {
             Text(naam).font(Thema.display(16))
@@ -105,6 +109,13 @@ struct AgentsView: View {
                 .font(Thema.tekst(11))
                 .foregroundStyle(Thema.kleur(.zacht))
             Spacer()
+            HStack(spacing: 5) {
+                Circle().fill(leeftKleur).frame(width: 7, height: 7)
+                Text(leeftStatus == "active" ? "LIVE" : leeftStatus.uppercased())
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(1)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+            }
+            .frame(width: 70, alignment: .trailing)
         }
         .padding(.vertical, 10)
     }
@@ -285,10 +296,23 @@ struct AgentsView: View {
             let f = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "familie",
                                            invoer: ["actie": "status"])
+            let s = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentstatus",
+                                           invoer: [:])
             await MainActor.run {
                 bezig = false
                 if let f, f.ok, let fam = f.data["familie"] as? [[String: Any]] {
                     status.familie = fam
+                }
+                if let s, let agents = s.data["agents"] as? [[String: Any]] {
+                    var kaart: [String: String] = [:]
+                    for a in agents {
+                        if let naam = a["agent"] as? String,
+                           let st = a["status"] as? String {
+                            kaart[naam] = st
+                        }
+                    }
+                    status.leeft = kaart
                 }
                 vulStatus(r)
             }
