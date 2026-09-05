@@ -22,6 +22,10 @@ struct GrowKitApp: App {
                         toonOver: $toonOver)
                 .frame(minWidth: 880, minHeight: 620)
                 .background(Thema.kleur(.papier))
+                // Editorial Monochrome is een LICHT thema: forceer lichte modus.
+                // In donkere modus is de SwiftUI-standaardtekst wit en verdwijnen
+                // alle titels zonder expliciete kleur op het witte papier.
+                .environment(\.colorScheme, .light)
                 .sheet(isPresented: $toonOver) { OverView() }
                 .sheet(isPresented: $toonOnboarding) {
                     OnboardingView(runner: Runner(), repoPad: .constant(""),
@@ -97,6 +101,12 @@ fileprivate extension NSView {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var fullscreenToegepast = false
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // App-decoraties (titelbalk, bedieningselementen, standaardtekstkleur)
+        // forceren naar lichte modus — het thema is wit-papier.
+        NSApp.appearance = NSAppearance(named: .aqua)
+    }
 
     func applicationDidBecomeActive(_ notification: Notification) {
         // Fullscreen pas ná het laadscherm (2,4s) — anders danst het venster.
