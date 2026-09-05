@@ -784,6 +784,49 @@ def cmd_agentstatus(invoer: dict) -> dict:
     return gs.verzamel_status()
 
 
+def cmd_agenttaak(invoer: dict) -> dict:
+    """Agenttaak (slice C): taak aanmelden bij de gouverneur en — bij
+    groen — in de wachtrij van de agent op de VPS zetten. Eén poort:
+    alleen /root/.hermes/agenttaken/<agent>/wachtrij/, alleen JSON via stdin."""
+    from kern import growkit_agenttaak as at
+    from kern import growkit_agents as ag
+
+    agent = str(invoer.get("agent", "")).strip().lower()
+    taak_id = str(invoer.get("taak_id", "")).strip()
+    titel = str(invoer.get("titel", "")).strip()
+    register_pad = Path(str(invoer.get("register_pad", "")).strip()
+                        or Path.home() / "growkit-governor" / "governor.json")
+
+    # 1) gouverneur eerst: het plafond beslist, niet de UI
+    register = ag.nieuw_register()
+    if register_pad.exists():
+        try:
+            register = json.loads(register_pad.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            raise AdapterFout(f"governor-register {register_pad} is geen geldige JSON: {e}")
+    nieuw, ok, reden = ag.meld_taak_aan(register, agent, taak_id)
+    if not ok:
+        return {"ok": False, "fout": f"Gouverneur weigert: {reden}"}
+    register_pad.parent.mkdir(parents=True, exist_ok=True)
+    register_pad.write_text(json.dumps(nieuw, indent=2, ensure_ascii=False) + "\n",
+                            encoding="utf-8")
+
+    # 2) transport naar de wachtrij
+    r = at.verstuur(agent, taak_id, titel)
+    if not r["ok"]:
+        # terugrollen in het register — een aangemelde taak die niet aankomt
+        # mag niet blijven hangen als 'open'
+        register["taken"].pop(taak_id, None)
+        a = register["agents"].get(agent)
+        if a and taak_id in a.get("open", []):
+            a["open"].remove(taak_id)
+        register_pad.write_text(json.dumps(register, indent=2, ensure_ascii=False) + "\n",
+                                encoding="utf-8")
+        return r
+    return {"ok": True, "data": {"resultaat": {"ok": True,
+            "reden": f"Taak {taak_id} staat in de wachtrij van {agent}."}}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -795,6 +838,7 @@ COMMANDOS = {
     "governor": cmd_governor,
     "familie": cmd_familie,
     "agentstatus": cmd_agentstatus,
+    "agenttaak": cmd_agenttaak,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

@@ -37,6 +37,7 @@ struct AgentsView: View {
     @StateObject private var status = GovernorStatus.leeg()
     @State private var nieuwAgent = ""
     @State private var nieuwTaak = ""
+    @State private var nieuwTitel = ""
     @State private var bezig = false
 
     var body: some View {
@@ -234,18 +235,56 @@ struct AgentsView: View {
 
     private var nieuweTaakRij: some View {
         HStack(spacing: 10) {
-            TextField("Agent", text: $nieuwAgent)
+            Picker("", selection: $nieuwAgent) {
+                Text("Agent…").tag("")
+                ForEach(familieNamen, id: \.self) { naam in
+                    Text(naam).tag(naam.lowercased())
+                }
+            }
+            .font(Thema.tekst(12))
+            .frame(width: 130)
+
+            TextField("Taak-id (bijv. taak-001)", text: $nieuwTaak)
                 .textFieldStyle(.plain)
                 .font(Thema.tekst(12))
-                .frame(width: 120)
-            TextField("Taak-id", text: $nieuwTaak)
+                .frame(width: 160)
+            TextField("Wat moet er gedaan worden?", text: $nieuwTitel)
                 .textFieldStyle(.plain)
                 .font(Thema.tekst(12))
-            PillKnop(titel: "Taak aanmelden", gevuld: true) {
-                meldTaak(agent: nieuwAgent, taak: nieuwTaak)
+            PillKnop(titel: "Taak koppelen", gevuld: true) {
+                koppelTaak()
             }
         }
         .padding(.top, 6)
+    }
+
+    private var familieNamen: [String] {
+        status.familie.compactMap { $0["naam"] as? String }
+    }
+
+    private func koppelTaak() {
+        let a = nieuwAgent.trimmingCharacters(in: .whitespaces)
+        let t = nieuwTaak.trimmingCharacters(in: .whitespaces)
+        let titel = nieuwTitel.trimmingCharacters(in: .whitespaces)
+        guard !a.isEmpty, !t.isEmpty, !titel.isEmpty else {
+            status.laatsteActie = "Vul agent, taak-id en titel in."; return
+        }
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agenttaak",
+                                           invoer: ["agent": a, "taak_id": t,
+                                                    "titel": titel])
+            await MainActor.run {
+                if let res = r?.data["resultaat"] as? [String: Any] {
+                    status.laatsteActie = (res["ok"] as? Bool == true ? "✓ " : "✕ ")
+                        + (res["reden"] as? String ?? "")
+                } else if let fout = r?.fout {
+                    status.laatsteActie = "✕ " + fout
+                }
+            }
+        }
+        nieuwTaak = ""
+        nieuwTitel = ""
     }
 
     // MARK: Taken
@@ -346,16 +385,6 @@ struct AgentsView: View {
                 vulStatus(r)
             }
         }
-    }
-
-    private func meldTaak(agent: String, taak: String) {
-        let a = agent.trimmingCharacters(in: .whitespaces)
-        let t = taak.trimmingCharacters(in: .whitespaces)
-        guard !a.isEmpty, !t.isEmpty else { status.laatsteActie = "Vul eerst agent en taak-id."; return }
-        actie(["doel": "~/growkit-governor", "actie": "aanmelden",
-               "agent": a, "taak_id": t])
-        nieuwAgent = ""
-        nieuwTaak = ""
     }
 
     private func controleer(taak: String, goed: Bool) {
