@@ -763,6 +763,19 @@ def cmd_audit(invoer: dict) -> dict:
                                  "kritiek": compact}}
 
 
+def cmd_familie(invoer: dict) -> dict:
+    """Familie-register (slice A): de vaste cast van het harnas.
+
+    Alleen-lezen — de familie verandert via de kernmodule (beleid),
+    nooit via een adapter-aanroep."""
+    from kern import growkit_familie as fam
+
+    actie = str(invoer.get("actie", "status")).strip()
+    if actie != "status":
+        raise AdapterFout("onbekende familie-actie — kies: status")
+    return {"ok": True, "data": fam.familie_register()}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -772,6 +785,7 @@ COMMANDOS = {
     "taak": cmd_taak,
     "slijp": cmd_slijp,
     "governor": cmd_governor,
+    "familie": cmd_familie,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

@@ -17,6 +17,7 @@ final class GovernorStatus: ObservableObject {
     @Published var agents: [[String: Any]] = []
     @Published var taken: [String: Any] = [:]
     @Published var meldingen: [[String: Any]] = []
+    @Published var familie: [[String: Any]] = []
     @Published var laatsteActie: String?
 
     var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
@@ -41,6 +42,7 @@ struct AgentsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 kop
+                familieKaart
                 limietenKaart
                 if let fout = status.fout {
                     foutKaart(fout)
@@ -65,6 +67,46 @@ struct AgentsView: View {
                 .foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    // MARK: Familie (slice A — de vaste cast)
+
+    private var familieKaart: some View {
+        Kaart(kop: "Familie", rechterKop: "\(status.familie.count) VAN 7 · TELEGRAM") {
+            VStack(alignment: .leading, spacing: 0) {
+                if status.familie.isEmpty {
+                    Text("Familie nog niet geladen.").font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                ForEach(Array(status.familie.enumerated()), id: \.offset) { i, agent in
+                    familieRij(agent)
+                    if i < status.familie.count - 1 {
+                        Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+                    }
+                }
+            }
+        }
+    }
+
+    private func familieRij(_ agent: [String: Any]) -> some View {
+        let naam = agent["naam"] as? String ?? "?"
+        let rol = agent["rol"] as? String ?? ""
+        let beschrijving = agent["beschrijving"] as? String ?? ""
+        let isObserver = rol == "observer"
+
+        return HStack(alignment: .firstTextBaseline, spacing: 14) {
+            Text(naam).font(Thema.display(16))
+                .frame(width: 110, alignment: .leading)
+            Text(rol.uppercased())
+                .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.2)
+                .foregroundStyle(Thema.kleur(isObserver ? .inkt : .gedempt))
+                .frame(width: 90, alignment: .leading)
+            Text(beschrijving)
+                .font(Thema.tekst(11))
+                .foregroundStyle(Thema.kleur(.zacht))
+            Spacer()
+        }
+        .padding(.vertical, 10)
     }
 
     // MARK: Limieten
@@ -240,8 +282,14 @@ struct AgentsView: View {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "governor",
                                            invoer: ["doel": "~/growkit-governor"])
+            let f = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "familie",
+                                           invoer: ["actie": "status"])
             await MainActor.run {
                 bezig = false
+                if let f, f.ok, let fam = f.data["familie"] as? [[String: Any]] {
+                    status.familie = fam
+                }
                 vulStatus(r)
             }
         }
