@@ -861,6 +861,13 @@ def cmd_agentcontrole(invoer: dict) -> dict:
     raise AdapterFout("onbekende agentcontrole-actie — kies: ophalen, besluit")
 
 
+def cmd_observaties(invoer: dict) -> dict:
+    """Observaties (slice E): voorstellen uit de brein-inbox, alleen-lezen."""
+    from kern import growkit_observaties as ob
+
+    return ob.lees()
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -874,6 +881,7 @@ COMMANDOS = {
     "agentstatus": cmd_agentstatus,
     "agenttaak": cmd_agenttaak,
     "agentcontrole": cmd_agentcontrole,
+    "observaties": cmd_observaties,
     "models": cmd_models,
     "vangnet": cmd_vangnet,
     "audit": cmd_audit,

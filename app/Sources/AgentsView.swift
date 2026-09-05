@@ -20,6 +20,7 @@ final class GovernorStatus: ObservableObject {
     @Published var familie: [[String: Any]] = []
     @Published var leeft: [String: String] = [:]
     @Published var controleWachtrij: [[String: Any]] = []
+    @Published var voorstellen: [[String: Any]] = []
     @Published var laatsteActie: String?
 
     var takenPerAgent: Int { limieten["taken_per_agent"] as? Int ?? 2 }
@@ -46,6 +47,7 @@ struct AgentsView: View {
             VStack(alignment: .leading, spacing: 20) {
                 kop
                 familieKaart
+                observatieKaart
                 controleKaart
                 limietenKaart
                 if let fout = status.fout {
@@ -121,6 +123,42 @@ struct AgentsView: View {
             .frame(width: 70, alignment: .trailing)
         }
         .padding(.vertical, 10)
+    }
+
+    // MARK: Observaties (slice E — Genius' voorstellen)
+
+    private var observatieKaart: some View {
+        Kaart(kop: "Observaties", rechterKop: "GENIUS · ALLEEN-LEZEN") {
+            VStack(alignment: .leading, spacing: 10) {
+                if status.voorstellen.isEmpty {
+                    Text("Geen open voorstellen in de brein-inbox — het stille genie heeft niets aan te merken.")
+                        .font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                ForEach(Array(status.voorstellen.prefix(5).enumerated()), id: \.offset) { _, v in
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack {
+                            Text(v["titel"] as? String ?? "")
+                                .font(Thema.tekst(12, gewicht: .medium))
+                            Spacer()
+                            Text((v["afzender"] as? String ?? "").uppercased())
+                                .font(Thema.tekst(8, gewicht: .semibold)).tracking(1)
+                                .foregroundStyle(Thema.kleur(.gedempt))
+                        }
+                        Text(v["inhoud"] as? String ?? "")
+                            .font(Thema.tekst(10))
+                            .foregroundStyle(Thema.kleur(.zacht))
+                            .lineLimit(2)
+                    }
+                    .padding(.vertical, 3)
+                }
+                if status.voorstellen.count > 5 {
+                    Text("+ \(status.voorstellen.count - 5) meer in de inbox")
+                        .font(Thema.tekst(10))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+            }
+        }
     }
 
     // MARK: Controle (slice D — de rondte)
@@ -425,8 +463,14 @@ struct AgentsView: View {
             let s = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "agentstatus",
                                            invoer: [:])
+            let o = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "observaties",
+                                           invoer: [:])
             await MainActor.run {
                 bezig = false
+                if let o, let lijst = o.data["voorstellen"] as? [[String: Any]] {
+                    status.voorstellen = lijst
+                }
                 if let f, f.ok, let fam = f.data["familie"] as? [[String: Any]] {
                     status.familie = fam
                 }
