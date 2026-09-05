@@ -9,7 +9,7 @@ import json
 import re
 import subprocess
 
-HOST = "root@168.119.248.208"
+from kern.growkit_verbind import HOST
 INBOX = "/root/.hermes/context/agent-brain/inbox"
 
 

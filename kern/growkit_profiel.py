@@ -25,7 +25,7 @@ def _nu() -> str:
 def _pad(wortel: Path | None) -> Path:
     """wortel mag een map zijn (profiel.json erin) of het bestand zelf."""
     if not wortel:
-        return Path.home() / "growkit-profiel" / "profiel.json"
+        return Path.home() / ".growkit" / "profiel.json"
     w = Path(wortel)
     return w / "profiel.json" if w.is_dir() else w
 

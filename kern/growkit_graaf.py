@@ -11,7 +11,7 @@ eigen functies als startpunten in het centrum.
 import json
 import subprocess
 
-HOST = "root@168.119.248.208"
+from kern.growkit_verbind import HOST
 MANIFEST = "/root/.hermes/context/agent-brain/brein/manifest.json"
 
 # App-functies als vaste startpunten in het centrum

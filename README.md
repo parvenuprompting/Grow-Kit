@@ -4,7 +4,7 @@
 [![Status](https://img.shields.io/badge/status-vlaggenschip_·_v1.3.0_huis_bewezen-brightgreen?style=flat-square)]()
 [![Taal](https://img.shields.io/badge/inhoud-Nederlands-blue?style=flat-square)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-geen_(stdlib_only)-success?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-404_unit_+_7_E2E_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-420_unit_+_13_E2E_groen-success?style=flat-square)]()
 
 > **Het eerste zaadje dat jij controleert — niet de agent.**
 > En inmiddels veel meer dan een zaadje: Grow Kit is een **huis**. Een native macOS-app waarin een hele agent-familie woont, werkt en groeit — met machine-bewijs voor elke stap, een gouverneur die grenzen afdwingt, en de mens met de laatste stem.
@@ -123,7 +123,7 @@ growkit/
 │   ├── autonome-fabriek/    ← in ontwikkeling (de "nachtfabriek")
 │   └── dev-werkplaats/      ← in ontwikkeling
 ├── groei/                   ← groeilaag-instructie (SETUP.md)
-├── tests/                   ← 224 unit-tests + 7 E2E-scripts
+├── tests/                   ← 420 unit-tests + 13 E2E-scripts
 ├── reviewconfig.voorbeeld.json  ← rollen zonder leveranciers (§12.5)
 ├── docs/
 │   ├── HOE-HET-WERKT.md     ← de complete, correcte uitleg
@@ -154,7 +154,7 @@ Verder lezen (in volgorde): `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-H
 
 ## Tests en bewijs
 
-- **404 unit-tests** (unittest, stdlib) + **7 end-to-end-scripts** — allemaal groen (5 september 2026).
+- **420 unit-tests** (unittest, stdlib) + **13 end-to-end-scripts** — allemaal groen (5 september 2026).
 - Bewijs per fase, letterlijk vastgelegd: `docs/superpowers/bewijs/` (fase-2-test1/2, fase-3-test3, fase-4-test4, fase-5-test5 + zelfreviews).
 - Test 4 bewijst de agent-onafhankelijkheid: het harnas plant, crasht (`kill -9`), hervat uit het logboek en ratificeert — met alleen python3 en gepijpte antwoorden.
 - Test 5 bewijst het oerwoud: register, doorstroom, drift-guard en corrupt-register-afhandeling op een schone plek.

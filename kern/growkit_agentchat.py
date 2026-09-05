@@ -15,7 +15,6 @@ from datetime import datetime, timezone
 from kern import growkit_agenttaak as at
 
 _ANTWOORDEN_ROOT = at.WACHTRIJ_ROOT  # zelfde boom: <agent>/antwoorden/
-_PATRONEN = at.__dict__.get("_TAAKID")  # noqa: alleen voor type-check
 
 
 def _scan_tekst(tekst: str) -> str | None:

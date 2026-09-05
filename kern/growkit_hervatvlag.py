@@ -23,7 +23,7 @@ def _nu() -> str:
 
 
 def _pad(naam: str, wortel: Path | None) -> Path:
-    basis = Path(wortel) if wortel else Path.home() / "growkit-profiel"
+    basis = Path(wortel) if wortel else Path.home() / ".growkit"
     return basis / "hervatvlag" / f"{naam}.json"
 
 

@@ -253,9 +253,14 @@ struct ContentView: View {
 
     private var merk: some View {
         HStack(alignment: .center, spacing: 10) {
-            Image("LogoIcon")
-                .resizable().scaledToFit()
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Thema.kleur(.papier))
                 .frame(width: 36, height: 36)
+                .overlay(
+                    Image("LogoIcon")
+                        .resizable().scaledToFit()
+                        .padding(3)
+                )
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
 

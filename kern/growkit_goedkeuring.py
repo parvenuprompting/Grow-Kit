@@ -202,10 +202,6 @@ def _uitleg_actie(soort: str, commando: str, tool: str) -> str:
     return basis + object_str
 
 
-def _korte_uitleg(soort: str) -> str:
-    return _UITLEG.get(soort, _UITLEG["onduidelijk"])
-
-
 def basis_pad_gelijkenissen(pad: str) -> list[str]:
     """Kleine paden die geen informatie dragen (bijv. '/', '.')."""
     return ["/", ".", "..", "~"]

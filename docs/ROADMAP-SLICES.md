@@ -15,7 +15,7 @@
 | 5 — Breinkoppeling | 8fc1c36 | 9 | 6 criteria |
 | 6 — Nachtfabriek-modus | 460e26c | 11 | 7 criteria |
 
-Volledige suite: 287 unit-tests groen. Adapter-commando's nu: status, profielen,
+Volledige suite: 420 unit-tests groen. Adapter-commando's nu: status, profielen,
 plant, ratificeer, hervat, taak, bomen, levensignaal, acties, inbox, curate,
 koppel, driftguard, stuur, nachtplan, nachtronde, nachtstatus.
 Wat resteert: de SwiftUI-kant (boom-lijst, statusblok, actieknoppen, curatie-

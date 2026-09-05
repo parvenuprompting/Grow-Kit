@@ -598,7 +598,7 @@ def acties_overzicht(doel: Path) -> dict:
     doel = doel.resolve()
     bewijs_pad = doel / "geboortebewijs.json"
     if not bewijs_pad.exists():
-        return {"mogelijk": ["planten"], "mensch_momenten": [],
+        return {"mogelijk": ["planten"], "mens_momenten": [],
                 "melding": "geen geplante boom in deze map — alleen planten is mogelijk"}
 
     mogelijk = ["status", "taak", "ratificatie", "hervat"]
@@ -617,7 +617,7 @@ def acties_overzicht(doel: Path) -> dict:
             mens_momenten.append({"soort": "ratificatie", "stap": e.get("stap", "?"),
                                   "tijdstip": e.get("tijdstip", "?")})
 
-    return {"mogelijk": mogelijk, "mensch_momenten": mens_momenten, "melding": None}
+    return {"mogelijk": mogelijk, "mens_momenten": mens_momenten, "melding": None}
 
 
 # ---------------------------------------------------------------------------

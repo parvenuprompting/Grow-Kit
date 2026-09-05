@@ -87,7 +87,7 @@ class ActiesMenu(ActiesBasis):
         self.assertIn("ratificatie", data["mogelijk"])
         self.assertIn("hervat", data["mogelijk"])
         self.assertNotIn("planten", data["mogelijk"])   # boom bestaat al
-        self.assertEqual(data["mensch_momenten"], [])
+        self.assertEqual(data["mens_momenten"], [])
 
     def test_acties_zonder_boom_is_planten_enkel(self):
         doel = Path(self._tmp.name) / "leeg"
@@ -109,7 +109,7 @@ class ActiesMenu(ActiesBasis):
         logboek.write_text(json.dumps(entries), encoding="utf-8")
         code, uit, _ = self.roep("acties", {"doel": str(doel)})
         self.assertEqual(code, 0)
-        momenten = uit["data"]["mensch_momenten"]
+        momenten = uit["data"]["mens_momenten"]
         self.assertTrue(any(m.get("soort") == "ratificatie" for m in momenten))
 
     def test_niet_bestaande_boom_geen_acties(self):

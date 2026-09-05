@@ -41,7 +41,7 @@ geen pad waar de AI "zegt dat het gelukt is" en dat als waarheid telt.
 | `kern/growkit_taken.py` | Takenlijst van de groeilaag: taken bestaan alleen mét bewijs-check. |
 | `profielen/` | De bomen: `profiel.json` (stappenplan met gecodeerd bewijs) + `sjablonen/`. |
 | `groei/` | Groeilaag-documentatie (`SETUP.md`) en het slijper-logboek. |
-| `tests/` | 110 unit-tests (unittest) + vijf E2E-shellscripts. |
+| `tests/` | 420 unit-tests (unittest) + dertien E2E-shellscripts. |
 
 ## De levensloop van een opdracht
 
@@ -135,6 +135,21 @@ Drie invoertypes, elk met vaste weigeringsteksten:
   fase-5+ materiaal). De huidige grens: alleen gecodeerde stappen uit
   poort-gevalideerde profielen/taken worden uitgevoerd, en stap-output wordt
   nooit als commando geïnterpreteerd.
+- **Bewuste keuze: `shell=True` in de motor en bewijs-check**
+  (`growkit_motor.py`, `growkit_bewijs.py`). Stap-commando's komen uit
+  profiel- en takenlijstbestanden die per installatie handmatig worden
+  beheerd — niet uit gebruikersinvoer of agent-output. De shell-constructie
+  maakt pijpen en omleidingen in geplante stappen mogelijk. Daar staat
+  tegenover: zodra profielen of taken ooit door een agent of derde worden
+  gegenereerd, is shell=True een commando-injectie-vector — dát is de grens
+  van de huidige zero-trust-claim. Twee harde regels vangen dit af:
+  (1) agent-output mag nooit in `commando`-velden terechtkomen (de
+  secrets-scanner en poort controleren inhoud, niet herkomst — herkomst
+  bewaakt de mens bij het cureren van profielen), en
+  (2) de review-laag gebruikt wél `shlex.split` + `shell=False` omdat daar
+  wél externe output (config) binnenkomt. Splitsing van motor-commando's
+  naar shell-loze lijsten is uitgesteld tot het moment dat profielen niet
+  meer uitsluitend handmatig worden samengesteld (fase-5+-materiaal).
 - **Geen auto-rollback, geen auto-reparatie.** Interpretatie is voor de mens;
   het systeem raadt niet.
 - **Sessie-beheer van de omringende agent** (sessie-reset, toolsets, contexthygiëne)
@@ -153,5 +168,7 @@ poorten, ssh-doele, sleutels) blijft lokaal per boom en wordt nooit gesynct.
 
 Fase 1-4 bewezen: Test 1 (schone-pleg-plant) 7/7 · Test 2 (vrije beschrijving)
 5/5 · Test 3 (review-laag) 5/5 · Test 4 (harnas zonder agent + crash-herstart)
-6/6. Eindstand: 110 unit-tests groen, vijf E2E-scripts groen. Zelfreviews:
+6/6. Sindsdien uitgebreid met oerwoud, agent-familie, agentchat en de
+vlaggenschip-app. Actuele stand: 424 unit-tests groen, dertien E2E-scripts
+(5 sept 2026). Zelfreviews:
 `docs/superpowers/bewijs/fase-3-zelfreview.md` en `fase-4-zelfreview.md`.

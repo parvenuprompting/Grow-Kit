@@ -13,7 +13,7 @@ import re
 import subprocess
 from datetime import datetime, timezone
 
-HOST = "root@168.119.248.208"
+from kern.growkit_verbind import HOST
 WACHTRIJ_ROOT = "/root/.hermes/agenttaken"
 # alleen bekende familieleden; gelijk aan het familie-register
 _AGENTEN = {"kairos", "riri", "vigil", "libra", "memoria", "codex", "genius"}

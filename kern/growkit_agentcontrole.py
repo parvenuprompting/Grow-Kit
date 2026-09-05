@@ -15,7 +15,7 @@ import json
 import re
 import subprocess
 
-HOST = "root@168.119.248.208"
+from kern.growkit_verbind import HOST
 WACHTRIJ_ROOT = "/root/.hermes/agenttaken"
 _AGENTEN = {"kairos", "riri", "vigil", "libra", "memoria", "codex", "genius"}
 _W = WACHTRIJ_ROOT
@@ -46,12 +46,18 @@ def ophalen(*, uitvoerder=_standaard_uitvoerder, timeout: int = 20) -> dict:
         return {"ok": False, "fout": "VPS onbereikbaar — controle onbekend."}
 
     afgerond: list[dict] = []
+    _w_delen = _W.strip("/").split("/")
     for pad in [l.strip() for l in uit.splitlines() if l.strip()]:
-        delen = pad.split("/")
-        if len(delen) < 3 or delen[-3] != _W.lstrip("/").split("/")[0]:
-            pass  # padvorm strikt: /root/.hermes/agenttaken/<agent>/afgerond/<id>.json
-        agent = pad.split("/")[-3]
-        naam = pad.split("/")[-1]
+        delen = pad.strip("/").split("/")
+        # padvorm strikt: <w-root>/<agent>/afgerond/<id>.json — de map vóór
+        # de bestandsnaam moet "afgerond" zijn en de map daarvóór de w-root;
+        # daarna blijft de agent/naam-check (bekende familie, .json) staan.
+        if (len(delen) < len(_w_delen) + 3
+                or delen[-2] != "afgerond"
+                or delen[:-2] != _w_delen + [delen[-3]]):
+            continue
+        agent = delen[-3]
+        naam = delen[-1]
         if agent not in _AGENTEN or not _BESTAND.match(naam):
             continue
         c, doc = _ssh(f"cat {pad}", uitvoerder=uitvoerder, timeout=timeout)

@@ -13,7 +13,7 @@ import subprocess
 
 # Vaste, alleen-lezen diagnostiek. Geen variabelen van buitenaf in
 # het commando — alleen de profielnamen uit het familie-register.
-HOST = "root@168.119.248.208"
+from kern.growkit_verbind import HOST
 PROFIELEN = ("kairos", "riri", "vigil", "libra", "memoria", "codex", "genius")
 
 _SERVICE = {
