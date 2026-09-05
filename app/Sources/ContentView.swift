@@ -85,6 +85,7 @@ struct ContentView: View {
     @State private var toonInstellingenTab = 0
     @State private var hoverModus: Modi? = nil
     @State private var saldoTekst = ""
+    @StateObject private var statusbalkStore = StatusBalkStore()
 
     var body: some View {
         NavigationSplitView {
@@ -93,7 +94,7 @@ struct ContentView: View {
         } detail: {
             detail
         }
-        .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer() }
+        .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer(); statusbalkStore.start() }
         .sheet(isPresented: $toonInstellingen) { instellingenSheet }
     }
 
@@ -173,6 +174,31 @@ struct ContentView: View {
             .scrollIndicators(.hidden)
 
             Spacer(minLength: 0)
+
+            // Tijd, datum en weer — thuishoren in het zijmenu, het scherm blijft leeg.
+            HStack(spacing: 6) {
+                Image(systemName: "clock").font(.system(size: 9))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                Text("\(statusbalkStore.datum) · \(statusbalkStore.tijd)")
+                    .font(Thema.tekst(9)).tracking(0.3)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 4)
+
+            if let weer = statusbalkStore.weer {
+                HStack(spacing: 6) {
+                    Image(systemName: weer.icoon).font(.system(size: 9))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    Text("\(String(format: "%.0f", weer.temperatuur))° — \(weer.omschrijving)")
+                        .font(Thema.tekst(9)).tracking(0.3)
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+            }
 
             if !saldoRegel.isEmpty {
                 Button(action: {
@@ -364,7 +390,6 @@ struct ContentView: View {
                 }
             }
             .frame(maxHeight: .infinity)
-            StatusBalk()
             schermVoet
         }
     }
