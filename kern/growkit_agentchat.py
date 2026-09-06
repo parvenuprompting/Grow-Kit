@@ -17,6 +17,51 @@ from kern import growkit_agenttaak as at
 _ANTWOORDEN_ROOT = at.WACHTRIJ_ROOT  # zelfde boom: <agent>/antwoorden/
 
 
+def zuiver_antwoord(tekst: str) -> str:
+    """Haal het pure antwoord uit ruwe Hermes CLI-output.
+
+    De poller op de VPS slaat anders de hele terminal-uitvoer op: query-
+    echo, init-regels, de ☤ Hermes-box, resume-commando's en sessie-stats.
+    Het echte antwoord staat in de box tussen ╭─ en ╰─ (of, zonder box,
+    na de init-regels en vóór 'Resume this session with:').
+    """
+    if not tekst:
+        return tekst
+    regels = tekst.splitlines()
+
+    # Box gevonden? Neem de inhoud tussen ╭─… en ╰─…
+    begin = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╭─")), None)
+    eind = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╰─")), None)
+    if begin is not None and eind is not None and eind > begin:
+        binnen = regels[begin + 1:eind]
+        # Legende-regel zoals '⚕ Hermes' of 'Hermes' bovenin de box weg
+        binnen = [r for r in binnen
+                  if r.strip() and r.strip() != "Hermes"
+                  and "⚕" not in r
+                  and not r.lstrip().startswith("Query:")
+                  and not r.lstrip().startswith("Initializing agent")]
+        puur = "\n".join(binnen).strip()
+        if puur:
+            return puur
+
+    # Geen box: alles vóór 'Resume this session with:' en na de init-regels
+    if "Resume this session with:" in tekst:
+        tekst = tekst.split("Resume this session with:")[0]
+    gestript = [r for r in regels
+                if r.strip()
+                and not r.lstrip().startswith("Query:")
+                and not r.lstrip().startswith("Initializing agent")
+                and "─────" not in r
+                and not r.lstrip().startswith("hermes ")
+                and not r.lstrip().startswith("Session:")
+                and not r.lstrip().startswith("Title:")
+                and not r.lstrip().startswith("Duration:")
+                and not r.lstrip().startswith("Messages:")
+                and "⚕" not in r]
+    puur = "\n".join(gestript).strip()
+    return puur if puur else tekst.strip()
+
+
 def _scan_tekst(tekst: str) -> str | None:
     """Dezelfde secret-patronen als het taak-contract, voor chatberichten."""
     from kern.growkit_contract import _PATRONEN as contract_patronen

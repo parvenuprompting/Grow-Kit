@@ -2,16 +2,13 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-434_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-538_groen-success?style=flat-square)]()
 [![App](https://img.shields.io/badge/app-macOS_SwiftUI-black?style=flat-square)]()
 [![Fase](https://img.shields.io/badge/fases-1_t%2Fm_6_bewezen-brightgreen?style=flat-square)]()
 [![Dependencies](https://img.shields.io/badge/dependencies-geen_(stdlib)-success?style=flat-square)]()
 
 > **Het zaadje dat jij controleert — niet de agent.**
 > Een zero-trust AI-werkbank waarin elke stap machine-bewezen is, de mens het laatste woord heeft, en niets verdwijnt.
-
-![Thuis — de landingspagina](docs/screenshots/thuis.png)
-*De landingspagina van de macOS-app: dashboard, agent-familie, saldo en kennisgraaf*
 
 ## Wat is Grow Kit?
 
@@ -49,34 +46,31 @@ Vage prompt → Scope-poort (structuurcheck, weigering bij vage invoer)
 Een native SwiftUI-app in editorial-monochrome stijl. Het zijmenu bundelt alle functies:
 
 ```
-00  Thuis              — landingspagina met mini-dashboard
+00  Thuis              — landingspagina met mini-dashboard en kennisgraaf
     WERK
-01  Agent Chat         — bericht = taak via de bewezen wachtrij
+01  Agent Chat         — praat met de familie; auto-verversing, reasoning-toggle,
+                         antwoorden zuiver van CLI-meuk, gesprekken blijven staan
 02  Status             — identiteit, register, tellers, logboek
 03  Planten            — profiel kiezen → concept → motor met bewijs
 04  Goedkeuringen      — ratificatie: mens keurt goed of wijst af
 05  Dialoog            — scope-poort, prompt-slijper, ronde tafel
-06  Agenten            — roster, taak-contract, gouverneur
+06  Agenten            — gouverneur: familie, observaties, taak-contracten
 07  Knowledge Graph    — brein-verbanden, tabs per sectie
 08  Prompts            — gecureerde bibliotheek, variabelen invullen
-    SYSTEEM
 09  Vangnet            — opgevangen review-aanroepen en uitkomsten
 10  Audit              — volledig, append-only logboek
-11  Hervatten          — crash-herstel uit het logboek
-12  Taak               — boom-pad + governor → takenlijst met bewijs
+    SYSTEEM
+11  Secure Vault       — echte kluizen via macOS hdiutil (AES-256/APFS)
+12  Amnesia Protocol   — gevoelige tekst anonimiseren en herstellen
+13  Digitale Kloon     — persoonlijke kluis: 6 categorieën, AES-256-GCM,
+                         PIN (4-8) + Touch ID, master-sleutel in de Sleutelhangar
+14  Hervatten          — crash-herstel uit het logboek
+15  Taak               — boom-pad + governor → takenlijst met bewijs
     LEREN
-13  Rondleiding        — het ontwerp in vijf schermen
-14  Uitleg             — de motor uitgelegd
+16  Rondleiding        — het ontwerp in vijf schermen
+17  Uitleg             — de motor uitgelegd
+18  Best Practices     — kerninzichten uit eigen onderzoek, met zoeken
 ```
-
-![Rondleiding](docs/screenshots/rondleiding.png)
-*De groeiketen in beeld: kiemkeuze → schuring → vragenformulier met keuzes*
-
-![Planten](docs/screenshots/planten.png)
-*Planten: kiemkeuze, doelmap en registratie — elke keuze wordt machine-gecontroleerd*
-
-![Prompts](docs/screenshots/prompts.png)
-*Gecureerde prompt-bibliotheek: zoeken, filteren, variabelen invullen en kopiëren*
 
 ## Wat er al bewezen is
 
@@ -138,7 +132,7 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `growkit_verbind.py` | SSH-verbinding naar VPS (omleidbaar via `GROWKIT_HOST`). |
 | `growkit_vault.py` | **Secure Vault** — echte kluizen via macOS hdiutil (AES-256/APFS), Sleutelhangar, Spotlight-zoeker. Inbouw van SecureVault v2. |
 | `growkit_amnesia.py` | **Amnesia Protocol** — lokale detectoren, review-markers (EMAIL_1) en synthetische tweede laag. Inbouw van Amnesia Protocol Lite. |
-| `growkit_kloon.py` | **Digitale Kloon** — persoonlijke kluis (vijf categorieën), AES-256-GCM, master-sleutel in de Sleutelhangar. Inbouw van digitale-kloon-ios. |
+| `growkit_kloon.py` | **Digitale Kloon** — persoonlijke kluis (zes categorieën incl. Notities), AES-256-GCM, master-sleutel in de Sleutelhangar. Inbouw van digitale-kloon-ios. |
 | `growkit_gids.py` | **Best Practices** — kerninzichten uit eigen onderzoek, met zoeken. |
 | `growkit_openrouter.py` | OpenRouter-saldo: live uitlezen |
 
@@ -173,10 +167,10 @@ growkit/
 │   ├── autonome-fabriek/    ← nachtelijk autonoom profiel
 │   └── dev-werkplaats/      ← in ontwikkeling
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 532 tests + 20 E2E-scripts
+├── tests/                   ← 538 tests + 20 E2E-scripts
 ├── reviewconfig.voorbeeld.json
 ├── app/                     ← macOS SwiftUI-app
-│   ├── Sources/             ← 18 views + Thema/Bouwstenen
+│   ├── Sources/             ← 22 views + Thema/Bouwstenen
 │   ├── Resources/           ← app-icoon
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
 │   ├── build.sh             ← XcodeGen + xcodebuild
@@ -191,7 +185,7 @@ growkit/
 
 ## Tests
 
-- **532 tests groen** (unittest — Digitale Kloon gebruikt de `cryptography`-bibliotheek in de repo-eigen `.venv`: een bewuste, gedocumenteerde uitzondering op stdlib-only, zie de module-docstring)
+- **538 tests groen** (unittest — Digitale Kloon gebruikt de `cryptography`-bibliotheek in de repo-eigen `.venv`: een bewuste, gedocumenteerde uitzondering op stdlib-only, zie de module-docstring)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Bewijs per fase: `docs/superpowers/bewijs/`
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
