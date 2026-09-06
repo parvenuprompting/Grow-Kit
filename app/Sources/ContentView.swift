@@ -166,7 +166,7 @@ struct ContentView: View {
                 if let r, r.ok,
                    let rest = r.data["resterend"] as? Double {
                     saldoTekst = String(format: "€ %.2f", rest)
-                    saldoLaag = rest < 10.0
+                    saldoLaag = rest < InstellingenStore.gedeeld.instellingen.saldoDrempel
                     saldoURL = r.data["credits_url"] as? String ?? ""
                 }
             }
@@ -253,7 +253,7 @@ struct ContentView: View {
                 .padding(.bottom, 8)
             }
 
-            if !saldoRegel.isEmpty {
+            if !saldoRegel.isEmpty && InstellingenStore.gedeeld.instellingen.saldoInZijmenu {
                 Button(action: {
                     if let url = URL(string: saldoURL) { NSWorkspace.shared.open(url) }
                 }) {

@@ -107,7 +107,7 @@ class TestModusEnRoutering(unittest.TestCase):
         self.assertEqual(keuze["naam"], "amazone")
         self.assertEqual(keuze["modus"], "cloud")
         self.assertEqual(keuze["model_id"],
-                         "anthropic/claude-opus-4.8")  # uit manifest
+                         "anthropic/claude-opus-5")  # uit manifest (frontier-opties)
 
     def test_lokaal_gebruikt_ram_klasse_model(self):
         with mock.patch.object(ram, "ram_klasse", return_value="24-36"):
@@ -187,6 +187,33 @@ class TestChatlogVulling(unittest.TestCase):
                 vulling = cs.chatlog_vulling()
                 self.assertIn("procent", vulling)
                 self.assertGreater(vulling["procent"], 0)
+
+
+
+class TestCloudOpties(unittest.TestCase):
+    """Frontier-cloud: meerdere modellen per naam, eerste = default."""
+
+    def test_opties_per_naam(self):
+        self.assertIn("google/gemini-3.5-flash", ram.cloud_opties("sprout"))
+        self.assertIn("z-ai/glm-5.3-flash", ram.cloud_opties("sprout"))
+        self.assertIn("openai/gpt-6-astra", ram.cloud_opties("amazone"))
+        self.assertIn("anthropic/claude-opus-5", ram.cloud_opties("amazone"))
+        self.assertIn("moonshotai/kimi-k3", ram.cloud_opties("jungle"))
+
+    def test_default_is_eerste_optie(self):
+        for naam in ("sprout", "root", "leaf", "tree", "jungle", "amazone"):
+            self.assertEqual(ram.cloud_default(naam),
+                             ram.cloud_opties(naam)[0])
+
+    def test_kies_model_gebruikt_expliciete_cloud_keuze(self):
+        k = cs.kies_model("x", naam="jungle", modus="cloud",
+                          cloud_model="moonshotai/kimi-k3")
+        self.assertEqual(k["model_id"], "moonshotai/kimi-k3")
+
+    def test_ongeldige_cloud_keuze_valt_op_default(self):
+        k = cs.kies_model("x", naam="leaf", modus="cloud",
+                          cloud_model="nep/model")
+        self.assertEqual(k["model_id"], ram.cloud_default("leaf"))
 
 
 if __name__ == "__main__":

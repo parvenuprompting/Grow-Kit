@@ -67,3 +67,14 @@ def min_ram_gb(naam: str) -> int:
 
 def cloud_model_voor(naam: str) -> str:
     return manifest().get("cloud", {}).get(naam, "")
+
+
+def cloud_opties(naam: str) -> list[str]:
+    """Alle cloud-modellen voor een CyberSeed-naam (oplopend tier)."""
+    return manifest().get("cloud", {}).get(naam, [])
+
+
+def cloud_default(naam: str) -> str:
+    """Standaardkeuze binnen de cloud-opties (eerste in de lijst)."""
+    opties = cloud_opties(naam)
+    return opties[0] if opties else ""

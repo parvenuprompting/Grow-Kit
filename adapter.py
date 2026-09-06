@@ -1450,7 +1450,8 @@ def cmd_cyberseedchat(invoer: dict) -> dict:
     antwoord = growkit_cyberseed.chat(
         bericht, van=van, model=model,
         naam=str(invoer.get("naam", "")) or None,
-        modus=str(invoer.get("modus", "")) or None)
+        modus=str(invoer.get("modus", "")) or None,
+        cloud_model=str(invoer.get("cloud_model", "")) or None)
     return {"ok": True, "data": {"antwoord": antwoord, "model_naam":
                                  growkit_cyberseed.MODEL_NAAM}}
 
@@ -1471,6 +1472,8 @@ def cmd_cyberseedinstellingen(invoer: dict) -> dict:
         "soul_leeftijd_uren": growkit_cyberseed.soul_leeftijd_uren(),
         "model_naam": growkit_cyberseed.MODEL_NAAM,
         "namen": growkit_cyberseed.installatie_status(),
+        "cloud_opties": {n: growkit_ram.cloud_opties(n)
+                         for n in growkit_cyberseed._NAAM_PROMPTS},
         "titels": {k: v["titel"] for k, v in
                    growkit_cyberseed.cyberseed_namen().items()},
         "chatlog_vulling": growkit_cyberseed.chatlog_vulling(),

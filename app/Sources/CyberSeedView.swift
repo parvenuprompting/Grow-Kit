@@ -25,8 +25,10 @@ struct CyberSeedView: View {
     @State private var melding: String?
     @State private var meldingOk = false
     @State private var bevestigWis = false
+    @State private var launchAgentAan = false
     @State private var gekozenNaam = "sprout"
     @State private var gekozenModus = "lokaal"
+    @State private var gekozenCloudModel: [String: String] = [:]
     @State private var tabData: [String: Any]? = nil
 
     var body: some View {
@@ -98,6 +100,8 @@ struct CyberSeedView: View {
                     HStack {
                         PillKnop(titel: "Genereer SOUL nu", gevuld: true) { genereerSoul() }
                         Spacer()
+                        PillKnop(titel: launchAgentAan ? "Auto-verfrissen uit" : "Auto-verfrissen aan (48u)",
+                                 gevuld: false, compact: true) { wisselLaunchAgent() }
                         PillKnop(titel: "Wis chatlog", gevuld: false, compact: true) {
                             bevestigWis = true
                         }
@@ -234,7 +238,11 @@ struct CyberSeedView: View {
                     }
                     .disabled(status != "geinstalleerd")
                     PillKnop(titel: "Cloud", gevuld: gekozenModus == "cloud" && gekozenNaam == sleutel, compact: true) {
-                        gekozenNaam = sleutel; gekozenModus = "cloud"
+                        gekozenNaam = sleutel
+                        gekozenModus = "cloud"
+                        if gekozenCloudModel[sleutel] == nil {
+                            gekozenCloudModel[sleutel] = cloudDefaultVoor(sleutel)
+                        }
                     }
                     if status == "niet geinstalleerd",
                        let cmd = info["pull_commando"] as? String {
@@ -245,6 +253,46 @@ struct CyberSeedView: View {
             }
         }
         .padding(.vertical, 4)
+
+        if gekozenNaam == sleutel && gekozenModus == "cloud" && !vergrendeld {
+            cloudOptieRij(sleutel)
+        }
+    }
+
+    private func cloudOptieRij(_ sleutel: String) -> some View {
+        let opties = cloudOptiesVoor(sleutel)
+        return HStack {
+            Text("model:").font(Thema.tekst(10))
+                .foregroundStyle(Thema.kleur(.gedempt))
+            Picker("", selection: bindingCloud(sleutel, opties)) {
+                ForEach(opties, id: \.self) { o in
+                    Text(o).tag(o)
+                }
+            }
+            .labelsHidden()
+            .font(Thema.tekst(10))
+            Spacer()
+        }
+        .padding(.leading, 17)
+        .padding(.bottom, 4)
+    }
+
+    private func cloudOptiesVoor(_ sleutel: String) -> [String] {
+        if let d = tabData, let opties = d["cloud_opties"] as? [String: [String]],
+           let lijst = opties[sleutel], !lijst.isEmpty {
+            return lijst
+        }
+        return [cloudDefaultVoor(sleutel)]
+    }
+
+    private func cloudDefaultVoor(_ sleutel: String) -> String {
+        cloudOptiesVoor(sleutel).first ?? ""
+    }
+
+    private func bindingCloud(_ sleutel: String, _ opties: [String]) -> Binding<String> {
+        Binding(
+            get: { gekozenCloudModel[sleutel] ?? opties.first ?? "" },
+            set: { gekozenCloudModel[sleutel] = $0 })
     }
 
     private func kleurVoor(_ status: String) -> Color {
@@ -285,6 +333,70 @@ struct CyberSeedView: View {
         .foregroundStyle(Thema.kleur(ok ? .inkt : .zacht))
     }
 
+    // MARK: LaunchAgent (auto-verfrissen 48u)
+
+    private var plistPad: String {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return home + "/Library/LaunchAgents/nl.growkit.cyberseed-verfris.plist"
+    }
+
+    private func launchAgentStatus() {
+        let r = Process()
+        r.executableURL = URL(fileURLWithPath: "/bin/bash")
+        r.arguments = ["-c",
+            "launchctl print gui/$(id -u)/nl.growkit.cyberseed-verfris >/dev/null 2>&1 && echo AAN"]
+        let pipe = Pipe(); r.standardOutput = pipe
+        try? r.run(); r.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        launchAgentAan = String(decoding: data, as: UTF8.self).contains("AAN")
+    }
+
+    private func wisselLaunchAgent() {
+        let fm = FileManager.default
+        let plist = plistPad
+        if launchAgentAan {
+            _ = shell("launchctl bootout gui/$(id -u)/nl.growkit.cyberseed-verfris")
+            try? fm.removeItem(atPath: plist)
+            launchAgentAan = false
+            meldingOk = true
+            melding = "Auto-verfrissen uit."
+        } else {
+            let home = fm.homeDirectoryForCurrentUser.path
+            let plistInhoud = """
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>nl.growkit.cyberseed-verfris</string>
+  <key>ProgramArguments</key><array>
+    <string>\(interpreter)</string>
+    <string>\(repoPad)/scripts/cyberseed_verfris.py</string>
+  </array>
+  <key>StartInterval</key><integer>172800</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardOutPath</key><string>\(home)/.growkit/cyberseed/cron.log</string>
+  <key>StandardErrorPath</key><string>\(home)/.growkit/cyberseed/cron.log</string>
+</dict></plist>
+"""
+            try? fm.createDirectory(atPath: (plist as NSString).deletingLastPathComponent,
+                                    withIntermediateDirectories: true)
+            try? plistInhoud.write(toFile: plist, atomically: true, encoding: .utf8)
+            _ = shell("launchctl bootstrap gui/$(id -u) \(plist)")
+            launchAgentAan = true
+            meldingOk = true
+            melding = "Auto-verfrissen aan — elke 48 uur."
+        }
+    }
+
+    @discardableResult
+    private func shell(_ cmd: String) -> String {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/bash")
+        p.arguments = ["-c", cmd]
+        let pipe = Pipe(); p.standardOutput = pipe; p.standardError = pipe
+        try? p.run(); p.waitUntilExit()
+        return String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+    }
+
     // MARK: Data
 
     private func roep(_ commando: String, _ invoerDict: [String: Any] = [:]) async -> AdapterResultaat? {
@@ -299,6 +411,7 @@ struct CyberSeedView: View {
             let log = await roep("cyberseedlog", ["aantal": 30])
             let tabR = await roep("cyberseedinstellingen")
             await MainActor.run {
+                launchAgentStatus()
                 if let tabR, tabR.ok { tabData = tabR.data }
                 if let s, s.ok { status = s.data }
                 if let soulR, soulR.ok { soul = soulR.data["soul"] as? String }
@@ -337,9 +450,13 @@ struct CyberSeedView: View {
         invoer = ""
         bezig = true
         Task {
-            let r = await roep("cyberseedchat", ["bericht": tekst, "van": van,
-                                                 "naam": gekozenNaam,
-                                                 "modus": gekozenModus])
+            var invoerD: [String: Any] = ["bericht": tekst, "van": van,
+                                          "naam": gekozenNaam,
+                                          "modus": gekozenModus]
+            if gekozenModus == "cloud", let cm = gekozenCloudModel[gekozenNaam] {
+                invoerD["cloud_model"] = cm
+            }
+            let r = await roep("cyberseedchat", invoerD)
             await MainActor.run {
                 bezig = false
                 if let r, r.ok {

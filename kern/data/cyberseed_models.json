@@ -44,12 +44,33 @@
   }
  },
  "cloud": {
-  "sprout": "google/gemini-3.5-flash",
-  "root": "deepseek/deepseek-v4-pro",
-  "leaf": "qwen/qwen3.7-max",
-  "tree": "anthropic/claude-sonnet-4.6",
-  "jungle": "x-ai/grok-4.3",
-  "amazone": "anthropic/claude-opus-4.8"
+  "sprout": [
+   "google/gemini-3.5-flash",
+   "openai/gpt-5.6-luna",
+   "z-ai/glm-5.3-flash"
+  ],
+  "root": [
+   "deepseek/deepseek-v4-pro",
+   "openai/gpt-5.6-terra"
+  ],
+  "leaf": [
+   "qwen/qwen3.8-max",
+   "moonshotai/kimi-k2.6"
+  ],
+  "tree": [
+   "anthropic/claude-sonnet-5",
+   "z-ai/glm-5.2"
+  ],
+  "jungle": [
+   "x-ai/grok-4.6",
+   "moonshotai/kimi-k3",
+   "openai/gpt-5.6-sol"
+  ],
+  "amazone": [
+   "anthropic/claude-opus-5",
+   "anthropic/claude-fable-5.1",
+   "openai/gpt-6-astra"
+  ]
  },
  "namen": {
   "sprout": "CyberSeed Sprout v0.5",
@@ -71,5 +92,13 @@
   "gpt-oss:20b": "14GB",
   "llama3.3:70b": "43GB",
   "qwen3-coder-next": "52GB"
+ },
+ "cloud_default": {
+  "sprout": "google/gemini-3.5-flash",
+  "root": "deepseek/deepseek-v4-pro",
+  "leaf": "qwen/qwen3.8-max",
+  "tree": "anthropic/claude-sonnet-5",
+  "jungle": "x-ai/grok-4.6",
+  "amazone": "anthropic/claude-opus-5"
  }
 }

@@ -316,8 +316,9 @@ struct AgentChatView: View {
     }
 
     private func startAutoVervers() {
+        guard InstellingenStore.gedeeld.instellingen.autoVerversing > 0 else { return }
         autoVerversTimer?.invalidate()
-        autoVerversTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
+        autoVerversTimer = Timer.scheduledTimer(withTimeInterval: Double(max(InstellingenStore.gedeeld.instellingen.autoVerversing, 5)), repeats: true) { _ in
             guard !gekozenAgent.isEmpty else { return }
             store.laadDraad(agent: gekozenAgent, runner: runner,
                             repoPad: repoPad, interpreter: interpreter, stil: true)

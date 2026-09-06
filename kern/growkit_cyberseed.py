@@ -318,7 +318,8 @@ def _log_regel(rol: str, tekst: str) -> None:
 # ---------------------------------------------------------------------------
 
 def kies_model(bericht: str, naam: str | None = None,
-               modus: str | None = None) -> dict:
+               modus: str | None = None,
+               cloud_model: str | None = None) -> dict:
     """Bepaal CyberSeed-naam + model_id + modus voor een beurt.
 
     Default = sprout/lokaal (lichte routering: goedkoop en lokaal tenzij
@@ -334,7 +335,11 @@ def kies_model(bericht: str, naam: str | None = None,
     if modus == "lokaal" and ram.is_vergrendeld(klasse, naam):
         naam, teruggevallen = "sprout", True
     if modus == "cloud":
-        model_id = ram.cloud_model_voor(naam)
+        opties = ram.cloud_opties(naam)
+        if cloud_model and cloud_model in opties:
+            model_id = cloud_model          # expliciete keuze binnen de opties
+        else:
+            model_id = ram.cloud_default(naam)  # eerste optie = default
     else:
         model_id = ram.model_voor(klasse, naam) or BASIS_MODEL_DEFAULT
     return {"naam": naam, "modus": modus, "model_id": model_id,
@@ -397,11 +402,68 @@ def _routing_log(naam: str, modus: str, model_id: str, bericht: str) -> None:
 
 
 
+def _openrouter_key() -> str:
+    """OpenRouter-sleutel: omgeving eerst, dan ~/.hermes/.env / config."""
+    import os
+    key = os.environ.get("OPENROUTER_API_KEY", "")
+    if key:
+        return key
+    for pad in (Path.home() / ".hermes" / ".env",
+                Path.home() / ".hermes" / "config.yaml"):
+        if pad.exists():
+            try:
+                for regel in pad.read_text(errors="replace").splitlines():
+                    if regel.startswith("OPENROUTER_API_KEY"):
+                        return regel.split("=", 1)[1].strip().strip('"\'')
+                    if "openrouter" in regel.lower() and "key" in regel.lower():
+                        deel = regel.split(":", 1)[-1].strip()
+                        if deel and not deel.startswith("sk-or"):
+                            continue
+                        if deel.startswith("sk-or"):
+                            return deel
+            except OSError:
+                continue
+    return ""
+
+
+def _openrouter_chat(model: str, systeem: str, bericht: str, van: str) -> str:
+    """Frontier-cloud via OpenRouter (bestaande koppeling, eigen sleutel)."""
+    key = _openrouter_key()
+    if not key:
+        raise ConnectionError(
+            "Geen OpenRouter-sleutel gevonden — stel die in via "
+            "Instellingen ▸ AI-providers of zet OPENROUTER_API_KEY.")
+    body = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": systeem},
+            {"role": "user",
+             "content": f"[van: {van or 'onbekend'}] {bericht}"},
+        ],
+    }
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json",
+                 "Authorization": f"Bearer {key}"})
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            data = json.loads(r.read())
+    except (OSError, urllib.error.URLError) as e:
+        raise ConnectionError(f"OpenRouter onbereikbaar: {e}")
+    try:
+        return data["choices"][0]["message"]["content"]
+    except (json.JSONDecodeError, KeyError, IndexError) as e:
+        raise ConnectionError(f"Ongeldig OpenRouter-antwoord: {e}")
+
+
 def chat(bericht: str, *, van: str = "", model: str = "",
-         naam: str | None = None, modus: str | None = None) -> str:
+         naam: str | None = None, modus: str | None = None,
+         cloud_model: str | None = None) -> str:
     """Eén beurt: gekozen naam+prompt als system (aangevuld met SOUL voor
     root+), bericht erin, antwoord terug + gelogd + routinglog."""
-    keuze = kies_model(bericht, naam=naam, modus=modus)
+    keuze = kies_model(bericht, naam=naam, modus=modus,
+                       cloud_model=cloud_model)
     naam = keuze["naam"]
     modus = keuze["modus"]
     model = model or keuze["model_id"]
@@ -422,17 +484,20 @@ def chat(bericht: str, *, van: str = "", model: str = "",
             {"role": "user",
              "content": f"[van: {van or 'onbekend'}] {bericht}"},
         ],
-    }
-    try:
-        code, data = _http_post(f"{OLLAMA_URL}/api/chat", body)
-    except OSError as e:
-        raise ConnectionError(f"Ollama onbereikbaar: {e}")
-    if code != 200:
-        raise ConnectionError(f"Ollama antwoordde {code}")
-    try:
-        antw = json.loads(data)["message"]["content"]
-    except (json.JSONDecodeError, KeyError) as e:
-        raise ConnectionError(f"Ongeldig Ollama-antwoord: {e}")
+    }  # lokaal; cloud bouwt zijn eigen body in _openrouter_chat
+    if modus == "cloud":
+        antw = _openrouter_chat(model, systeem, bericht, van)
+    else:
+        try:
+            code, data = _http_post(f"{OLLAMA_URL}/api/chat", body)
+        except OSError as e:
+            raise ConnectionError(f"Ollama onbereikbaar: {e}")
+        if code != 200:
+            raise ConnectionError(f"Ollama antwoordde {code}")
+        try:
+            antw = json.loads(data)["message"]["content"]
+        except (json.JSONDecodeError, KeyError) as e:
+            raise ConnectionError(f"Ongeldig Ollama-antwoord: {e}")
     _log_regel("gebruiker", bericht)
     _log_regel("assistent", antw)
     return antw
