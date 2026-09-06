@@ -173,7 +173,6 @@ struct AgentChatView: View {
     @State private var nieuwBericht = ""
     @State private var agentLijst: [(naam: String, live: Bool)] = []
     @State private var agentenGeladen = false
-    @State private var toonRedenatie = false
     @State private var toonGeschiedenis = false
     @State private var wisBevestiging = false
     @State private var wisGeschiedenisBevestiging = false
@@ -336,10 +335,6 @@ struct AgentChatView: View {
                 Text("de familie.").font(Thema.display(30, cursief: true))
                     .foregroundStyle(Thema.kleur(.zacht))
                 Spacer()
-                PillKnop(titel: toonRedenatie ? "Redenatie aan" : "Redenatie uit",
-                         gevuld: toonRedenatie, compact: true) {
-                    toonRedenatie.toggle()
-                }
                 PillKnop(titel: "Geschiedenis", gevuld: false, compact: true) {
                     toonGeschiedenis.toggle()
                     if toonGeschiedenis {
