@@ -43,9 +43,9 @@ struct SecureVaultView: View {
                 kop
                 if let fout { foutKaart(fout) }
 
-                overzichtKaart
                 openKaart
                 maakKaart
+                overzichtKaart
                 Spacer(minLength: 16)
             }
             .padding(28)
