@@ -31,6 +31,76 @@ _DAGEN = ("maandag", "dinsdag", "woensdag", "donderdag",
 # Pad-injectie (tests overschrijven _basis_pad)
 # ---------------------------------------------------------------------------
 
+
+
+# ---------------------------------------------------------------------------
+# CyberSeed-namen: zes tiers, oplopend in autonomie (prompts uit de
+# ontwerp-documenten, 6 sept). Governance in alle tiers.
+# ---------------------------------------------------------------------------
+
+_NAAM_PROMPTS = {
+    "sprout": (
+        "Je bent CyberSeed Sprout, het instapmodel binnen GrowKit. Je "
+        "beantwoordt directe vragen kort en concreet. Je neemt geen autonome "
+        "beslissingen en voert geen acties uit — je geeft alleen antwoord op "
+        "wat gevraagd wordt. Bij twijfel over de vraag, vraag om "
+        "verduidelijking in plaats van aan te nemen wat bedoeld wordt."),
+    "root": (
+        "Je bent CyberSeed Root binnen GrowKit. Je krijgt de actuele "
+        "SOUL-snapshot (profiel, openstaande ratificaties, saldo, recente "
+        "audit-regels, actieve bomen) als context mee. Gebruik die context "
+        "om antwoorden persoonlijker en relevanter te maken, maar doe geen "
+        "aannames buiten wat de snapshot bevestigt. Je mag suggesties doen, "
+        "maar voert geen wijzigingen of acties uit zonder expliciete "
+        "bevestiging van de gebruiker."),
+    "leaf": (
+        "Je bent CyberSeed Leaf, gespecialiseerd in Vangnet-taken: het "
+        "opvangen van modelaanroepen, het afleiden van labels, en het "
+        "structureren van logs. Binnen dit taakdomein mag je zelfstandig "
+        "classificeren en labelen volgens de vastgestelde categorieën. "
+        "Buiten dit domein geef je aan dat de vraag buiten je specialisatie "
+        "valt en verwijs je door naar een breder model. Wees precies — een "
+        "verkeerd label is duurder dan een lege classificatie."),
+    "tree": (
+        "Je bent CyberSeed Tree, verantwoordelijk voor coördinatie binnen "
+        "het Agent Harnas. Je hebt overzicht over meerdere taakspecifieke "
+        "modellen en bepaalt welke taak bij welke specialist hoort. Je "
+        "voert zelf geen gespecialiseerde taken uit die een specialist "
+        "tobehoren — je routeert, combineert resultaten, en signaleert "
+        "conflicten tussen specialisten. Alle beslissingen die buiten "
+        "routinematige coördinatie vallen, leg je voor aan de gebruiker "
+        "voor akkoord."),
+    "jungle": (
+        "Je bent CyberSeed Jungle. Je werkt met patronen die over meerdere "
+        "gebruikerscontexten en periodes heen zijn geëxtraheerd, niet "
+        "alleen de huidige sessie. Je mag complexere, samengestelde taken "
+        "behandelen die meerdere stappen of domeinen overspannen. Je blijft "
+        "gebonden aan de bestaande governance-regels (KairOS): geen actie "
+        "zonder audit-spoor, geen zelfbeoordeling van je eigen output, en "
+        "expliciete goedkeuring vereist voor alles wat buiten reversibele, "
+        "low-risk stappen valt."),
+    "amazone": (
+        "Je bent CyberSeed Amazone, het meest capabele model binnen "
+        "GrowKit. Je autonomie is het grootst van alle CyberSeed-niveaus, "
+        "maar je grenzen zijn ongewijzigd: geen actie zonder audit-spoor, "
+        "geen zelfbeoordeling, en menselijke goedkeuring blijft vereist "
+        "voor alles wat onomkeerbaar is of buiten de vastgestelde scope "
+        "valt. Capaciteit is geen vrijbrief voor meer autonomie dan de "
+        "governance toestaat — bij twijfel kies je de voorzichtiger weg en "
+        "leg je uit waarom."),
+}
+
+
+def cyberseed_namen() -> dict:
+    """{sleutel: {titel, prompt}} — zes tiers, governance in alle prompts."""
+    from kern import growkit_ram as ram
+    titels = ram.manifest().get("namen", {})
+    return {sleutel: {"titel": titels.get(sleutel, sleutel),
+                      "prompt": prompt}
+            for sleutel, prompt in _NAAM_PROMPTS.items()}
+
+
+
 def _basis_pad() -> Path:
     return Path.home() / ".growkit" / "cyberseed"
 
@@ -241,17 +311,114 @@ def _log_regel(rol: str, tekst: str) -> None:
         f.write(json.dumps(regel, ensure_ascii=False) + "\n")
 
 
-def chat(bericht: str, *, van: str = "", model: str = "") -> str:
-    """Eén beurt: SOUL als system, bericht erin, antwoord terug + gelogd."""
+
+
+# ---------------------------------------------------------------------------
+# Modus- en naam-keuze (lichte routering — review-punt 2, NuNu 6 sept)
+# ---------------------------------------------------------------------------
+
+def kies_model(bericht: str, naam: str | None = None,
+               modus: str | None = None) -> dict:
+    """Bepaal CyberSeed-naam + model_id + modus voor een beurt.
+
+    Default = sprout/lokaal (lichte routering: goedkoop en lokaal tenzij
+    expliciet geëscaleerd). Vergrendelde naam valt terug naar sprout.
+    """
+    from kern import growkit_ram as ram
+    naam = (naam or "sprout").lower()
+    modus = (modus or "lokaal").lower()
+    if naam not in _NAAM_PROMPTS:
+        naam = "sprout"
+    teruggevallen = False
+    klasse = ram.ram_klasse()
+    if modus == "lokaal" and ram.is_vergrendeld(klasse, naam):
+        naam, teruggevallen = "sprout", True
+    if modus == "cloud":
+        model_id = ram.cloud_model_voor(naam)
+    else:
+        model_id = ram.model_voor(klasse, naam) or BASIS_MODEL_DEFAULT
+    return {"naam": naam, "modus": modus, "model_id": model_id,
+            "ram_klasse": klasse, "teruggevallen": teruggevallen}
+
+
+def installatie_status() -> dict:
+    """Per naam: model, status (geinstalleerd/niet/vergrendeld), pull-commando,
+    downloadgrootte, min-RAM bij vergrendeling — UI-toestand vóór het klikken."""
+    from kern import growkit_ram as ram
+    s = ollama_status()
+    geinstalleerd = set(s.get("modellen", []))
+    klasse = ram.ram_klasse()
+    manifest_ = ram.manifest()
+    groottes = manifest_.get("download_grootte_gb", {})
+    uit = {}
+    for naam in _NAAM_PROMPTS:
+        vergrendeld = ram.is_vergrendeld(klasse, naam)
+        model = ram.model_voor(klasse, naam)
+        regel: dict = {"model": model, "vergrendeld": vergrendeld,
+                       "ram_klasse": klasse}
+        if vergrendeld:
+            regel["status"] = "vergrendeld"
+            regel["min_ram_gb"] = ram.min_ram_gb(naam)
+        elif model and (model in geinstalleerd):
+            regel["status"] = "geinstalleerd"
+        else:
+            regel["status"] = "niet geinstalleerd"
+            regel["pull_commando"] = f"ollama pull {model}"
+        grootte = groottes.get(model or "", "")
+        if grootte:
+            regel["download_grootte"] = grootte
+        uit[naam] = regel
+    return uit
+
+
+def chatlog_vulling() -> dict:
+    """Hoe vol is de chatlog die de volgende SOUL-regeneratie voedt?
+    (review-punt 5: voorspelbaar regenereren). Cap: SOUL_MAX_TEKENS."""
+    pad = _basis_pad() / "chatlog.jsonl"
+    if not pad.exists():
+        return {"tekens": 0, "cap": SOUL_MAX_TEKENS, "procent": 0,
+                "aanbevolen": False}
+    tekens = sum(len(r) for r in pad.read_text().splitlines())
+    procent = min(100, round(100 * tekens / SOUL_MAX_TEKENS))
+    return {"tekens": tekens, "cap": SOUL_MAX_TEKENS, "procent": procent,
+            "aanbevolen": procent >= 60}
+
+
+def _routing_log(naam: str, modus: str, model_id: str, bericht: str) -> None:
+    """Verificatie-eis: log per call met naam + model_id + modus."""
+    pad = _basis_pad()
+    pad.mkdir(parents=True, exist_ok=True)
+    regel = {"ts": _nu().isoformat(timespec="seconds"), "naam": naam,
+             "modus": modus, "model_id": model_id,
+             "bericht_lengte": len(bericht)}
+    with (pad / "routinglog.jsonl").open("a") as f:
+        f.write(json.dumps(regel, ensure_ascii=False) + "\n")
+
+
+
+
+def chat(bericht: str, *, van: str = "", model: str = "",
+         naam: str | None = None, modus: str | None = None) -> str:
+    """Eén beurt: gekozen naam+prompt als system (aangevuld met SOUL voor
+    root+), bericht erin, antwoord terug + gelogd + routinglog."""
+    keuze = kies_model(bericht, naam=naam, modus=modus)
+    naam = keuze["naam"]
+    modus = keuze["modus"]
+    model = model or keuze["model_id"]
+    _routing_log(naam, modus, model, bericht)
+
+    naam_prompt = _NAAM_PROMPTS[naam]
     soul = soul_lees()
-    if not soul:
-        soul = verfris_soul() and soul_lees() or soul_snapshot()
+    if naam in ("root", "jungle", "amazone") and not soul:
+        verfris_soul()
+        soul = soul_lees()
+    systeem = naam_prompt if not soul or naam == "sprout" else f"{naam_prompt}\n\n# SOUL-snapshot\n{soul}"
     body = {
-        "model": model or BASIS_MODEL_DEFAULT,
+        "model": model,
         "keep_alive": "24h",
         "stream": False,
         "messages": [
-            {"role": "system", "content": soul},
+            {"role": "system", "content": systeem},
             {"role": "user",
              "content": f"[van: {van or 'onbekend'}] {bericht}"},
         ],

@@ -29,6 +29,7 @@ from kern import growkit_automatiek  # noqa: E402
 from kern import growkit_agenda  # noqa: E402
 from kern import growkit_telegram  # noqa: E402
 from kern import growkit_cyberseed  # noqa: E402
+from kern import growkit_ram  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -1446,7 +1447,10 @@ def cmd_cyberseedchat(invoer: dict) -> dict:
     _cyberseed_scan(bericht)
     van = str(invoer.get("van", "")).strip()
     model = str(invoer.get("model", "")).strip()
-    antwoord = growkit_cyberseed.chat(bericht, van=van, model=model)
+    antwoord = growkit_cyberseed.chat(
+        bericht, van=van, model=model,
+        naam=str(invoer.get("naam", "")) or None,
+        modus=str(invoer.get("modus", "")) or None)
     return {"ok": True, "data": {"antwoord": antwoord, "model_naam":
                                  growkit_cyberseed.MODEL_NAAM}}
 
@@ -1454,6 +1458,23 @@ def cmd_cyberseedchat(invoer: dict) -> dict:
 def cmd_cyberseedlog(invoer: dict) -> dict:
     n = int(invoer.get("aantal", 20))
     return {"ok": True, "data": {"regels": growkit_cyberseed.chatlog_lees(n)}}
+
+
+def cmd_cyberseedinstellingen(invoer: dict) -> dict:
+    """Alles voor het CyberSeed-tabblad in één aanroep: status, namen met
+    modellen/status/vergrendeling/grootte, RAM-klasse, chatlog-vulling."""
+    s = growkit_cyberseed.ollama_status()
+    return {"ok": True, "data": {
+        "ollama": s,
+        "ram_klasse": growkit_ram.ram_klasse(),
+        "ram_gb": growkit_ram.ram_gb(),
+        "soul_leeftijd_uren": growkit_cyberseed.soul_leeftijd_uren(),
+        "model_naam": growkit_cyberseed.MODEL_NAAM,
+        "namen": growkit_cyberseed.installatie_status(),
+        "titels": {k: v["titel"] for k, v in
+                   growkit_cyberseed.cyberseed_namen().items()},
+        "chatlog_vulling": growkit_cyberseed.chatlog_vulling(),
+    }}
 
 
 def cmd_cyberseedwis(invoer: dict) -> dict:
@@ -1523,6 +1544,7 @@ COMMANDOS = {
     "cyberseedchat": cmd_cyberseedchat,
     "cyberseedlog": cmd_cyberseedlog,
     "cyberseedwis": cmd_cyberseedwis,
+    "cyberseedinstellingen": cmd_cyberseedinstellingen,
     "klooncategorieen": cmd_klooncategorieen,
     "kloonlijst": cmd_kloonlijst,
     "kloonlees": cmd_kloonlees,

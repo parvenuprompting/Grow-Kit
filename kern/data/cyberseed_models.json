@@ -1,0 +1,75 @@
+{
+ "_comment": "CyberSeed-modelmanifest — RAM-klasse → naam → lokaal Ollama-model. Bewerken zonder app-release. Vergrendeld = null (te weinig RAM). Cloud-mapping staat apart: cyberseed_cloud_models.json.",
+ "versie": 1,
+ "lokaal": {
+  "8-15": {
+   "sprout": "qwen3:0.6b",
+   "root": "qwen3:1.7b",
+   "leaf": "qwen3:4b",
+   "tree": "qwen3:8b",
+   "jungle": null,
+   "amazone": null
+  },
+  "16-23": {
+   "sprout": "qwen3:1.7b",
+   "root": "qwen3:4b",
+   "leaf": "qwen3:8b",
+   "tree": "gpt-oss:20b",
+   "jungle": "qwen3:14b",
+   "amazone": null
+  },
+  "24-36": {
+   "sprout": "qwen3:4b",
+   "root": "qwen3:8b",
+   "leaf": "qwen3:14b",
+   "tree": "gpt-oss:20b",
+   "jungle": "qwen3.6:27b",
+   "amazone": "qwen3:32b"
+  },
+  "48-64": {
+   "sprout": "qwen3:8b",
+   "root": "qwen3:14b",
+   "leaf": "qwen3.6:27b",
+   "tree": "qwen3:32b",
+   "jungle": "qwen3-coder:30b",
+   "amazone": "llama3.3:70b"
+  },
+  "96+": {
+   "sprout": "qwen3:14b",
+   "root": "qwen3.6:27b",
+   "leaf": "qwen3:32b",
+   "tree": "qwen3-coder:30b",
+   "jungle": "llama3.3:70b",
+   "amazone": "qwen3-coder-next"
+  }
+ },
+ "cloud": {
+  "sprout": "google/gemini-3.5-flash",
+  "root": "deepseek/deepseek-v4-pro",
+  "leaf": "qwen/qwen3.7-max",
+  "tree": "anthropic/claude-sonnet-4.6",
+  "jungle": "x-ai/grok-4.3",
+  "amazone": "anthropic/claude-opus-4.8"
+ },
+ "namen": {
+  "sprout": "CyberSeed Sprout v0.5",
+  "root": "CyberSeed Root v1.0",
+  "leaf": "CyberSeed Leaf v1.5",
+  "tree": "CyberSeed Tree v2.0",
+  "jungle": "CyberSeed Jungle v2.5",
+  "amazone": "CyberSeed Amazone v3.0"
+ },
+ "download_grootte_gb": {
+  "qwen3:0.6b": "4GB",
+  "qwen3:1.7b": "1.4GB",
+  "qwen3:4b": "2.5GB",
+  "qwen3:8b": "5.2GB",
+  "qwen3:14b": "9.3GB",
+  "qwen3:32b": "20GB",
+  "qwen3.6:27b": "18GB",
+  "qwen3-coder:30b": "19GB",
+  "gpt-oss:20b": "14GB",
+  "llama3.3:70b": "43GB",
+  "qwen3-coder-next": "52GB"
+ }
+}
