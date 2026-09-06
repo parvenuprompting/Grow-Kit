@@ -20,6 +20,7 @@ struct ContentView: View {
         case gids = 93
         case automatiek = 94
         case agenda = 95
+        case telegram = 96
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -46,9 +47,10 @@ struct ContentView: View {
             case .kloon: return "15"
             case .hervatten: return "16"
             case .taak: return "17"
-            case .rondleiding: return "18"
-            case .uitleg: return "19"
-            case .gids: return "20"
+            case .rondleiding: return "19"
+            case .uitleg: return "20"
+            case .gids: return "21"
+            case .telegram: return "18"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -70,6 +72,7 @@ struct ContentView: View {
             case .vangnet: return "Vangnet"
             case .audit: return "Audit"
             case .agenda: return "Agenda"
+            case .telegram: return "Telegram Connect"
             case .hervatten: return "Hervatten"
             case .securevault: return "Secure Vault"
             case .amnesia: return "Amnesia Protocol"
@@ -99,6 +102,7 @@ struct ContentView: View {
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .agenda: return "Cron, wachtende goedkeuringen en taken — alles vastligt hier"
+            case .telegram: return "Koppel de hele familie aan jouw eigen Telegram, stap voor stap"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .securevault: return "Echte macOS-kluizen — AES-256 via hdiutil"
             case .amnesia: return "Gevoelige tekst veilig maken, lokaal en met jouw goedkeuring"
@@ -210,12 +214,13 @@ struct ContentView: View {
 
                     // LEREN — rondleiding, uitleg en de AI Gids
                     zijbalkSectie("LEREN")
-                    ForEach([Modi.rondleiding, .uitleg, .gids]) { modus in
+                    ForEach([Modi.telegram, .rondleiding, .uitleg, .gids]) { modus in
                         modusRij(modus)
                     }
                 }
             }
-            .scrollIndicators(.hidden)
+            .scrollIndicators(.automatic)
+            .scrollBounceBehavior(.basedOnSize)
 
             Spacer(minLength: 0)
 
@@ -407,6 +412,8 @@ struct ContentView: View {
                     KloonView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .telegram:
+                    TelegramWizardView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:
                     AgentChatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .skills:

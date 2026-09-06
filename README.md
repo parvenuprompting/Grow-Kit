@@ -55,8 +55,9 @@ Native macOS-app (SwiftUI) in editorial-monochrome stijl. Zijmenu:
 | 16 | Taak | Boom-pad + governor → takenlijst met bewijs |
 | **LEREN** | | |
 | 17 | Rondleiding | Het ontwerp in vijf schermen |
-| 18 | Uitleg | De motor uitgelegd |
-| 19 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
+| 18 | **Telegram Connect** | De familie koppelen aan jouw eigen Telegram, stap voor stap |
+| 19 | Uitleg | De motor uitgelegd |
+| 20 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
 
 ## De agent-familie
 
