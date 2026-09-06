@@ -48,10 +48,12 @@ class TestVoortgang(unittest.TestCase):
     def test_token_wordt_niet_in_voortgang_bewaard(self):
         with tempfile.TemporaryDirectory() as tmp:
             pad = Path(tmp) / "wizard.json"
-            with mock.patch.object(tg, "_voortgang_pad", return_value=pad):
+            with mock.patch.object(tg, "_voortgang_pad", return_value=pad), \
+                 mock.patch.object(tg, "bewaar_token", return_value=True) as bewaar:
                 tg.markeer_klaar("kairos", 2, token="123456:ABC-DEF")
                 raw = pad.read_text()
-                self.assertNotIn("ABC-DEF", raw)
+                self.assertNotIn("ABC-DEF", raw)     # token lekt niet in state
+                bewaar.assert_called_once()           # en ging wél naar de hangar-laag
 
 
 class TestKeychain(unittest.TestCase):
