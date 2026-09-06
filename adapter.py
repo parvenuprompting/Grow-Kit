@@ -22,6 +22,7 @@ sys.path.insert(0, str(REPO))
 from kern import growkit_oerwoud  # noqa: E402
 from kern import growkit_prompts  # noqa: E402
 from kern import growkit_vault  # noqa: E402
+from kern import growkit_amnesia  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -685,6 +686,65 @@ def cmd_vaultsluit(invoer: dict) -> dict:
     return {"ok": True, "data": {"gesloten": [mount]}}
 
 
+def cmd_amnesiadetect(invoer: dict) -> dict:
+    """Amnesia-laag 1: kandidaten vinden in tekst (of terminal: true).
+
+    Puur analyserend — er wordt nog niets vervangen; de mens keurt.
+    """
+    tekst = invoer.get("tekst")
+    if tekst is None:
+        raise AdapterFout("ontbrekend veld: tekst")
+    try:
+        if invoer.get("terminal"):
+            vondsten = growkit_amnesia.detecteer_terminal(tekst)
+        else:
+            vondsten = growkit_amnesia.detecteer(tekst)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"vondsten": vondsten}}
+
+
+def cmd_amnesiamarker(invoer: dict) -> dict:
+    """Amnesia-laag 1 afronden: besluiten + zaad → veilige tekst + markers.
+
+    besluiten: [{id: 'vondst-1', besluit: 'geaccepteerd'|'genegeerd'|
+    'aangepast', waarde?: '...'}] — alleen geaccepteerd/aangepast verdwijnen.
+    """
+    tekst = invoer.get("tekst")
+    vondsten = invoer.get("vondsten")
+    if tekst is None or vondsten is None:
+        raise AdapterFout("ontbrekende velden: tekst, vondsten")
+    besluiten = {b.get("id"): b for b in invoer.get("besluiten", [])}
+    verwerkt = []
+    for v in vondsten:
+        b = besluiten.get(v.get("id"))
+        item = dict(v)
+        if b:
+            item["besluit"] = b.get("besluit", v.get("besluit", "open"))
+            if b.get("waarde"):
+                item["waarde"] = b["waarde"]
+        verwerkt.append(item)
+    zaad = invoer.get("zaad")
+    tokens = growkit_amnesia.bouw_markers(verwerkt)
+    veilig = growkit_amnesia.veilige_tekst(tekst, verwerkt, tokens)
+    return {"ok": True, "data": {"veilige_tekst": veilig, "tokens": tokens}}
+
+
+def cmd_amnesiasynth(invoer: dict) -> dict:
+    """Amnesia-laag 2: markers → fictieve waarden (zaad = sessie)."""
+    tekst = invoer.get("tekst")
+    if tekst is None:
+        raise AdapterFout("ontbrekend veld: tekst")
+    zaad = invoer.get("zaad")
+    if zaad is None:
+        raise AdapterFout("ontbrekend veld: zaad (sessie-nummer)")
+    markers = growkit_amnesia.parse_markers(tekst)
+    kaart = growkit_amnesia.bouw_synthetische_map(markers, int(zaad))
+    resultaat = growkit_amnesia.vervang_markers(tekst, kaart)
+    return {"ok": True, "data": {"synthetische_tekst": resultaat,
+            "vervangingen": kaart}}
+
+
 def cmd_verbruik(invoer: dict) -> dict:
     """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
     from kern import growkit_openrouter
@@ -1136,6 +1196,9 @@ COMMANDOS = {
     "vaultmaak": cmd_vaultmaak,
     "vaultopen": cmd_vaultopen,
     "vaultsluit": cmd_vaultsluit,
+    "amnesiadetect": cmd_amnesiadetect,
+    "amnesiamarker": cmd_amnesiamarker,
+    "amnesiasynth": cmd_amnesiasynth,
 }
 
 def main(argv: list[str]) -> int:

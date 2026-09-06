@@ -100,14 +100,14 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `SEED.md` | Geboortebrief: rol, regels en leesroute |
 | `seed.py` | Plant-mechanisme: kiemkeuze, slijper, motor |
 | `loop.py` | Het harnas: vijf modi — planten, hervatten, taak, ratificatie, status |
-| `adapter.py` | Machine-leesbare JSON-CLI over de kern — 42 commando's |
+| `adapter.py` | Machine-leesbare JSON-CLI over de kern — 45 commando's |
 | `app/` | Native macOS-app (SwiftUI, XcodeGen) — 18 schermen + zijmenu |
-| `kern/` | 29 modules — het volledige fundament |
+| `kern/` | 30 modules — het volledige fundament |
 | `profielen/` | Bomen: JSON-stappenplannen met gecodeerd bewijs |
 | `groei/` | Groeilaag-documentatie en slijper-logboek |
 | `testing/` | 434 unittesten + 20 end-to-end-scripts |
 
-### De 29 kernmodules
+### De 30 kernmodules
 
 | Module | Rol |
 |---|---|
@@ -137,6 +137,7 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `growkit_hervatvlag.py` | Wizard-hervatvlag |
 | `growkit_verbind.py` | SSH-verbinding naar VPS (omleidbaar via `GROWKIT_HOST`). |
 | `growkit_vault.py` | **Secure Vault** — echte kluizen via macOS hdiutil (AES-256/APFS), Sleutelhangar, Spotlight-zoeker. Inbouw van SecureVault v2. |
+| `growkit_amnesia.py` | **Amnesia Protocol** — lokale detectoren, review-markers (EMAIL_1) en synthetische tweede laag. Inbouw van Amnesia Protocol Lite. |
 | `growkit_openrouter.py` | OpenRouter-saldo: live uitlezen |
 
 ## Quickstart
@@ -162,15 +163,15 @@ growkit/
 ├── SEED.md                  ← geboortebrief
 ├── seed.py                  ← plant-mechanisme
 ├── loop.py                  ← het harnas: orchestratie zonder agent
-├── adapter.py               ← JSON-CLI brug (42 commando's)
-├── kern/                    ← 29 modules
+├── adapter.py               ← JSON-CLI brug (45 commando's)
+├── kern/                    ← 30 modules
 ├── profielen/
 │   ├── INDEX.md             ← kiemkeuze-catalogus
 │   ├── tweede-brein/        ← bewezen profiel
 │   ├── autonome-fabriek/    ← nachtelijk autonoom profiel
 │   └── dev-werkplaats/      ← in ontwikkeling
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 474 tests + 20 E2E-scripts
+├── tests/                   ← 503 tests + 20 E2E-scripts
 ├── reviewconfig.voorbeeld.json
 ├── app/                     ← macOS SwiftUI-app
 │   ├── Sources/             ← 18 views + Thema/Bouwstenen
@@ -188,7 +189,7 @@ growkit/
 
 ## Tests
 
-- **474 tests groen** (unittest, stdlib-only)
+- **503 tests groen** (unittest, stdlib-only)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Bewijs per fase: `docs/superpowers/bewijs/`
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
