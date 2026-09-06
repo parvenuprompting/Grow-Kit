@@ -72,47 +72,76 @@ struct AgentChatView: View {
     @StateObject private var store = AgentChatStore()
     @State private var gekozenAgent = ""
     @State private var nieuwBericht = ""
-
-    private var agenten: [(naam: String, live: Bool)] {
-        FamilieStatusStore.gedeeld.leeft
-            .sorted { $0.key < $1.key }
-            .map { ($0.key, $0.value == "active") }
-    }
-
-    /// Kies bij eerste opening de eerste bekende agent uit de familie;
-    /// val terug op de eerste uit de live-status als er nog niets gekozen is.
-    private func stelEersteAgentIn() {
-        guard gekozenAgent.isEmpty else { return }
-        if !agenten.isEmpty {
-            gekozenAgent = agenten[0].naam
-        }
-    }
+    @State private var agentLijst: [(naam: String, live: Bool)] = []
+    @State private var agentenGeladen = false
 
     var body: some View {
         VStack(spacing: 0) {
             kop
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
             HStack(spacing: 0) {
-                agentLijst
+                agentLijstView
                 Rectangle().fill(Thema.kleur(.lijn)).frame(width: 1)
                 draadPaneel
             }
         }
         .background(Thema.kleur(.papier))
         .onAppear {
-            stelEersteAgentIn()
-            if !gekozenAgent.isEmpty, store.draad.isEmpty {
-                store.laadDraad(agent: gekozenAgent, runner: runner,
-                                repoPad: repoPad, interpreter: interpreter)
-            }
+            laadAgenten()
         }
-        // De familie-status arriveert asynchroon. Observeer de store direct:
-        // alleen dan herlaadt SwiftUI deze view wanneer leeft gevuld wordt.
-        .onReceive(FamilieStatusStore.gedeeld.$leeft) { _ in
-            stelEersteAgentIn()
-            if !gekozenAgent.isEmpty, store.draad.isEmpty {
-                store.laadDraad(agent: gekozenAgent, runner: runner,
-                                repoPad: repoPad, interpreter: interpreter)
+    }
+
+    private func laadAgenten() {
+        Task {
+            // Tweeledig: laad de namen uit de lokale familie-JSON (geen SSH
+            // nodig — dit moet altijd werken) en haal daarna de live-status
+            // op voor de groene/grijze stip. Agentnamen komen uit de familie,
+            // niet uit de VPS.
+            async let fam = try? runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                              commando: "familie", invoer: ["actie": "status"])
+            async let stat = try? runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                               commando: "agentstatus", invoer: [:])
+            let (familieResult, statusResult) = await (fam, stat)
+
+            await MainActor.run {
+                // Stap 1: namen uit de lokale familie (altijd beschikbaar, geen SSH)
+                var namen: Set<String> = []
+                if let fam = familieResult, fam.ok,
+                   let leden = fam.data["familie"] as? [[String: Any]] {
+                    for lid in leden {
+                        if let naam = lid["naam"] as? String, !naam.isEmpty {
+                            namen.insert(naam.lowercased())
+                        }
+                    }
+                } else {
+                    // Fallback: vaste familieleden (voor het geval de adapter
+                    // de eerste keer nog niet geladen heeft)
+                    namen = ["kairos", "riri", "vigil", "libra", "memoria", "codex", "genius"]
+                }
+
+                // Stap 2: live-status voor de groene/grijze stip (optioneel)
+                var statusMap: [String: String] = [:]
+                if let stat = statusResult,
+                   let lijst = stat.data["agents"] as? [[String: Any]] {
+                    for a in lijst {
+                        if let n = a["agent"] as? String, let s = a["status"] as? String {
+                            statusMap[n] = s
+                        }
+                    }
+                }
+
+                agentLijst = namen.sorted().map { naam in
+                    (naam: naam, live: statusMap[naam] == "active")
+                }
+
+                if agentLijst.isEmpty {
+                    store.fout = "Geen agenten gevonden in de familie."
+                } else if gekozenAgent.isEmpty, let eerste = agentLijst.first {
+                    gekozenAgent = eerste.naam
+                    store.laadDraad(agent: eerste.naam, runner: runner,
+                                    repoPad: repoPad, interpreter: interpreter)
+                }
+                agentenGeladen = true
             }
         }
     }
@@ -141,17 +170,21 @@ struct AgentChatView: View {
 
     // MARK: Agentlijst (links)
 
-    private var agentLijst: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                if agenten.isEmpty {
-                    Text(store.geladen ? "Familie nog niet geladen."
-                                       : "Familie laden…")
-                        .font(Thema.tekst(11))
-                        .foregroundStyle(Thema.kleur(.gedempt))
-                        .padding(16)
-                }
-                ForEach(agenten, id: \.naam) { agent in
+    private var agentLijstView: some View {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    if !agentenGeladen {
+                        Text("Familie laden…")
+                            .font(Thema.tekst(11))
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                            .padding(16)
+                    } else if agentLijst.isEmpty {
+                        Text("Geen agenten bereikbaar.")
+                            .font(Thema.tekst(11))
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                            .padding(16)
+                    }
+                    ForEach(agentLijst, id: \.naam) { agent in
                     Button {
                         gekozenAgent = agent.naam
                         store.laadDraad(agent: agent.naam, runner: runner,
@@ -255,6 +288,13 @@ struct AgentChatView: View {
     }
 
     private func verstuur() {
+        if gekozenAgent.isEmpty, let eerste = agentLijst.first {
+            gekozenAgent = eerste.naam
+        }
+        guard !gekozenAgent.isEmpty else {
+            store.fout = "De familie is nog aan het laden — probeer het over enkele seconden opnieuw."
+            return
+        }
         let tekst = nieuwBericht
         nieuwBericht = ""
         store.stuur(agent: gekozenAgent, tekst: tekst, runner: runner,
