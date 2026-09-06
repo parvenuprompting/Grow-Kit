@@ -30,7 +30,7 @@ FAMILIE: list[dict] = [
     {"naam": "Codex",   "rol": "archief",    "platform": "telegram",
      "beschrijving": "Archivaris — brein-boekingen, documenten, orde."},
     {"naam": "Genius",  "rol": "observer",   "platform": "telegram",
-     "beschrijving": "Jongste — observeert en levert aan. Observer is zijn startpunt, geen vonnis: hij groeit in fasen."},
+     "beschrijving": "Jongste — back-up programmeur sinds 6 sept. Observeert, levert aan en bouwt mee: eigen repos, TDD verplicht, merge naar main pas na ratificatie."},
 ]
 
 MAX_AGENTS = 8
