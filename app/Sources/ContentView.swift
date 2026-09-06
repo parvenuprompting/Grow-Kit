@@ -16,6 +16,7 @@ struct ContentView: View {
         case home = -1, status, planten, goedkeuringen, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
         case securevault = 90
         case amnesia = 91
+        case gids = 92
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -41,6 +42,7 @@ struct ContentView: View {
             case .taak: return "14"
             case .rondleiding: return "15"
             case .uitleg: return "16"
+            case .gids: return "17"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -52,6 +54,7 @@ struct ContentView: View {
             case .home: return "Thuis"
             case .rondleiding: return "Rondleiding"
             case .uitleg: return "Uitleg"
+            case .gids: return "AI Gids"
             case .status: return "Status"
             case .planten: return "Planten"
             case .goedkeuringen: return "Goedkeuringen"
@@ -77,6 +80,7 @@ struct ContentView: View {
             case .home: return "Startpunten en de dialoog binnen handbereik"
             case .rondleiding: return "De vijf schermen van het ontwerp"
             case .uitleg: return "Zes regels · de engine room"
+            case .gids: return "Kerninzichten uit je eigen documenten"
             case .status: return "Identiteit, register, tellers, logboek"
             case .planten: return "Concept → bevestiging → motor met bewijs"
             case .goedkeuringen: return "Mens-momenten in bulk goedkeuren of afkeuren"
@@ -192,9 +196,9 @@ struct ContentView: View {
 
                     Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
 
-                    // LEREN — rondleiding en uitleg
+                    // LEREN — rondleiding, uitleg en de AI Gids
                     zijbalkSectie("LEREN")
-                    ForEach([Modi.rondleiding, .uitleg]) { modus in
+                    ForEach([Modi.rondleiding, .uitleg, .gids]) { modus in
                         modusRij(modus)
                     }
                 }
@@ -375,6 +379,8 @@ struct ContentView: View {
                     RondleidingView()
                 case .uitleg:
                     UitlegView()
+                case .gids:
+                    GidsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .hervatten:
                     HervatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .securevault:

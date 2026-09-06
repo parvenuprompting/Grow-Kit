@@ -23,6 +23,7 @@ from kern import growkit_oerwoud  # noqa: E402
 from kern import growkit_prompts  # noqa: E402
 from kern import growkit_vault  # noqa: E402
 from kern import growkit_amnesia  # noqa: E402
+from kern import growkit_gids  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -745,6 +746,21 @@ def cmd_amnesiasynth(invoer: dict) -> dict:
             "vervangingen": kaart}}
 
 
+def cmd_gids(invoer: dict) -> dict:
+    """AI Gids: kerninzichten uit Tiëndo's Drive-documenten.
+
+    Zonder zoekterm: alle thema's. Met zoekterm: matchende inzichten.
+    Puur lezend — de gids is kennis, geen uitvoer.
+    """
+    term = invoer.get("zoek")
+    if term:
+        gevonden = growkit_gids.zoek(term)
+        return {"ok": True, "data": {"inzichten": gevonden,
+                "teller": len(gevonden)}}
+    return {"ok": True, "data": {"gids": growkit_gids.laad(),
+            "teller": len(growkit_gids.alle_inzichten())}}
+
+
 def cmd_verbruik(invoer: dict) -> dict:
     """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
     from kern import growkit_openrouter
@@ -1199,6 +1215,7 @@ COMMANDOS = {
     "amnesiadetect": cmd_amnesiadetect,
     "amnesiamarker": cmd_amnesiamarker,
     "amnesiasynth": cmd_amnesiasynth,
+    "gids": cmd_gids,
 }
 
 def main(argv: list[str]) -> int:

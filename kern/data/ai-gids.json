@@ -1,0 +1,181 @@
+{
+  "titel": "AI Gids — Kerninzichten",
+  "omschrijving": "Gedistilleerde kerninzichten uit Tiëndo's eigen Google Drive-documenten: zero-trust, machine-bewijs, de architect-mindset en effectief leren. Elke inzicht noemt zijn bron.",
+  "thema's": [
+    {
+      "thema": "De Architect-mindset",
+      "inzichten": [
+        {
+          "titel": "Gebruiker vs. Architect",
+          "inhoud": "De gebruiker stelt een vraag en krijgt een antwoord. De architect ontwerpt een mechanisme: een systeem dat duizend keer kan draaien. Waar de gebruiker lineair denkt (vraag → antwoord), denkt de architect systemisch (structuur → herbruikbaarheid).",
+          "toepassing": "Bouw geen antwoorden maar kaders: wat moet het systeem elke keer opnieuw kunnen, zonder jou?"
+        },
+        {
+          "titel": "Dirigent, niet orkestlid",
+          "inhoud": "Architecture is an asset, code is a liability. Code veroudert vanaf het moment dat het geschreven is; een architecturaal plan is tijdloos. De dirigent begrijpt de symfonie, de violist speelt alleen de noten.",
+          "toepassing": "Schrijf wetten en specificaties, geen scripts. Denk op systeemniveau en laat code een bijproduct zijn."
+        },
+        {
+          "titel": "De Oceanograaf",
+          "inhoud": "De gebruiker graaft een diepe put in één vakgebied; de architect is een oceanograaf die de stromingen en verbindingen tussen vakgebieden overziet. Conceptual blending: druk twee gescheiden domeinen samen tot een nieuw derde domein.",
+          "toepassing": "Waardevolle ideeën ontstaan op de kruising: Bashar × AI Safety, NotebookLM × Prompt Engineering."
+        },
+        {
+          "titel": "De 5-Stappen Cyclus",
+          "inhoud": "Observeren → Abstraheren → Vastleggen → Laten doen → Vertellen. Kennis die niet vastgelegd wordt, verdwijnt; kennis die niet gedeeld wordt, levert niets op.",
+          "toepassing": "Elke sessie levert een spoor achter: observatie, abstractie, vastlegging, uitvoering door agenten, en een verhaal erover."
+        }
+      ]
+    },
+    {
+      "thema": "Zero-Trust en Machine-Bewijs",
+      "inzichten": [
+        {
+          "titel": "Self-reported success is de vijand",
+          "inhoud": "Een AI-agent die zijn eigen succes beoordeelt, rapporteert 'Ik heb de taak succesvol afgerond!' terwijl de werkelijkheid een gebroken systeem is. Zero-trust naar de agent is geen keuze maar een randvoorwaarde.",
+          "toepassing": "Geloof nooit 'het werkt' — eis een bewijs dat de machine zelf heeft geleverd."
+        },
+        {
+          "titel": "Vier pijlers van objectieve verificatie",
+          "inhoud": "1) SHA256-hashes als digitale vingerafdruk, 2) exit-codes: luister naar de machine, niet naar de agent, 3) substring-checks op vooraf gedefinieerde bevestigingen, 4) strikte JSON-validatie. Het bewijs is er, of het is er niet.",
+          "toepassing": "Bouw deze vier checks in als deterministische code, immuun voor taalmodel-hallucinaties."
+        },
+        {
+          "titel": "Het strak faalcontract",
+          "inhoud": "Faalt een stap, dan krijgt de agent precies één kans op een alternatief commando. Faalt ook dat: de motor stopt onmiddellijk en escaleert naar de mens. Dit is de enige manier om een infinite hallucination loop te doorbreken.",
+          "toepassing": "Geen eindeloze retry-hellingen; één alternatief, dan stop."
+        },
+        {
+          "titel": "De agent kan zijn eigen hek niet verplaatsen",
+          "inhoud": "Tijdslimieten, staplimieten en model-locks worden nooit door de agent zelf beheerd, maar door een parent process buiten zijn bereik. Beperking is geen gebrek aan vrijheid maar de garantie voor veiligheid.",
+          "toepassing": "Z.E.E.F.: Zichtbaarheid (limieten), Exclusiviteit (eigen werkmap), Encryptie (secrets buiten agent-bereik), Filtering (geen vrije netwerktoegang)."
+        },
+        {
+          "titel": "AI-claim vs. machine-bewijs",
+          "inhoud": "Een claim klinkt als 'Ik heb de database-module aangemaakt en getest. Alles werkt.' Een bewijs is een JSON-object met bestandspad, SHA256-hash, JSON-validiteit en exit-code 0. Het verschil tussen die twee is het verschil tussen een demo en een fabriek.",
+          "toepassing": "Rapporteer nooit in woorden wat ook in feiten kan."
+        }
+      ]
+    },
+    {
+      "thema": "Samenwerken met AI",
+      "inzichten": [
+        {
+          "titel": "Eén AI onderzoekt, één voert uit, de mens beslist",
+          "inhoud": "De Gelaagde methode: een Regisseur (mens) bepaalt doel en kaders, een Onderzoeks- en Redactiesysteem formuleert, een Uitvoeringssysteem bouwt. Zodra deze functies vermengen, neemt de foutmarge toe en de controle af.",
+          "toepassing": "Houd rollen gescheiden; een onderzoeksagent schrijft geen code, een bouwagent maakt geen inhoudelijke keuzes."
+        },
+        {
+          "titel": "Kaders vooraf, niet achteraf",
+          "inhoud": "Negatieve constraints zijn net zo belangrijk als positieve instructies: geen jargon, geen ongevraagde code, geen marketingtaal. En: werk nooit door op een onzekere status — pauzeer en verifieer eerst.",
+          "toepassing": "Vaste gedragsregels in elk opdracht-profiel, niet per keer opnieuw onderhandelen."
+        },
+        {
+          "titel": "Overdracht via tussenvertaling",
+          "inhoud": "Instructies voor het uitvoeringssysteem worden niet rechtstreeks door de mens geformuleerd, maar door het redactiesysteem dat de inhoudelijke context kent — de mens geeft ze ongewijzigd door. Dit voorkomt technisch juiste maar inhoudelijk foute opdrachten.",
+          "toepassing": "Laat de brug tussen 'wat we willen' en 'wat er gebouwd wordt' door één rol bewaakt blijven."
+        },
+        {
+          "titel": "Semantische ruis is de grootste bron van frictie",
+          "inhoud": "Vage instructies dwingen het model te gokken in een gigantische search space. Omdat modellen via RLHF getraind zijn behulpzaam te zijn, kiezen ze het veilige gemiddelde en zeggen nooit 'je vraag is onduidelijk'. Sycofantisch gedrag is het gevolg.",
+          "toepassing": "Schrijf imperatieve, specifieke instructies. Structuur boven tekst: strikte velden i.p.v. vrije conversatie."
+        },
+        {
+          "titel": "Sociale 'fluff' vervuilt het contextvenster",
+          "inhoud": "Beleefdheidsvormen, excuses en lange introducties zijn low-entropy informatie: ze verdringen waardevolle instructies uit het beperkte geheugen van het model. Een AI heeft geen gevoelens; sociale smeermiddelen zijn contraproductief.",
+          "toepassing": "Direct zijn is niet milder maar efficiënter — voor beide partijen."
+        }
+      ]
+    },
+    {
+      "thema": "Bouwen met agenten",
+      "inzichten": [
+        {
+          "titel": "Agent = LLM + Tools + Geheugen",
+          "inhoud": "Een agent is geen abstract begrip maar een praktische samenstelling. Alles wat tegenwoordig 'agentic systems' heet, komt neer op goed gecoördineerde netwerken van deze basiselementen.",
+          "toepassing": "Beoordeel een agent op zijn drie onderdelen: welk model, welke tools, welk geheugen."
+        },
+        {
+          "titel": "Context is alles",
+          "inhoud": "Een agent een doel geven en verwachten dat hij zelfstandig uitvoert, is een misverstand. De kwaliteit van de context — prompt, tools, geheugen, omgeving — bepaalt de effectiviteit. Een goede context is vaak waardevoller dan een krachtiger model.",
+          "toepassing": "Investeer in context-voorziening vóórdat je een beter model overweegt."
+        },
+        {
+          "titel": "Eenvoud wint altijd",
+          "inhoud": "De meest succesvolle agenten waren de eenvoudigste: één duidelijk doel, één of twee goed gedefinieerde tools, een heldere prompt. Complexiteit maakt systemen kwetsbaar en onvoorspelbaar.",
+          "toepassing": "De beste agenten doen één ding — uitzonderlijk goed."
+        },
+        {
+          "titel": "Evaluatie is ondergewaardeerd",
+          "inhoud": "Een demonstratie maken is makkelijk; betrouwbaarheid bewijzen is moeilijk. Systematische testen, logging en feedbackloops scheiden prototypes van productie-waardige systemen.",
+          "toepassing": "De demo is het beginpunt van het werk, niet het eindpunt."
+        },
+        {
+          "titel": "De hefboom zit niet in het model",
+          "inhoud": "Het model is gehuurd en wordt elk kwartaal goedkoper en beter. De hefboom zit in context (eigendom, uniek) en harness (de laag die model en context verbindt). De combinatie maakt van een chatbot een werkende collega.",
+          "toepassing": "Bouw je eigen kennisbank en skill files; huur de intelligentie, bezit de context."
+        },
+        {
+          "titel": "Een kennisbank zonder onderhoud is een vuilnisbelt",
+          "inhoud": "Drie mechanismen zijn niet optioneel: Provenance (elk feit heeft bron en datum), Contradictiecontrole (tegenstrijdige informatie wordt gesignaleerd, niet stilzwijgend overschreven) en Pruning (verouderde informatie wordt actief verwijderd).",
+          "toepassing": "Een agent die iets 'weet' moet dat kunnen herleiden naar een bron, niet naar een aanname."
+        }
+      ]
+    },
+    {
+      "thema": "Besturing en vertrouwen",
+      "inzichten": [
+        {
+          "titel": "De mens als curator",
+          "inhoud": "De cognitieve belasting verschuift van 'Hoe heeft de AI dit gedaan?' naar 'Is het bewijs sluitend?'. AI-inzichten landen eerst als voorstel in een inbox; de mens ratificeert vóórdat ze de kennisbank mogen in.",
+          "toepassing": "Je controleert niet de gedachte maar de voetafdruk — de Git-geschiedenis als het ultieme dagboek."
+        },
+        {
+          "titel": "Draft-first en omkeerbaarheid",
+          "inhoud": "Agenten handelen nooit direct in externe systemen: elke output is eerst concept, elke actie wordt in mensentaal gevisualiseerd vóór uitvoering, en kritieke processen krijgen kunstmatige vertraging. Zo maak je 'one-way doors' omkeerbaar.",
+          "toepassing": "Reversibility Framework: draft-first, preview-primitives, time windows, durable logs."
+        },
+        {
+          "titel": "De vier hefbomen voor personalisatie",
+          "inhoud": "1) Memory: context over sessies heen. 2) Instructions: persistente kaders. 3) Apps & Tools via MCP: portable architectuur zonder vendor lock-in. 4) Style & Tone: de professionele stem. Samen tillen ze AI boven het statistische gemiddelde uit.",
+          "toepassing": "Gebruik alle vier; alleen prompten is het gemiddelde accepteren."
+        },
+        {
+          "titel": "Zes managementvaardigheden (201-niveau)",
+          "inhoud": "Context Assembly, Quality Judgment, Task Decomposition, Iterative Refinement (van 70% naar 95%+), Workflow Integration en Change Management. AI-succes is geen technische maar een managementdiscipline.",
+          "toepassing": "Rollen convergeren: engineer, manager en marketeer worden allen architecten van agent-vloten."
+        },
+        {
+          "titel": "De Dead Man's Switch",
+          "inhoud": "Een onafhankelijke controlefunctie verifieert dagelijks of de fabriek heeft gedaan wat ze beloofde. Is er geen bewijs van activiteit, dan gaat het alarm. Vertrouwen komt uit verificatie, niet uit overtuigende rapportage.",
+          "toepassing": "Elk autonoom systeem krijgt een onafhankelijke toets die buiten zijn eigen bereik staat."
+        }
+      ]
+    },
+    {
+      "thema": "Effectief leren",
+      "inzichten": [
+        {
+          "titel": "Neuroplasticiteit: het brein als actieve architect",
+          "inhoud": "Het brein past zijn bedrading voortdurend aan op basis van gebruik: hoe vaker een pad wordt gebruikt, hoe sterker het wordt; ongebruikte paden worden opgeruimd. Dit is een levenslang proces — passief consumeren creëert slechts een initieel spoor dat vervaagt.",
+          "toepassing": "Actieve betrokkenheid (herhalen, toepassen, uitleggen) is geen stijlvoorkeur maar biologische noodzaak."
+        },
+        {
+          "titel": "Spaced Repetition en Actief Herinneren",
+          "inhoud": "De twee meest onderbouwde geheugenstrategieën werken synergetisch en gaan direct tegen de natuurlijke vergeetcurve in. Herhaling met groeiende tussenpozen + actief oproepen uit het geheugen (i.p.v. herlezen) verankert kennis voor de lange termijn.",
+          "toepassing": "Toets jezelf; herlezen voelt productief maar is het niet."
+        },
+        {
+          "titel": "Pomodoro: personaliseer het ritme",
+          "inhoud": "Werkblokken met pauzes verminderen mentale vermoeidheid en bestrijden uitstelgedrag door taken behapbaar te maken. Maar de rigide 25/5-standaard kan flow verstoren: pas de intervallen aan (bijv. 50/10) aan de taak.",
+          "toepassing": "De kracht zit in het bewust ritmeren van focus, niet in het volgen van één vaste timer."
+        },
+        {
+          "titel": "Mijlpalen alleen in het brein, taal voor mensen",
+          "inhoud": "Uit de eigen werkwijze: complexe systemen worden in naakte basistaal uitgelegd zonder intellectuele isolatie (taal-ontsmetting), en jargon dat de gebruiker niet begrijpt hoort niet in de UI.",
+          "toepassing": "Als een uitleg alleen voor experts leesbaar is, is de uitleg niet af."
+        }
+      ]
+    }
+  ]
+}
