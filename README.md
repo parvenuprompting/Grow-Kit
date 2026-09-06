@@ -1,6 +1,7 @@
 # Grow Kit 🌳
 
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/badge/CI-tests%20%2B%20secrets-scan%20%2B%20macOS%20build-brightgreen?style=flat-square)](https://github.com/parvenuprompting/Grow-Kit/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-546_groen-success?style=flat-square)]()
 [![App](https://img.shields.io/badge/app-macOS_SwiftUI-black?style=flat-square)]()
 [![Fase](https://img.shields.io/badge/fases-1_t%2Fm_6_bewezen-brightgreen?style=flat-square)]()
@@ -120,7 +121,12 @@ Grow-Kit/
 └── README.md
 ```
 
-## Tests
+## Tests & CI
+
+Elke push en PR draait automatisch **CI** (GitHub Actions):
+1. **Tests** — de volledige unittest-suite; rood = merge geblokkeerd
+2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
+3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
 - **546 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E

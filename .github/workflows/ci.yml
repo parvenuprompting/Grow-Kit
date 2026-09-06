@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: Tests (546, unittest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Omgeving + dependency (cryptography)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --quiet cryptography
+
+      - name: Volledige suite
+        run: .venv/bin/python -m unittest discover tests -v
+        env:
+          GROWKIT_HOST: root@ci-placeholder.invalid
+
+  secrets-scan:
+    name: Secrets-scan (contract-patronen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Scan gewijzigde bestanden op key-patronen
+        run: |
+          python - <<'PY'
+          import re, subprocess, sys
+
+          # Dezelfde patronen als kern/growkit_contract.py — de machine-
+          # controle buiten de agent om.
+          PATRONEN = (
+              (re.compile(r"sk-[a-zA-Z0-9_-]{16,}"), "API-sleutel (sk-…)"),
+              (re.compile(r"ghp_[A-Za-z0-9]{30,}"), "GitHub-token (ghp_…)"),
+              (re.compile(r"gho_[A-Za-z0-9]{30,}"), "GitHub-token (gho_…)"),
+              (re.compile(r"\b\d{8,12}:AA[A-Za-z0-9_-]{30,}"), "bot-token"),
+              (re.compile(r"(?i)\bwachtwoord\s*[=:]\s*\S+"), "wachtwoord in tekst"),
+              (re.compile(r"(?i)\bpassword\s*[=:]\s*\S+"), "wachtwoord in tekst"),
+              (re.compile(r"(?i)\bapi[-_ ]?key\s*[=:]\s*\S+"), "API-key in tekst"),
+              (re.compile(r"(?i)\btoken\s*[=:]\s*\S+"), "token in tekst"),
+          )
+          # Valse-alarmvrijstelling: testfixtures met voorbeeld-keys
+          TOEGESTAAN = re.compile(
+              r"(AKIAIO|MPLE|a{36}|redacted|voorbeeld|example|PLACEHOLDER)", re.I)
+
+          diff = subprocess.run(
+              ["git", "diff", "--unified=0", "HEAD~1", "--", "*.py", "*.swift", "*.md", "*.json", "*.yml", "*.yaml"],
+              capture_output=True, text=True).stdout
+          if not diff:
+              print("Geen gewijzigde inhoud te scannen.")
+              sys.exit(0)
+
+          treffers = []
+          huidig = "?"
+          for regel in diff.splitlines():
+              if regel.startswith("+++ b/"):
+                  huidig = regel[6:]
+                  continue
+              if not regel.startswith("+") or regel.startswith("+++"):
+                  continue
+              inhoud = regel[1:]
+              if TOEGESTAAN.search(inhoud):
+                  continue
+              for patroon, label in PATRONEN:
+                  if patroon.search(inhoud):
+                      treffers.append(f"{huidig}: {label}: {inhoud.strip()[:80]}")
+
+          if treffers:
+              print("SECRET GEVONDEN — push geblokkeerd:")
+              print("\n".join(treffers))
+              sys.exit(1)
+          print("Scan schoon — geen secrets in de diff.")
+          PY
+
+  macos-build:
+    name: macOS-app build
+    runs-on: macos-14
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: XcodeGen (pinned 2.46.0)
+        run: |
+          brew install xcodegen
+          echo "xcodegen $(xcodegen --version | awk '{print $NF}')"
+
+      - name: Build GrowKit.app
+        run: |
+          cd app
+          bash build.sh
+
+      - name: App-bewijs
+        run: |
+          test -d app/.build/Build/Products/Debug/GrowKit.app
+          test -f app/.build/Build/Products/Debug/GrowKit.app/Contents/Resources/Fraunces.ttf
+          test -f app/.build/Build/Products/Debug/GrowKit.app/Contents/Resources/Inter.ttf
+          echo "GrowKit.app gebouwd met fonts — bewijs geleverd."
