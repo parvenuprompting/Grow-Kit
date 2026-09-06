@@ -143,7 +143,7 @@ struct ContentView: View {
         .onAppear { Thema.registreerFonts(); laadSaldo(); startSaldoTimer(); statusbalkStore.start()
             FamilieStatusStore.gedeeld.start(repoPad: repoPad, interpreter: interpreter, runner: runner)
             AgentVoorlader.gedeeld.start(repoPad: repoPad, interpreter: interpreter, runner: runner) }
-        .sheet(isPresented: $toonInstellingen) { instellingenSheet }
+        .sheet(isPresented: $toonInstellingen) { InstellingenView() }
         .background(SneltoetsBeheerder()) // ⌘\ = zijbalk in/uitklappen
     }
 

@@ -375,3 +375,22 @@ struct Veld: View {
         .frame(maxWidth: breed ? .infinity : nil)
     }
 }
+
+
+// Gelabeld invoerveld (gloednieuwe herbruikbare steen — was private in ContentView)
+struct LabeledVeld: View {
+    let label: String
+    @Binding var tekst: String
+    var placeholder: String = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                .foregroundStyle(Thema.kleur(.gedempt))
+            Veld(placeholder: placeholder.isEmpty ? label : placeholder, tekst: $tekst)
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 8)
+                    .stroke(Thema.kleur(.lijn)))
+        }
+    }
+}

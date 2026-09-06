@@ -28,6 +28,7 @@ from kern import growkit_gids  # noqa: E402
 from kern import growkit_automatiek  # noqa: E402
 from kern import growkit_agenda  # noqa: E402
 from kern import growkit_telegram  # noqa: E402
+from kern import growkit_cyberseed  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -1401,6 +1402,68 @@ def cmd_telegramwizard(invoer: dict) -> dict:
                                  "mask": growkit_telegram.toon_token_mask(agent)}}
 
 
+def _cyberseed_scan(tekst: str) -> None:
+    """Secrets-scanner op chat-invoer (zelfde contract als taken/chat)."""
+    import re as _re
+    patronen = [
+        r"sk-[A-Za-z0-9]{20,}", r"ghp_[A-Za-z0-9]{30,}",
+        r"AKIA[0-9A-Z]{16}", r"xox[baprs]-[A-Za-z0-9-]{10,}",
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
+        r"(?i)wachtwoord\s*[:=]\s*\S+",
+        r"(?i)password\s*[:=]\s*\S+",
+        r"github_pat_[A-Za-z0-9_]{20,}",
+    ]
+    for p in patronen:
+        if _re.search(p, tekst):
+            raise AdapterFout(
+                "geheim gedetecteerd in bericht — authenticatie hoort op "
+                "de doelmachine, nooit in de chat")
+
+
+def cmd_cyberseedstatus(invoer: dict) -> dict:
+    s = growkit_cyberseed.ollama_status()
+    s["soul_leeftijd_uren"] = growkit_cyberseed.soul_leeftijd_uren()
+    s["model_naam"] = growkit_cyberseed.MODEL_NAAM
+    s["basis_model"] = growkit_cyberseed.BASIS_MODEL_DEFAULT
+    return {"ok": True, "data": s}
+
+
+def cmd_cyberseedsoul(invoer: dict) -> dict:
+    actie = str(invoer.get("actie", "lees")).strip()
+    if actie == "genereer":
+        growkit_cyberseed.verfris_soul()
+        soul = growkit_cyberseed.soul_lees() or ""
+        return {"ok": True, "data": {"soul": soul, "gegenereerd": True}}
+    if actie == "lees":
+        return {"ok": True, "data": {"soul": growkit_cyberseed.soul_lees()}}
+    raise AdapterFout("onbekende actie — kies: genereer, lees")
+
+
+def cmd_cyberseedchat(invoer: dict) -> dict:
+    bericht = str(invoer.get("bericht", "")).strip()
+    if not bericht:
+        raise AdapterFout("ontbrekend veld: bericht")
+    _cyberseed_scan(bericht)
+    van = str(invoer.get("van", "")).strip()
+    model = str(invoer.get("model", "")).strip()
+    antwoord = growkit_cyberseed.chat(bericht, van=van, model=model)
+    return {"ok": True, "data": {"antwoord": antwoord, "model_naam":
+                                 growkit_cyberseed.MODEL_NAAM}}
+
+
+def cmd_cyberseedlog(invoer: dict) -> dict:
+    n = int(invoer.get("aantal", 20))
+    return {"ok": True, "data": {"regels": growkit_cyberseed.chatlog_lees(n)}}
+
+
+def cmd_cyberseedwis(invoer: dict) -> dict:
+    try:
+        growkit_cyberseed.chatlog_wis(bevestig=bool(invoer.get("bevestig")))
+    except PermissionError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"gewist": True}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1455,6 +1518,11 @@ COMMANDOS = {
     "automatiekvoorstel": cmd_automatiekvoorstel,
     "agenda": cmd_agenda,
     "telegramwizard": cmd_telegramwizard,
+    "cyberseedstatus": cmd_cyberseedstatus,
+    "cyberseedsoul": cmd_cyberseedsoul,
+    "cyberseedchat": cmd_cyberseedchat,
+    "cyberseedlog": cmd_cyberseedlog,
+    "cyberseedwis": cmd_cyberseedwis,
     "klooncategorieen": cmd_klooncategorieen,
     "kloonlijst": cmd_kloonlijst,
     "kloonlees": cmd_kloonlees,
