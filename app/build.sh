@@ -31,7 +31,7 @@ fi
 xcodebuild -project GrowKit.xcodeproj -scheme GrowKit \
   -configuration Debug -destination 'platform=macOS' \
   -derivedDataPath .build build $SIGN_FLAG > .build/log.txt 2>&1 \
-  || { tail -25 .build/log.txt; exit 1; }
+  || { grep -E "error:" .build/log.txt | head -10; echo "---"; tail -15 .build/log.txt; exit 1; }
 
 APP=".build/Build/Products/Debug/GrowKit.app"
 test -d "$APP" || { echo "FAIL: app-bundle ontbreekt"; exit 1; }
