@@ -100,14 +100,14 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `SEED.md` | Geboortebrief: rol, regels en leesroute |
 | `seed.py` | Plant-mechanisme: kiemkeuze, slijper, motor |
 | `loop.py` | Het harnas: vijf modi — planten, hervatten, taak, ratificatie, status |
-| `adapter.py` | Machine-leesbare JSON-CLI over de kern — 45 commando's |
-| `app/` | Native macOS-app (SwiftUI, XcodeGen) — 18 schermen + zijmenu |
-| `kern/` | 30 modules — het volledige fundament |
+| `adapter.py` | Machine-leesbare JSON-CLI over de kern — 50 commando's |
+| `app/` | Native macOS-app (SwiftUI, XcodeGen) — 21 schermen + zijmenu |
+| `kern/` | 32 modules — het volledige fundament |
 | `profielen/` | Bomen: JSON-stappenplannen met gecodeerd bewijs |
 | `groei/` | Groeilaag-documentatie en slijper-logboek |
-| `testing/` | 434 unittesten + 20 end-to-end-scripts |
+| `testing/` | 532 unittesten + 20 end-to-end-scripts |
 
-### De 30 kernmodules
+### De 32 kernbestanden in `kern/`
 
 | Module | Rol |
 |---|---|
@@ -138,6 +138,8 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `growkit_verbind.py` | SSH-verbinding naar VPS (omleidbaar via `GROWKIT_HOST`). |
 | `growkit_vault.py` | **Secure Vault** — echte kluizen via macOS hdiutil (AES-256/APFS), Sleutelhangar, Spotlight-zoeker. Inbouw van SecureVault v2. |
 | `growkit_amnesia.py` | **Amnesia Protocol** — lokale detectoren, review-markers (EMAIL_1) en synthetische tweede laag. Inbouw van Amnesia Protocol Lite. |
+| `growkit_kloon.py` | **Digitale Kloon** — persoonlijke kluis (vijf categorieën), AES-256-GCM, master-sleutel in de Sleutelhangar. Inbouw van digitale-kloon-ios. |
+| `growkit_gids.py` | **Best Practices** — kerninzichten uit eigen onderzoek, met zoeken. |
 | `growkit_openrouter.py` | OpenRouter-saldo: live uitlezen |
 
 ## Quickstart
@@ -163,15 +165,15 @@ growkit/
 ├── SEED.md                  ← geboortebrief
 ├── seed.py                  ← plant-mechanisme
 ├── loop.py                  ← het harnas: orchestratie zonder agent
-├── adapter.py               ← JSON-CLI brug (45 commando's)
-├── kern/                    ← 30 modules
+├── adapter.py               ← JSON-CLI brug (50 commando's)
+├── kern/                    ← 32 modules
 ├── profielen/
 │   ├── INDEX.md             ← kiemkeuze-catalogus
 │   ├── tweede-brein/        ← bewezen profiel
 │   ├── autonome-fabriek/    ← nachtelijk autonoom profiel
 │   └── dev-werkplaats/      ← in ontwikkeling
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 503 tests + 20 E2E-scripts
+├── tests/                   ← 532 tests + 20 E2E-scripts
 ├── reviewconfig.voorbeeld.json
 ├── app/                     ← macOS SwiftUI-app
 │   ├── Sources/             ← 18 views + Thema/Bouwstenen
@@ -189,7 +191,7 @@ growkit/
 
 ## Tests
 
-- **503 tests groen** (unittest, stdlib-only)
+- **532 tests groen** (unittest — Digitale Kloon gebruikt de `cryptography`-bibliotheek in de repo-eigen `.venv`: een bewuste, gedocumenteerde uitzondering op stdlib-only, zie de module-docstring)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Bewijs per fase: `docs/superpowers/bewijs/`
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3

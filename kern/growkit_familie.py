@@ -18,9 +18,9 @@ Rol = Literal["uitvoering", "onderzoek", "bewaking", "kosten",
 
 FAMILIE: list[dict] = [
     {"naam": "KairOS",  "rol": "uitvoering", "platform": "telegram",
-     "beschrijving": "Papa — bouwt, voert uit, herstelt én coördineert de kinderen."},
+     "beschrijving": "Bouwer — voert uit, herstelt en coördineert het team."},
     {"naam": "Riri",    "rol": "onderzoek",  "platform": "telegram",
-     "beschrijving": "Mama — research, ontwerp, externe review."},
+     "beschrijving": "Research — onderzoek, ontwerp, externe review."},
     {"naam": "Vigil",   "rol": "bewaking",   "platform": "telegram",
      "beschrijving": "Waker — infrastructuur, security, signalen."},
     {"naam": "Libra",   "rol": "kosten",     "platform": "telegram",

@@ -16,7 +16,8 @@ struct ContentView: View {
         case home = -1, status, planten, goedkeuringen, dialoog, agenten, vangnet, audit, hervatten, taak, rondleiding, uitleg
         case securevault = 90
         case amnesia = 91
-        case gids = 92
+        case kloon = 92
+        case gids = 93
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -38,11 +39,12 @@ struct ContentView: View {
             case .audit: return "10"
             case .securevault: return "11"
             case .amnesia: return "12"
-            case .hervatten: return "13"
-            case .taak: return "14"
-            case .rondleiding: return "15"
-            case .uitleg: return "16"
-            case .gids: return "17"
+            case .kloon: return "13"
+            case .hervatten: return "14"
+            case .taak: return "15"
+            case .rondleiding: return "16"
+            case .uitleg: return "17"
+            case .gids: return "18"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -65,6 +67,7 @@ struct ContentView: View {
             case .hervatten: return "Hervatten"
             case .securevault: return "Secure Vault"
             case .amnesia: return "Amnesia Protocol"
+            case .kloon: return "Digitale Kloon"
             case .taak: return "Taak"
             case .agentchat: return "Agent Chat"
             case .skills: return "Skills"
@@ -91,6 +94,7 @@ struct ContentView: View {
             case .hervatten: return "Restdraai vanuit het logboek"
             case .securevault: return "Echte macOS-kluizen — AES-256 via hdiutil"
             case .amnesia: return "Gevoelige tekst veilig maken, lokaal en met jouw goedkeuring"
+            case .kloon: return "Je persoonlijke kluis — wachtwoorden, keys, bank en crypto"
             case .taak: return "Taken uit de groeilaag uitvoeren"
             case .agentchat: return "Agents ondernemen direct actie — groot venster"
             case .skills: return "Welke skills draaien er op jouw GrowKit?"
@@ -190,7 +194,7 @@ struct ContentView: View {
 
                     // SYSTEEM — Secure Vault eerst (privacy-fundering), dan herstel en taken
                     zijbalkSectie("SYSTEEM")
-                    ForEach([Modi.securevault, .amnesia, .hervatten, .taak]) { modus in
+                    ForEach([Modi.securevault, .amnesia, .kloon, .hervatten, .taak]) { modus in
                         modusRij(modus)
                     }
 
@@ -387,6 +391,8 @@ struct ContentView: View {
                     SecureVaultView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .amnesia:
                     AmnesiaView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .kloon:
+                    KloonView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:

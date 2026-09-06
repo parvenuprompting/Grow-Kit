@@ -761,6 +761,81 @@ def cmd_gids(invoer: dict) -> dict:
             "teller": len(growkit_gids.alle_inzichten())}}
 
 
+def _kloon_module():
+    """Laad cryptography alleen voor Digitale Kloon.
+
+    De rest van de adapter (graaf, status, Amnesia, Secure Vault) blijft
+    werken met de standaard-Python. De Kloon gebruikt de repo-venv met
+    cryptography; een ontbrekende omgeving geeft een nette fout, geen
+    import-crash voor het hele huis.
+    """
+    try:
+        from kern import growkit_kloon
+        return growkit_kloon
+    except ModuleNotFoundError as e:
+        if e.name == "cryptography":
+            raise AdapterFout(
+                "Digitale Kloon heeft de GrowKit-omgeving nodig: "
+                ".venv/bin/python adapter.py kloon…"
+            ) from e
+        raise
+
+
+def cmd_klooncategorieen(invoer: dict) -> dict:
+    """Digitale Kloon: de vijf categorieën met veldtemplates."""
+    kloon = _kloon_module()
+    return {"ok": True, "data": {"categorieen": kloon.CATEGORIEEN}}
+
+
+def cmd_kloonlijst(invoer: dict) -> dict:
+    """Digitale Kloon: overzicht zonder geheimen (titels + open velden)."""
+    kloon = _kloon_module()
+    return {"ok": True, "data": {"items": kloon.lijst()}}
+
+
+def cmd_kloonlees(invoer: dict) -> dict:
+    """Digitale Kloon: volledig item mét ontsleutelde geheimen.
+
+    Expliciete actie van de mens — wordt gelogd als 'lezen'.
+    """
+    item_id = invoer.get("id")
+    if not item_id:
+        raise AdapterFout("ontbrekend veld: id")
+    kloon = _kloon_module()
+    try:
+        item = kloon.lees_item(item_id)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"item": item}}
+
+
+def cmd_kloontoevoegen(invoer: dict) -> dict:
+    """Digitale Kloon: nieuw geheim. titel + categorie + velden verplicht."""
+    titel = invoer.get("titel")
+    categorie = invoer.get("categorie")
+    velden = invoer.get("velden")
+    if not titel or not categorie or not isinstance(velden, dict):
+        raise AdapterFout("ontbrekende velden: titel, categorie, velden")
+    kloon = _kloon_module()
+    try:
+        item = kloon.voeg_toe(titel, categorie, velden)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"item": {**item,
+            "velden_versleuteld": list(item["velden_versleuteld"])}}}
+
+
+def cmd_kloonverwijder(invoer: dict) -> dict:
+    """Digitale Kloon: geheim verwijderen (met log-entry)."""
+    item_id = invoer.get("id")
+    if not item_id:
+        raise AdapterFout("ontbrekend veld: id")
+    kloon = _kloon_module()
+    if not kloon.verwijder(item_id):
+        raise AdapterFout(f"Onbekend item: {item_id}")
+    return {"ok": True, "data": {"verwijderd": item_id}}
+
+
 def cmd_verbruik(invoer: dict) -> dict:
     """Tokenverbruik per model (Slice A1), gesorteerd op kosten."""
     from kern import growkit_openrouter
@@ -1216,6 +1291,11 @@ COMMANDOS = {
     "amnesiamarker": cmd_amnesiamarker,
     "amnesiasynth": cmd_amnesiasynth,
     "gids": cmd_gids,
+    "klooncategorieen": cmd_klooncategorieen,
+    "kloonlijst": cmd_kloonlijst,
+    "kloonlees": cmd_kloonlees,
+    "kloontoevoegen": cmd_kloontoevoegen,
+    "kloonverwijder": cmd_kloonverwijder,
 }
 
 def main(argv: list[str]) -> int:
