@@ -25,6 +25,9 @@ struct CyberSeedView: View {
     @State private var melding: String?
     @State private var meldingOk = false
     @State private var bevestigWis = false
+    @State private var gekozenNaam = "sprout"
+    @State private var gekozenModus = "lokaal"
+    @State private var tabData: [String: Any]? = nil
 
     var body: some View {
         ScrollView {
@@ -32,6 +35,7 @@ struct CyberSeedView: View {
                 kop
                 statusKaart
                 if let melding { meldingRegel(melding, ok: meldingOk) }
+                naamKeuzeKaart
                 chatKaart
                 soulKaart
                 Spacer(minLength: 16)
@@ -160,6 +164,97 @@ struct CyberSeedView: View {
         }
     }
 
+    // MARK: Naam-keuze (6 tiers · cloud/lokaal · RAM-vergrendeling)
+
+    private var naamKeuzeKaart: some View {
+        Kaart(kop: "Welke CyberSeed antwoordt?", rechterKop: ramLabel) {
+            VStack(alignment: .leading, spacing: 12) {
+                if let d = tabData, let namen = d["namen"] as? [String: [String: Any]] {
+                    let titels = d["titels"] as? [String: String] ?? [:]
+                    ForEach(namen.keys.sorted(), id: \.self) { sleutel in
+                        naamRij(sleutel,
+                                titels[sleutel] ?? sleutel,
+                                namen[sleutel] ?? [:])
+                    }
+                } else {
+                    Text("Instellingen laden…").font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+                Text("Lokaal is de eindbestemming — cloud is de brug. Sprout is de slimme default; zwaardere namen kies je expliciet.")
+                    .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+            }
+        }
+    }
+
+    private var ramLabel: String {
+        if let d = tabData,
+           let klasse = d["ram_klasse"] as? String,
+           let gb = d["ram_gb"] as? Int {
+            return "RAM \(gb) GB · klasse \(klasse)"
+        }
+        return "RAM detecteren…"
+    }
+
+    private func naamRij(_ sleutel: String, _ titel: String,
+                         _ info: [String: Any]) -> some View {
+        let status = info["status"] as? String ?? "?"
+        let model = info["model"] as? String ?? "—"
+        let vergrendeld = info["vergrendeld"] as? Bool ?? false
+        let grootte = info["download_grootte"] as? String ?? ""
+        let minRam = info["min_ram_gb"] as? Int ?? 0
+        let gekozen = gekozenNaam == sleutel && gekozenModus != ""
+
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Circle()
+                    .fill(kleurVoor(status))
+                    .frame(width: 7, height: 7)
+                Text(titel).font(Thema.tekst(12, gewicht: gekozen ? .semibold : .medium))
+                Spacer()
+                if gekozen {
+                    Text("actief").font(Thema.tekst(9, gewicht: .semibold)).tracking(1)
+                }
+            }
+            if vergrendeld {
+                Text("Vergrendeld — vereist minimaal \(minRam) GB RAM")
+                    .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+            } else {
+                HStack {
+                    Text(model).font(Thema.tekst(10)).monospaced()
+                        .foregroundStyle(Thema.kleur(.zacht))
+                    if !grootte.isEmpty && status == "niet geinstalleerd" {
+                        Text("· \(grootte) download").font(Thema.tekst(10))
+                            .foregroundStyle(.orange)
+                    }
+                    Spacer()
+                }
+                HStack(spacing: 8) {
+                    PillKnop(titel: "Lokaal", gevuld: gekozenModus == "lokaal" && gekozenNaam == sleutel, compact: true) {
+                        gekozenNaam = sleutel; gekozenModus = "lokaal"
+                    }
+                    .disabled(status != "geinstalleerd")
+                    PillKnop(titel: "Cloud", gevuld: gekozenModus == "cloud" && gekozenNaam == sleutel, compact: true) {
+                        gekozenNaam = sleutel; gekozenModus = "cloud"
+                    }
+                    if status == "niet geinstalleerd",
+                       let cmd = info["pull_commando"] as? String {
+                        Text(cmd).font(.system(size: 9)).monospaced()
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func kleurVoor(_ status: String) -> Color {
+        switch status {
+        case "geinstalleerd": return .green
+        case "vergrendeld": return .gray
+        default: return .orange
+        }
+    }
+
     // MARK: SOUL
 
     private var soulKaart: some View {
@@ -202,7 +297,9 @@ struct CyberSeedView: View {
             let s = await roep("cyberseedstatus")
             let soulR = await roep("cyberseedsoul", ["actie": "lees"])
             let log = await roep("cyberseedlog", ["aantal": 30])
+            let tabR = await roep("cyberseedinstellingen")
             await MainActor.run {
+                if let tabR, tabR.ok { tabData = tabR.data }
                 if let s, s.ok { status = s.data }
                 if let soulR, soulR.ok { soul = soulR.data["soul"] as? String }
                 if let log, log.ok, let regels = log.data["regels"] as? [[String: Any]] {
@@ -240,7 +337,9 @@ struct CyberSeedView: View {
         invoer = ""
         bezig = true
         Task {
-            let r = await roep("cyberseedchat", ["bericht": tekst, "van": van])
+            let r = await roep("cyberseedchat", ["bericht": tekst, "van": van,
+                                                 "naam": gekozenNaam,
+                                                 "modus": gekozenModus])
             await MainActor.run {
                 bezig = false
                 if let r, r.ok {
