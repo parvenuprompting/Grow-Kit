@@ -27,6 +27,7 @@ from kern import growkit_amnesia  # noqa: E402
 from kern import growkit_gids  # noqa: E402
 from kern import growkit_automatiek  # noqa: E402
 from kern import growkit_agenda  # noqa: E402
+from kern import growkit_telegram  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -1358,6 +1359,48 @@ def cmd_agenda(invoer: dict) -> dict:
                                  "teller": len(items)}}
 
 
+def cmd_telegramwizard(invoer: dict) -> dict:
+    """Telegram-wizard: voortgang lezen of stappen markeren.
+
+    Zonder agent: stand van alles. Met agent+stap: markeer klaar
+    (token optioneel — gaat uitsluitend naar de Sleutelhangar).
+    ontkoppel=true haalt een vinkje weer weg.
+    """
+    agent = str(invoer.get("agent", "")).strip()
+    if not agent:
+        stand = growkit_telegram.voortgang()
+        maskers = {a: growkit_telegram.toon_token_mask(a)
+                   for a in growkit_telegram.FAMILIE}
+        return {"ok": True, "data": {"voortgang": stand, **{
+            f"mask_{a}": m for a, m in maskers.items()}}}
+
+    stap = invoer.get("stap")
+    if stap is None:
+        raise AdapterFout("ontbrekend veld: stap")
+    try:
+        stap = int(stap)
+    except (TypeError, ValueError):
+        raise AdapterFout("stap moet een geheel getal zijn")
+
+    if invoer.get("ontkoppel"):
+        # vinkje weghalen: geïnjecteerde state-bewerking via kern
+        stand = growkit_telegram.voortgang()
+        lijst = [s for s in stand.get(agent, []) if s != stap]
+        stand[agent] = lijst
+        pad = growkit_telegram._voortgang_pad()
+        pad.parent.mkdir(parents=True, exist_ok=True)
+        pad.write_text(json.dumps(stand, ensure_ascii=False, indent=1))
+        return {"ok": True, "data": {"agent": agent, "stappen": lijst}}
+
+    token = str(invoer.get("token", "")).strip()
+    try:
+        growkit_telegram.markeer_klaar(agent, stap, token=token)
+    except (ValueError, RuntimeError) as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"agent": agent, "stap": stap,
+                                 "mask": growkit_telegram.toon_token_mask(agent)}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1411,6 +1454,7 @@ COMMANDOS = {
     "automatiekexport": cmd_automatiekexport,
     "automatiekvoorstel": cmd_automatiekvoorstel,
     "agenda": cmd_agenda,
+    "telegramwizard": cmd_telegramwizard,
     "klooncategorieen": cmd_klooncategorieen,
     "kloonlijst": cmd_kloonlijst,
     "kloonlees": cmd_kloonlees,

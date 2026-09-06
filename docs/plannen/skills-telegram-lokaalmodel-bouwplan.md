@@ -58,6 +58,42 @@ gateway-logboek als hij niet reageert. Connectiestatus-kleuren: groen
 **Geen automatische bot-aanmaak** — BotFather vraagt interactie in
 Telegram zelf; de wizard begeleidt, de mens doet de stappen.
 
+**Fase B3 — FAMILIE-MODUS: alle 7 agents op je eigen mobiel (6 sept):**
+
+Doel: een nieuwe gebruiker zet met deze wizard de complete familie
+op z'n eigen Telegram, exact zoals Tiëndo het heeft.
+
+Stappenstromen (per agent dezelfde 6 stappen, 7× herhaald):
+1. @BotFather → /newbot → naam (bijv. "KairOS") + gebruikersnaam
+   (bijv. kairos_family_bot) → token kopiëren
+2. Token plakken in het veld (alleen laatste 4 tekens zichtbaar;
+   bewaring: Sleutelhangar `GrowKit Telegram: <agent>`)
+3. @userinfobot → eigen chat-ID noteren
+4. Profiel-config bijwerken: telegram.token (uit Sleutelhangar bij
+   start), allowed_chat_ids=[jouw id], home_channel
+5. Gateway-herstart (de wizard toont het commando; uitvoeren = mens)
+6. Test: stuur /status naar díe bot → verwacht antwoord van díe agent
+
+Familie-afsluiting:
+7. Telegram-groep "Parvenu Agent Family" aanmaken, alle 7 bots
+   toevoegen, groep-id invullen in elk profiel
+8. Verdeelregel-test: één bericht in de groep → precies één agent
+   antwoordt (volgens de ANTWOORD-VERDEELREGEL in de SOUL's)
+
+Scherm (22 · SYSTEEM "Telegram Connect"):
+- Tablet met 7 rijen (KairOS, Riri, Vigil, Libra, Memoria, Codex, Genius),
+  elk met status-stip (groen/oranje/grijs) en vinkje per voltooide stap
+- Klik op een rij → de 6 stappen van díe agent, met invoervelden op
+  stap 2 (token) en 4 (chat-id); stap 5 toont het herstart-commando
+- Familie-rij onderaan: groep-stappen 7-8 met gedeelde chat-ID
+- Voortgang bewaard in ~/.growkit/telegram_wizard.json (append-only log
+  van voltooide stappen; geen tokens daarin — die leven in de hangar)
+
+Tokens komen via een adapter-commando in de Sleutelhangar op de VPS:
+`telegramkoppel <agent> <token>` (weigert herhaling zonder bevestiging;
+toont alleen laatste 4 tekens terug). De app stuurt het token één keer
+en toont het daarna nooit meer.
+
 ---
 
 ## Functie C — Eigen lokaal LLM "CyberSeed" (scherm 22 · SYSTEEM)
