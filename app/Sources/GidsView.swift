@@ -132,12 +132,6 @@ struct GidsView: View {
                 .foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 6) {
-                Image(systemName: "book.closed")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Thema.kleur(.gedempt))
-                Text("Bron: \(i["bron"] as? String ?? "")")
-                    .font(Thema.tekst(10))
-                    .foregroundStyle(Thema.kleur(.gedempt))
                 if let toepassing = i["toepassing"] as? String, !toepassing.isEmpty {
                     Spacer()
                     Text(toepassing)
