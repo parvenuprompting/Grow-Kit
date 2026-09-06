@@ -221,8 +221,7 @@ struct TelegramWizardView: View {
                 Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
                 HStack {
                     PillKnop(titel: "Markeer gekozen stap klaar",
-                             gevuld: true,
-                             ) {
+                             gevuld: true) {
                         if let stap = gekozenStap {
                             markeer(agent, stap: stap)
                         }
