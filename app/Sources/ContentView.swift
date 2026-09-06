@@ -18,6 +18,7 @@ struct ContentView: View {
         case amnesia = 91
         case kloon = 92
         case gids = 93
+        case automatiek = 94
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -33,18 +34,19 @@ struct ContentView: View {
             case .goedkeuringen: return "04"
             case .dialoog: return "05"
             case .agenten: return "06"
-            case .graaf: return "07"
-            case .prompts: return "08"
-            case .vangnet: return "09"
-            case .audit: return "10"
-            case .securevault: return "11"
-            case .amnesia: return "12"
-            case .kloon: return "13"
-            case .hervatten: return "14"
-            case .taak: return "15"
-            case .rondleiding: return "16"
-            case .uitleg: return "17"
-            case .gids: return "18"
+            case .automatiek: return "07"
+            case .graaf: return "08"
+            case .prompts: return "09"
+            case .vangnet: return "10"
+            case .audit: return "11"
+            case .securevault: return "12"
+            case .amnesia: return "13"
+            case .kloon: return "14"
+            case .hervatten: return "15"
+            case .taak: return "16"
+            case .rondleiding: return "17"
+            case .uitleg: return "18"
+            case .gids: return "19"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -62,6 +64,7 @@ struct ContentView: View {
             case .goedkeuringen: return "Goedkeuringen"
             case .dialoog: return "Dialoog"
             case .agenten: return "Agenten"
+            case .automatiek: return "Automatiek"
             case .vangnet: return "Vangnet"
             case .audit: return "Audit"
             case .hervatten: return "Hervatten"
@@ -89,6 +92,7 @@ struct ContentView: View {
             case .goedkeuringen: return "Mens-momenten in bulk goedkeuren of afkeuren"
             case .dialoog: return "Gesprek met geïnstalleerde AI-agenten"
             case .agenten: return "Governor: taken, controle, observer"
+            case .automatiek: return "Eén zin in, automation-plan uit — KairOS stelt voor"
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .hervatten: return "Restdraai vanuit het logboek"
@@ -186,7 +190,7 @@ struct ContentView: View {
 
                     // WERK — Agent Chat eerst (hoofdfunctie), daarna de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .graaf, .prompts, .vangnet, .audit]) { modus in
+                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .automatiek, .graaf, .prompts, .vangnet, .audit]) { modus in
                         modusRij(modus)
                     }
 
@@ -366,6 +370,8 @@ struct ContentView: View {
                              repoPad: $repoPad, interpreter: $interpreter)
                 case .agenten:
                     AgentsView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .automatiek:
+                    AutomatiekView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .graaf:
                     GraafView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .prompts:

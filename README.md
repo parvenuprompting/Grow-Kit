@@ -1,10 +1,14 @@
 # Grow Kit 🌳
 
-[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![CI](https://img.shields.io/badge/CI-tests%20%2B%20secrets-scan%20%2B%20macOS%20build-brightgreen?style=flat-square)](https://github.com/parvenuprompting/Grow-Kit/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-546_groen-success?style=flat-square)]()
-[![App](https://img.shields.io/badge/app-macOS_SwiftUI-black?style=flat-square)]()
-[![Fase](https://img.shields.io/badge/fases-1_t%2Fm_6_bewezen-brightgreen?style=flat-square)]()
+[![CI](https://github.com/parvenuprompting/Grow-Kit/actions/workflows/ci.yml/badge.svg)](https://github.com/parvenuprompting/Grow-Kit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS_14%2B-black?style=flat-square)]()
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-566_groen-success?style=flat-square)]()
+[![Agents](https://img.shields.io/badge/agent-familie-7_teal?style=flat-square)]()
+[![Privacy](https://img.shields.io/badge/privacy-100%25_local-success?style=flat-square)]()
+[![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
+[![Encryption](https://img.shields.io/badge/secrets-AES--256_GCM-orange?style=flat-square)]()
 
 **GROW** = **G**overned **R**eproducible **O**perational **W**orkflow — de wet waar elke stap onder draait.
 
@@ -37,20 +41,21 @@ Native macOS-app (SwiftUI) in editorial-monochrome stijl. Zijmenu:
 | 04 | Goedkeuringen | Ratificatie: mens keurt goed of af |
 | 05 | Dialoog | Scope-poort, prompt-slijper, ronde tafel |
 | 06 | Agenten | Gouverneur: familie, observaties, taak-contracten |
-| 07 | Knowledge Graph | Brein-verbanden; klik op een sectie om in te zoeken |
-| 08 | Prompts | Gecureerde bibliotheek, variabelen invullen |
-| 09 | Vangnet | Opgevangen review-aanroepen en uitkomsten |
-| 10 | Audit | Volledig, append-only logboek |
+| 07 | **Automatiek** | Eén zin in, automation-plan uit — KairOS stelt voor, jij keurt |
+| 08 | Knowledge Graph | Brein-verbanden; klik op een sectie om in te zoeken |
+| 09 | Prompts | Gecureerde bibliotheek, variabelen invullen |
+| 10 | Vangnet | Opgevangen review-aanroepen en uitkomsten |
+| 11 | Audit | Volledig, append-only logboek |
 | **SYSTEEM** | | |
-| 11 | Secure Vault | Echte kluizen via macOS hdiutil (AES-256/APFS) |
-| 12 | Amnesia Protocol | Gevoelige tekst anonimiseren en herstellen |
-| 13 | Digitale Kloon | Persoonlijke kluis: 6 categorieën, AES-256-GCM, PIN + Touch ID |
-| 14 | Hervatten | Crash-herstel uit het logboek |
-| 15 | Taak | Boom-pad + governor → takenlijst met bewijs |
+| 12 | Secure Vault | Echte kluizen via macOS hdiutil (AES-256/APFS) |
+| 13 | Amnesia Protocol | Gevoelige tekst anonimiseren en herstellen |
+| 14 | Digitale Kloon | Persoonlijke kluis: 6 categorieën, AES-256-GCM, PIN + Touch ID |
+| 15 | Hervatten | Crash-herstel uit het logboek |
+| 16 | Taak | Boom-pad + governor → takenlijst met bewijs |
 | **LEREN** | | |
-| 16 | Rondleiding | Het ontwerp in vijf schermen |
-| 17 | Uitleg | De motor uitgelegd |
-| 18 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
+| 17 | Rondleiding | Het ontwerp in vijf schermen |
+| 18 | Uitleg | De motor uitgelegd |
+| 19 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
 
 ## De agent-familie
 
@@ -73,9 +78,10 @@ De agents kennen de gebruiker bij naam (het `van`-veld in elk chatbericht) en sp
 Voor wie verder wil kijken:
 
 - **Python-kern** (`kern/`, 32 modules): scope-poort, stappen-motor met faalcontract, vijf machine-controles, review-laag, ratificatie, leesroute, crash-herstel, boom-register, vangnet (SQLite), agent-familie, Knowledge Graph, prompt-bibliotheek, Secure Vault (hdiutil), Amnesia (anonimiseren), Digitale Kloon (AES-256-GCM via `cryptography` in een repo-eigen `.venv` — bewuste uitzondering op stdlib-only), Best Practices.
-- **Adapter** (`adapter.py`): JSON-CLI met 50 commando's over de kern — de enige poort tussen app en motor.
+- **Adapter** (`adapter.py`): JSON-CLI met 56 commando's over de kern — de enige poort tussen app en motor.
+- **Automatiek** (`kern/growkit_automatiek.py`): het zes-blokken-model (doel & trigger, bronnen, stappen, kwaliteit, uitvoering, randvoorwaarden) uit de Automatiek-planner; secrets-scanner weigert plannen met keys; `automatiekvoorstel` stuurt je wens naar KairOS, zijn JSON-antwoord wordt een plan.
 - **Agent Chat-pijplijn**: bericht → `~/.../agenttaken/<agent>/wachtrij/*.json` op de VPS → poller (cron, 1 min) → `hermes chat -q --profile <agent>` met `[van: NAAM]`-prefix → antwoord gepuurd van CLI-meuk (`zuiver_antwoord`) + redenatie apart bewaard → antwoorden/<id>.json.
-- **Chat-geschiedenis**: wissen = verplaatsen naar `<agent>/geschiedenis/` (antwoorden als `antwoord-*.json`); definitief wissen vereist `bevestig=true`.
+- **Chat-geschiedenis**: wissen = verplaatsen naar `<agent>/geschiedenis/` (antwoorden als `antwoord-*.json`); definitief wissen vereist `bevestig=true`. Elk antwoord kan een `redenatie`-veld meedragen (het denkproces, per bericht in- en uitklapbaar).
 - **SSH**: de app praat met de VPS via `GROWKIT_HOST` (omgeving of `.env` in de repo-root; in `.gitignore`).
 - **SOUL-bestanden**: gedrag, rol en stem van elke agent op de VPS (`/root/.hermes/SOUL.md` + profiel-SOUL's): focus-manifest, titulatuur ("Tiëndo" of "de Baas", nooit "papa"/"oom"), antwoord-verdeelregel, per-agent STEM.
 
@@ -105,11 +111,11 @@ Grow-Kit/
 ├── SEED.md                  ← geboortebrief
 ├── seed.py                  ← plant-mechanisme
 ├── loop.py                  ← het harnas: orchestratie zonder agent
-├── adapter.py               ← JSON-CLI brug (50 commando's)
+├── adapter.py               ← JSON-CLI brug (56 commando's)
 ├── kern/                    ← 32 modules
 ├── profielen/               ← bomen: JSON-stappenplannen met gecodeerd bewijs
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 546 tests + 20 E2E-scripts
+├── tests/                   ← 566 tests + 20 E2E-scripts
 ├── app/                     ← macOS SwiftUI-app (22 views)
 │   ├── Sources/             ← views + Thema/Bouwstenen
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
@@ -128,7 +134,7 @@ Elke push en PR draait automatisch **CI** (GitHub Actions):
 2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
 3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
-- **546 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
+- **566 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
 - Elke nieuwe slice TDD: eerst rood, dan groen, dan end-to-end
