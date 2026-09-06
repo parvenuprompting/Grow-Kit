@@ -96,6 +96,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Xcode 16 kiezen (project-format 77 vereist dit)
+        run: |
+          ls /Applications | grep Xcode || true
+          sudo xcode-select -s /Applications/Xcode_16*.app/Contents/Developer || \
+            sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
       - name: XcodeGen (pinned 2.46.0)
         run: |
           brew install xcodegen
