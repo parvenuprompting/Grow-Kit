@@ -54,7 +54,7 @@ struct ContentView: View {
             case .home: return "Thuis"
             case .rondleiding: return "Rondleiding"
             case .uitleg: return "Uitleg"
-            case .gids: return "AI Gids"
+            case .gids: return "Best Practices"
             case .status: return "Status"
             case .planten: return "Planten"
             case .goedkeuringen: return "Goedkeuringen"

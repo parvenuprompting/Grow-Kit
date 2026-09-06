@@ -18,12 +18,12 @@ class TestGidsData(unittest.TestCase):
         self.assertIn("thema's", data)
         self.assertTrue(len(data["thema's"]) >= 5)
 
-    def test_elk_inzicht_heeft_titel_inhoud_en_bron(self):
+    def test_elk_inzicht_heeft_titel_en_inhoud(self):
         for thema in gids.laad()["thema's"]:
             for i in thema["inzichten"]:
                 self.assertTrue(i["titel"], f"titel leeg in {thema['thema']}")
                 self.assertTrue(i["inhoud"], f"inhoud leeg: {i['titel']}")
-                self.assertTrue(i["bron"], f"bron ontbreekt: {i['titel']}")
+                self.assertNotIn("bron", i, f"bronveld moet weg: {i['titel']}")
 
     def test_bekende_themas_aanwezig(self):
         namen = {t["thema"] for t in gids.laad()["thema's"]}
@@ -50,12 +50,10 @@ class TestZoeken(unittest.TestCase):
     def test_zoek_zonder_resultaat_geeft_leeg(self):
         self.assertEqual(gids.zoek("xtqwxzqq"), [])
 
-    def test_zoek_op_bron(self):
-        r = gids.zoek("Nachtfabriek")
-        self.assertTrue(r)
-        self.assertTrue(all("Nachtfabriek" in x["bron"] or
-                            "Nachtfabriek" in x["titel"] or
-                            "Nachtfabriek" in x["inhoud"] for x in r))
+    def test_geen_bronnen_meer_in_de_gids(self):
+        """Besluit 6 sept 2026: bronnen helemaal uit de gids."""
+        self.assertEqual(gids.bronnen(), [])
+        self.assertNotIn("bronnen", gids.laad())
 
 
 if __name__ == "__main__":

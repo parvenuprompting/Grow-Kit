@@ -46,9 +46,9 @@ struct GidsView: View {
 
     private var kop: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("AI Gids")
+            Text("Best Practices")
                 .font(Thema.display(30))
-            Text("Kerninzichten uit je eigen Drive-documenten — de architect-mindset, zero-trust, machine-bewijs en effectief leren. Elk inzicht noemt zijn bron: een feit zonder bron is een aanname.")
+            Text("Kerninzichten uit je eigen Drive-documenten — de architect-mindset, zero-trust, machine-bewijs en effectief leren. Bewezen lessen, klaar om toe te passen.")
                 .font(Thema.tekst(12))
                 .foregroundStyle(Thema.kleur(.zacht))
                 .fixedSize(horizontal: false, vertical: true)

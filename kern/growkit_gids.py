@@ -46,7 +46,7 @@ def alle_inzichten() -> list[dict]:
 
 
 def zoek(term: str) -> list[dict]:
-    """Zoek inzichten op titel, inhoud of bron (hoofdletterongevoelig)."""
+    """Zoek inzichten op titel en inhoud (hoofdletterongevoelig)."""
     term = term.strip().lower()
     if not term:
         return []
@@ -54,10 +54,9 @@ def zoek(term: str) -> list[dict]:
         i for i in alle_inzichten()
         if term in i["titel"].lower()
         or term in i["inhoud"].lower()
-        or term in i["bron"].lower()
     ]
 
 
 def bronnen() -> list[str]:
-    """De bron-documenten waarop de gids rust."""
-    return laad().get("bronnen", [])
+    """Bron-documenten zijn verwijderd uit de gids (besluit 6 sept 2026)."""
+    return []
