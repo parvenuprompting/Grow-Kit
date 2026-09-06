@@ -17,6 +17,33 @@ from kern import growkit_agenttaak as at
 _ANTWOORDEN_ROOT = at.WACHTRIJ_ROOT  # zelfde boom: <agent>/antwoorden/
 
 
+def redenatie_uit(tekst: str) -> str | None:
+    """Haal het denkproces (redenatie) uit ruwe Hermes CLI-output.
+
+    Dat is alles vóór het antwoordblok: de query-echo, de init-regels en
+    vooral de inhoud van de ☤ Hermes-box vóór het antwoord. Voor berichten
+    zonder box is er meestal geen zichtbare redenatie → None.
+    """
+    if not tekst:
+        return None
+    regels = tekst.splitlines()
+    begin = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╭─")), None)
+    eind = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╰─")), None)
+    if begin is None:
+        # Geen box: redenatie = init-regels vóór het eerste antwoordblok,
+        # als die er zijn
+        kop = [r for r in regels
+               if r.lstrip().startswith(("Query:", "Initializing agent"))
+               or "─────" in r]
+        red = "\n".join(kop).strip()
+        return red or None
+    binnen = regels[begin + 1:eind if eind and eind > begin else len(regels)]
+    binnen = [r for r in binnen
+              if r.strip() and "⚕" not in r]
+    red = "\n".join(binnen).strip()
+    return red or None
+
+
 def zuiver_antwoord(tekst: str) -> str:
     """Haal het pure antwoord uit ruwe Hermes CLI-output.
 
@@ -29,18 +56,17 @@ def zuiver_antwoord(tekst: str) -> str:
         return tekst
     regels = tekst.splitlines()
 
-    # Box gevonden? Neem de inhoud tussen ╭─… en ╰─…
+    # Box gevonden? Het antwoord staat búiten de box (na ╰─…); de inhoud
+    # binnenin is het denkproces.
     begin = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╭─")), None)
     eind = next((i for i, r in enumerate(regels) if r.lstrip().startswith("╰─")), None)
     if begin is not None and eind is not None and eind > begin:
-        binnen = regels[begin + 1:eind]
-        # Legende-regel zoals '⚕ Hermes' of 'Hermes' bovenin de box weg
-        binnen = [r for r in binnen
-                  if r.strip() and r.strip() != "Hermes"
-                  and "⚕" not in r
-                  and not r.lstrip().startswith("Query:")
-                  and not r.lstrip().startswith("Initializing agent")]
-        puur = "\n".join(binnen).strip()
+        na_box = [r for r in regels[eind + 1:]
+                  if r.strip()
+                  and not r.lstrip().startswith("Resume this session with:")
+                  and not r.lstrip().startswith("hermes ")
+                  and not r.lstrip().startswith(("Session:", "Title:", "Duration:", "Messages:"))]
+        puur = "\n".join(na_box).strip()
         if puur:
             return puur
 
@@ -178,7 +204,99 @@ def draad(agent: str, *, uitvoerder=at._standaard_uitvoerder,
             "tijd": doc.get("aangemeld_op", ""),
             "van": doc.get("van", ""),
             "antwoord": (antwoord_doc or {}).get("antwoord"),
+            "redenatie": (antwoord_doc or {}).get("redenatie"),
             "antwoord_tijd": (antwoord_doc or {}).get("afgerond_op"),
         })
     thread.sort(key=lambda x: x["tijd"])
     return {"ok": True, "data": {"agent": agent, "draad": thread}}
+
+
+# ---------------------------------------------------------------------------
+# Geschiedenis: wissen = naar archief; archief lezen; archief definitief weg
+# ---------------------------------------------------------------------------
+
+def wis_draad(agent: str, *, uitvoerder=at._standaard_uitvoerder,
+              timeout: int = 25) -> dict:
+    """Wis de zichtbare chat: alle agentchat-berichten (wachtrij/bezig/
+    afgerond + antwoorden) gaan naar <agent>/geschiedenis/. Niets gaat
+    verloren — dit is de leesweergave leegmaken, niet verwijderen."""
+    agent = agent.strip().lower()
+    if agent not in at._AGENTEN:
+        return {"ok": False, "fout": f"Onbekende agent '{agent}'."}
+    basis = f"{at.WACHTRIJ_ROOT}/{agent}"
+    script = (
+        f"mkdir -p {basis}/geschiedenis && "
+        f"for sub in wachtrij bezig afgerond; do "
+        f"  for f in {basis}/$sub/*.json; do "
+        f'    [ -f "$f" ] || continue; '
+        f'    grep -q \'"bron": "agentchat"\' "$f" 2>/dev/null && '
+        f"    mv \"$f\" {basis}/geschiedenis/ ; "
+        f"  done; done; "
+        f"for f in {basis}/antwoorden/*.json; do "
+        f'  [ -f "$f" ] || continue; '
+        f'  bn=$(basename "$f"); mv "$f" {basis}/geschiedenis/antwoord-"$bn" ; '
+        f"done; echo OK"
+    )
+    code, _ = uitvoerder(["ssh", "-o", "BatchMode=yes",
+                          "-o", f"ConnectTimeout={max(timeout - 5, 5)}",
+                          at.HOST, script], None, timeout)
+    if code == 255:
+        return {"ok": False, "fout": "VPS onbereikbaar — niets gewist."}
+    if code != 0:
+        return {"ok": False, "fout": "Wissen mislukt op de VPS."}
+    return {"ok": True, "data": {"agent": agent, "gewist": True}}
+
+
+def geschiedenis(agent: str, *, uitvoerder=at._standaard_uitvoerder,
+                 timeout: int = 25) -> dict:
+    """De gearchiveerde sessie: berichten + antwoorden, alleen-lezen."""
+    agent = agent.strip().lower()
+    if agent not in at._AGENTEN:
+        return {"ok": False, "fout": f"Onbekende agent '{agent}'."}
+    try:
+        berichten = _lees_alle(ssh=uitvoerder,
+                               pad=f"{at.WACHTRIJ_ROOT}/{agent}/geschiedenis",
+                               timeout=timeout)
+    except ConnectionError:
+        return {"ok": False, "fout": "VPS onbereikbaar — geschiedenis onbekend."}
+
+    thread: list[dict] = []
+    antwoorden = {n[len("antwoord-"):]: d for n, d in berichten.items()
+                  if n.startswith("antwoord-")}
+    for naam, doc in berichten.items():
+        if doc.get("bron") != "agentchat" or naam.startswith("antwoord-"):
+            continue
+        taak_id = doc.get("taak_id", naam)
+        antw = antwoorden.get(f"{taak_id}.json")
+        thread.append({
+            "taak_id": taak_id,
+            "bericht": doc.get("titel", ""),
+            "tijd": doc.get("aangemeld_op", ""),
+            "van": doc.get("van", ""),
+            "antwoord": (antw or {}).get("antwoord"),
+            "redenatie": (antw or {}).get("redenatie"),
+        })
+    thread.sort(key=lambda x: x["tijd"])
+    return {"ok": True, "data": {"agent": agent, "geschiedenis": thread}}
+
+
+def wis_geschiedenis(agent: str, *, bevestig: bool = False,
+                     uitvoerder=at._standaard_uitvoerder,
+                     timeout: int = 25) -> dict:
+    """DEFINITIEF wissen van de gearchiveerde sessie. Vereist
+    bevestig=True — zonder die vlag gebeurt er niets (faalcontract)."""
+    agent = agent.strip().lower()
+    if agent not in at._AGENTEN:
+        return {"ok": False, "fout": f"Onbekende agent '{agent}'."}
+    if not bevestig:
+        return {"ok": False,
+                "fout": "Definitief wissen vereist bevestiging (bevestig=true)."}
+    script = (f"rm -f {at.WACHTRIJ_ROOT}/{agent}/geschiedenis/*.json && echo OK")
+    code, _ = uitvoerder(["ssh", "-o", "BatchMode=yes",
+                          "-o", f"ConnectTimeout={max(timeout - 5, 5)}",
+                          at.HOST, script], None, timeout)
+    if code == 255:
+        return {"ok": False, "fout": "VPS onbereikbaar — niets gewist."}
+    if code != 0:
+        return {"ok": False, "fout": "Verwijderen mislukt op de VPS."}
+    return {"ok": True, "data": {"agent": agent, "definitief_gewist": True}}

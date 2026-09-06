@@ -1243,7 +1243,15 @@ def cmd_agentchat(invoer: dict) -> dict:
                         van=str(invoer.get("van", "")))
     if actie == "draad":
         return ac.draad(agent)
-    raise AdapterFout("onbekende agentchat-actie — kies: stuur, draad")
+    if actie == "wis":
+        return ac.wis_draad(agent)
+    if actie == "geschiedenis":
+        return ac.geschiedenis(agent)
+    if actie == "wisgeschiedenis":
+        return ac.wis_geschiedenis(agent,
+                                   bevestig=bool(invoer.get("bevestig")))
+    raise AdapterFout("onbekende agentchat-actie — kies: stuur, draad, wis, "
+                      "geschiedenis, wisgeschiedenis")
 
 
 COMMANDOS = {

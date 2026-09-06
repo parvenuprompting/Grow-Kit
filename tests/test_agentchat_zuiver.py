@@ -11,7 +11,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
-from kern.growkit_agentchat import zuiver_antwoord
+from kern.growkit_agentchat import zuiver_antwoord, redenatie_uit
 
 
 class TestZuiverAntwoord(unittest.TestCase):
@@ -58,10 +58,12 @@ class TestZuiverAntwoord(unittest.TestCase):
         self.assertEqual(zuiver_antwoord(""), "")
 
     def test_geen_hermes_in_resultaat(self):
-        rauw = "╭─ ☤ Hermes ──╮\nHalloor.\n╰─────────────╯\nhermes --resume x"
+        rauw = ("╭─ ☤ Hermes ──╮\nDenkwerk.\n╰──────────────╯\n"
+                "Het antwoord.\nResume this session with:\n  hermes --resume x")
         resultaat = zuiver_antwoord(rauw)
         self.assertNotIn("Hermes", resultaat)
         self.assertNotIn("hermes", resultaat)
+        self.assertEqual(resultaat, "Het antwoord.")
 
 
 if __name__ == "__main__":

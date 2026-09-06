@@ -17,6 +17,7 @@ private var _stores: [String: AgentChatStore] = [:]
 
 final class AgentChatStore: ObservableObject {
     @Published var draad: [AgentChatBericht] = []
+    @Published var geschiedenis: [AgentChatBericht] = []
     @Published var geladen = false
     @Published var fout: String?
     @Published var bezigVersturen = false
@@ -36,7 +37,7 @@ final class AgentChatStore: ObservableObject {
     func voegLokaalToe(tekst: String) {
         let tijd = ISO8601DateFormatter().string(from: Date())
         draad.append(AgentChatBericht(taakId: "lokaal-" + tijd, bericht: tekst,
-                                      tijd: tijd, antwoord: nil))
+                                      tijd: tijd, antwoord: nil, redenatie: nil))
         wachtOpAntwoord = true
     }
 
@@ -59,7 +60,8 @@ final class AgentChatStore: ObservableObject {
                         taakId: item["taak_id"] as? String ?? "",
                         bericht: item["bericht"] as? String ?? "",
                         tijd: item["tijd"] as? String ?? "",
-                        antwoord: item["antwoord"] as? String ?? nil)
+                        antwoord: item["antwoord"] as? String ?? nil,
+                        redenatie: item["redenatie"] as? String ?? nil)
                 }
                 // Wacht-indicator uit als het laatste bericht een antwoord heeft
                 if let laatste = draad.last {
@@ -68,6 +70,63 @@ final class AgentChatStore: ObservableObject {
                     wachtOpAntwoord = false
                 }
                 geladen = true
+            }
+        }
+    }
+
+    /// Wis de zichtbare chat (berichten gaan naar archief op de VPS).
+    func wisDraad(agent: String, runner: Runner, repoPad: String, interpreter: String) {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentchat",
+                                           invoer: ["actie": "wis", "agent": agent])
+            await MainActor.run {
+                if let r, r.ok {
+                    draad = []
+                    wachtOpAntwoord = false
+                    fout = nil
+                    geladen = true
+                } else {
+                    fout = r?.fout ?? "Wissen mislukt."
+                }
+            }
+        }
+    }
+
+    /// De gearchiveerde sessie (alleen-lezen).
+    func laadGeschiedenis(agent: String, runner: Runner, repoPad: String,
+                          interpreter: String) {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentchat",
+                                           invoer: ["actie": "geschiedenis", "agent": agent])
+            await MainActor.run {
+                if let r, r.ok, let lijst = r.data["geschiedenis"] as? [[String: Any]] {
+                    geschiedenis = lijst.map { item in
+                        AgentChatBericht(
+                            taakId: item["taak_id"] as? String ?? "",
+                            bericht: item["bericht"] as? String ?? "",
+                            tijd: item["tijd"] as? String ?? "",
+                            antwoord: item["antwoord"] as? String ?? nil,
+                            redenatie: item["redenatie"] as? String ?? nil)
+                    }
+                }
+            }
+        }
+    }
+
+    /// DEFINITIEF de gearchiveerde sessie wissen (vereist bevestiging in de UI).
+    func wisGeschiedenis(agent: String, runner: Runner, repoPad: String,
+                         interpreter: String) {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "agentchat",
+                                           invoer: ["actie": "wisgeschiedenis",
+                                                    "agent": agent, "bevestig": true])
+            await MainActor.run {
+                if let r, r.ok {
+                    geschiedenis = []
+                }
             }
         }
     }
@@ -100,6 +159,7 @@ struct AgentChatBericht: Identifiable {
     let bericht: String
     let tijd: String
     let antwoord: String?
+    let redenatie: String?
     var id: String { taakId }
 }
 
@@ -114,6 +174,9 @@ struct AgentChatView: View {
     @State private var agentLijst: [(naam: String, live: Bool)] = []
     @State private var agentenGeladen = false
     @State private var toonRedenatie = false
+    @State private var toonGeschiedenis = false
+    @State private var wisBevestiging = false
+    @State private var wisGeschiedenisBevestiging = false
     @State private var autoVerversTimer: Timer?
     @State private var gebruikersNaam: String = ""
 
@@ -128,7 +191,11 @@ struct AgentChatView: View {
             HStack(spacing: 0) {
                 agentLijstView
                 Rectangle().fill(Thema.kleur(.lijn)).frame(width: 1)
-                draadPaneel
+                if toonGeschiedenis {
+                    geschiedenisPaneel
+                } else {
+                    draadPaneel
+                }
             }
         }
         .background(Thema.kleur(.papier))
@@ -137,6 +204,56 @@ struct AgentChatView: View {
             laadGebruiker()
         }
         .onDisappear { autoVerversTimer?.invalidate(); autoVerversTimer = nil }
+        // Wis-chat: berichten gaan naar archief op de VPS (omkeerbaar)
+        .alert("Gesprek wissen?", isPresented: $wisBevestiging) {
+            Button("Annuleer", role: .cancel) {}
+            Button("Wis (naar archief)", role: .destructive) {
+                store.wisDraad(agent: gekozenAgent, runner: runner,
+                               repoPad: repoPad, interpreter: interpreter)
+            }
+        } message: {
+            Text("De chat wordt leeg. Berichten blijven bewaard in de geschiedenis.")
+        }
+        // Wis-geschiedenis: DEFINITIEF, vraagt om aparte bevestiging
+        .alert("Geschiedenis definitief wissen?", isPresented: $wisGeschiedenisBevestiging) {
+            Button("Annuleer", role: .cancel) {}
+            Button("Definitief wissen", role: .destructive) {
+                store.wisGeschiedenis(agent: gekozenAgent, runner: runner,
+                                      repoPad: repoPad, interpreter: interpreter)
+            }
+        } message: {
+            Text("De gearchiveerde sessie van \(gekozenAgent.capitalized) wordt permanent verwijderd. Dit kan niet ongedaan worden.")
+        }
+    }
+
+    /// De bewaarde sessie — alleen-lezen, met eigen wis-knop.
+    private var geschiedenisPaneel: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Text("GESCHIEDENIS · \(gekozenAgent.capitalized)")
+                            .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                        Spacer()
+                        PillKnop(titel: "Definitief wissen", gevuld: false, compact: true) {
+                            wisGeschiedenisBevestiging = true
+                        }
+                        PillKnop(titel: "Terug naar chat", gevuld: true, compact: true) {
+                            toonGeschiedenis = false
+                        }
+                    }
+                    if store.geschiedenis.isEmpty {
+                        Text("Geen gearchiveerde sessies voor \(gekozenAgent.capitalized).")
+                            .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                    }
+                    ForEach(store.geschiedenis) { bericht in
+                        chatBlok(bericht).id(bericht.id)
+                    }
+                }
+                .padding(24)
+            }
+        }
     }
 
     private func laadGebruiker() {
@@ -222,6 +339,16 @@ struct AgentChatView: View {
                 PillKnop(titel: toonRedenatie ? "Redenatie aan" : "Redenatie uit",
                          gevuld: toonRedenatie, compact: true) {
                     toonRedenatie.toggle()
+                }
+                PillKnop(titel: "Geschiedenis", gevuld: false, compact: true) {
+                    toonGeschiedenis.toggle()
+                    if toonGeschiedenis {
+                        store.laadGeschiedenis(agent: gekozenAgent, runner: runner,
+                                               repoPad: repoPad, interpreter: interpreter)
+                    }
+                }
+                PillKnop(titel: "Wis", gevuld: false, compact: true) {
+                    wisBevestiging = true
                 }
                 PillKnop(titel: "Ververs") {
                     store.laadDraad(agent: gekozenAgent, runner: runner,
@@ -358,20 +485,14 @@ struct AgentChatView: View {
                 .background(RoundedRectangle(cornerRadius: 8).fill(Thema.kleur(.papierZacht)))
 
             if let antwoord = b.antwoord {
-                let (redenatie, puurAntwoord) = splitAntwoord(antwoord)
+                // Redenatie: uit data (nieuw) of uit ruwe antwoordtekst (oud)
+                let gesplitst = splitAntwoord(antwoord)
+                let red = b.redenatie ?? gesplitst.redenatie
+                let puurAntwoord = b.redenatie != nil ? antwoord : gesplitst.antwoord
 
-                if let red = redenatie, toonRedenatie {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Redenatie").font(Thema.tekst(9, gewicht: .semibold))
-                            .tracking(1.5).foregroundStyle(Thema.kleur(.gedempt))
-                        Text(red)
-                            .font(Thema.tekst(10))
-                            .foregroundStyle(Thema.kleur(.zacht))
-                            .padding(8)
-                            .frame(maxWidth: 420, alignment: .leading)
-                            .background(RoundedRectangle(cornerRadius: 6)
-                                .stroke(Thema.kleur(.lijn), style: StrokeStyle(dash: [3, 3])))
-                    }
+                // Thought \u{25BE} — inklapbaar denkproces per bericht (net als Hermes)
+                if let red, !red.isEmpty {
+                    DenkBlok(redenatie: red)
                 }
 
                 // Antwoord van de agent — met naam-label en markdown-opmaak
@@ -380,10 +501,6 @@ struct AgentChatView: View {
                         Text(gekozenAgent.capitalized)
                             .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
                             .foregroundStyle(Thema.kleur(.gedempt))
-                        if let t = b.antwoordTijd {
-                            Text(formatteerTijd(t))
-                                .font(Thema.tekst(8)).foregroundStyle(Thema.kleur(.gedempt))
-                        }
                     }
                     // Simpele markdown: kopjes, bullets, code worden netjes getoond
                     MarkdownTekst(tekst: puurAntwoord)
@@ -449,6 +566,42 @@ struct AgentChatView: View {
     }
 }
 
+// MARK: - DenkBlok — inklapbaar "Thought \u{25BE}" per bericht (net als Hermes)
+
+struct DenkBlok: View {
+    let redenatie: String
+    @State private var open = false   // standaard DICHT (keuze Tiëndo 6 sept)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { open.toggle() }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("Thought")
+                        .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.2)
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    Image(systemName: open ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                }
+            }
+            .buttonStyle(.plain)
+
+            if open {
+                Text(redenatie)
+                    .font(Thema.tekst(10))
+                    .foregroundStyle(Thema.kleur(.zacht))
+                    .padding(8)
+                    .frame(maxWidth: 420, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 6)
+                        .stroke(Thema.kleur(.lijn), style: StrokeStyle(dash: [3, 3])))
+                    .textSelection(.enabled)
+            }
+        }
+    }
+}
+
 // MARK: - Typing-stip (geanimeerd)
 
 struct TypingStip: View {
@@ -506,7 +659,3 @@ struct MarkdownTekst: View {
     }
 }
 
-// Extensie voor antwoordTijd op AgentChatBericht
-extension AgentChatBericht {
-    var antwoordTijd: String? { nil }
-}
