@@ -39,7 +39,8 @@ class TestCyberseedCommandos(unittest.TestCase):
                 {"bericht": "dag", "van": "Tiëndo"})
         self.assertTrue(r["ok"])
         self.assertEqual(r["data"]["antwoord"], "hoi")
-        chat_mock.assert_called_once_with("dag", van="Tiëndo", model="")
+        chat_mock.assert_called_once_with("dag", van="Tiëndo", model="",
+                                          naam=None, modus=None)
         # secret in bericht wordt geweigerd (scanner vóór de kern)
         with mock.patch.object(cs, "chat", return_value="x"):
             with self.assertRaises(adapter.AdapterFout):
