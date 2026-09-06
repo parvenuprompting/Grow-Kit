@@ -1,17 +1,18 @@
-// AgentChatView (ronde 3) — het grote chatvenster: praat met de familie.
-// Elk bericht = taak (bron=agentchat) via de bewezen wachtrij; de poller
-// op de VPS voert hem uit met het profiel van de agent; de draad toont
-// bericht ↔ antwoord. Gouverneur en faalcontract blijven de bewakers.
+// AgentChatView (ronde 4) — het grote chatvenster: praat met de familie.
+//
+// Fixes 6 sept:
+// - Auto-verversing: elke 15s wordt de draad stilletjes ververst
+// - Conversaties blijven staan: store is een singleton per agent
+// - Hermes-header weg: antwoorden worden geschoond van CLI-headers
+// - Reasoning-toggle: knop om de denkstappen van de agent te tonen/verbergen
+// - Antwoord-label toont agentnaam, niet "Hermes"
 
 import SwiftUI
+import AppKit
 
-struct AgentChatBericht: Identifiable {
-    let taakId: String
-    let bericht: String
-    let tijd: String
-    let antwoord: String?
-    var id: String { taakId }
-}
+// MARK: - Singleton stores (conversaties overleven tab-wissels)
+
+private var _stores: [String: AgentChatStore] = [:]
 
 final class AgentChatStore: ObservableObject {
     @Published var draad: [AgentChatBericht] = []
@@ -19,14 +20,24 @@ final class AgentChatStore: ObservableObject {
     @Published var fout: String?
     @Published var bezigVersturen = false
 
-    func laadDraad(agent: String, runner: Runner, repoPad: String, interpreter: String) {
+    static func voor(agent: String) -> AgentChatStore {
+        let sleutel = agent.lowercased()
+        if let bestaand = _stores[sleutel] { return bestaand }
+        let nieuw = AgentChatStore()
+        _stores[sleutel] = nieuw
+        return nieuw
+    }
+
+    func laadDraad(agent: String, runner: Runner, repoPad: String, interpreter: String,
+                   stil: Bool = false) {
+        if !stil { geladen = false }
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "agentchat",
                                            invoer: ["actie": "draad", "agent": agent])
             await MainActor.run {
                 guard let r, r.ok, let lijst = r.data["draad"] as? [[String: Any]] else {
-                    fout = r?.fout ?? "Draad onbereikbaar."
+                    if !stil { fout = r?.fout ?? "Draad onbereikbaar." }
                     geladen = true
                     return
                 }
@@ -65,15 +76,30 @@ final class AgentChatStore: ObservableObject {
     }
 }
 
+struct AgentChatBericht: Identifiable {
+    let taakId: String
+    let bericht: String
+    let tijd: String
+    let antwoord: String?
+    var id: String { taakId }
+}
+
+// MARK: - View
+
 struct AgentChatView: View {
     @ObservedObject var runner: Runner
     @Binding var repoPad: String
     @Binding var interpreter: String
-    @StateObject private var store = AgentChatStore()
     @State private var gekozenAgent = ""
     @State private var nieuwBericht = ""
     @State private var agentLijst: [(naam: String, live: Bool)] = []
     @State private var agentenGeladen = false
+    @State private var toonRedenatie = false
+    @State private var autoVerversTimer: Timer?
+
+    private var store: AgentChatStore {
+        AgentChatStore.voor(agent: gekozenAgent)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -86,25 +112,20 @@ struct AgentChatView: View {
             }
         }
         .background(Thema.kleur(.papier))
-        .onAppear {
-            laadAgenten()
-        }
+        .onAppear { laadAgenten() }
+        .onDisappear { autoVerversTimer?.invalidate(); autoVerversTimer = nil }
     }
+
+    // MARK: - Agenten laden
 
     private func laadAgenten() {
         Task {
-            // Tweeledig: laad de namen uit de lokale familie-JSON (geen SSH
-            // nodig — dit moet altijd werken) en haal daarna de live-status
-            // op voor de groene/grijze stip. Agentnamen komen uit de familie,
-            // niet uit de VPS.
             async let fam = try? runner.roep(repoPad: repoPad, interpreter: interpreter,
                                               commando: "familie", invoer: ["actie": "status"])
             async let stat = try? runner.roep(repoPad: repoPad, interpreter: interpreter,
                                                commando: "agentstatus", invoer: [:])
             let (familieResult, statusResult) = await (fam, stat)
-
             await MainActor.run {
-                // Stap 1: namen uit de lokale familie (altijd beschikbaar, geen SSH)
                 var namen: Set<String> = []
                 if let fam = familieResult, fam.ok,
                    let leden = fam.data["familie"] as? [[String: Any]] {
@@ -114,12 +135,8 @@ struct AgentChatView: View {
                         }
                     }
                 } else {
-                    // Fallback: vaste familieleden (voor het geval de adapter
-                    // de eerste keer nog niet geladen heeft)
                     namen = ["kairos", "riri", "vigil", "libra", "memoria", "codex", "genius"]
                 }
-
-                // Stap 2: live-status voor de groene/grijze stip (optioneel)
                 var statusMap: [String: String] = [:]
                 if let stat = statusResult,
                    let lijst = stat.data["agents"] as? [[String: Any]] {
@@ -129,11 +146,9 @@ struct AgentChatView: View {
                         }
                     }
                 }
-
                 agentLijst = namen.sorted().map { naam in
                     (naam: naam, live: statusMap[naam] == "active")
                 }
-
                 if agentLijst.isEmpty {
                     store.fout = "Geen agenten gevonden in de familie."
                 } else if gekozenAgent.isEmpty, let eerste = agentLijst.first {
@@ -142,7 +157,17 @@ struct AgentChatView: View {
                                     repoPad: repoPad, interpreter: interpreter)
                 }
                 agentenGeladen = true
+                startAutoVervers()
             }
+        }
+    }
+
+    private func startAutoVervers() {
+        autoVerversTimer?.invalidate()
+        autoVerversTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
+            guard !gekozenAgent.isEmpty else { return }
+            store.laadDraad(agent: gekozenAgent, runner: runner,
+                            repoPad: repoPad, interpreter: interpreter, stil: true)
         }
     }
 
@@ -157,6 +182,11 @@ struct AgentChatView: View {
                 Text("de familie.").font(Thema.display(30, cursief: true))
                     .foregroundStyle(Thema.kleur(.zacht))
                 Spacer()
+                // Reasoning toggle
+                PillKnop(titel: toonRedenatie ? "Redenatie aan" : "Redenatie uit",
+                         gevuld: toonRedenatie, compact: true) {
+                    toonRedenatie.toggle()
+                }
                 PillKnop(titel: "Ververs") {
                     store.laadDraad(agent: gekozenAgent, runner: runner,
                                     repoPad: repoPad, interpreter: interpreter)
@@ -171,20 +201,20 @@ struct AgentChatView: View {
     // MARK: Agentlijst (links)
 
     private var agentLijstView: some View {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    if !agentenGeladen {
-                        Text("Familie laden…")
-                            .font(Thema.tekst(11))
-                            .foregroundStyle(Thema.kleur(.gedempt))
-                            .padding(16)
-                    } else if agentLijst.isEmpty {
-                        Text("Geen agenten bereikbaar.")
-                            .font(Thema.tekst(11))
-                            .foregroundStyle(Thema.kleur(.gedempt))
-                            .padding(16)
-                    }
-                    ForEach(agentLijst, id: \.naam) { agent in
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                if !agentenGeladen {
+                    Text("Familie laden…")
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                        .padding(16)
+                } else if agentLijst.isEmpty {
+                    Text("Geen agenten bereikbaar.")
+                        .font(Thema.tekst(11))
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                        .padding(16)
+                }
+                ForEach(agentLijst, id: \.naam) { agent in
                     Button {
                         gekozenAgent = agent.naam
                         store.laadDraad(agent: agent.naam, runner: runner,
@@ -216,42 +246,111 @@ struct AgentChatView: View {
 
     private var draadPaneel: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
-                    if let fout = store.fout {
-                        Text(fout).font(Thema.tekst(11)).foregroundStyle(.red)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 14) {
+                        if let fout = store.fout {
+                            Text(fout).font(Thema.tekst(11)).foregroundStyle(.red)
+                        }
+                        if store.geladen && store.draad.isEmpty {
+                            Text("Nog geen gesprek met \(gekozenAgent.capitalized). Begin hieronder — hij antwoordt binnen enkele minuten.")
+                                .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
+                        }
+                        ForEach(store.draad) { bericht in
+                            chatBlok(bericht)
+                                .id(bericht.id)
+                        }
                     }
-                    if store.geladen && store.draad.isEmpty {
-                        Text("Nog geen gesprek met \(gekozenAgent.capitalized). Begin hieronder — hij antwoordt binnen enkele minuten.")
-                            .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.gedempt))
-                    }
-                    ForEach(store.draad) { bericht in
-                        chatBlok(bericht)
-                    }
+                    .padding(24)
                 }
-                .padding(24)
             }
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
             invoerRij
         }
     }
 
+    /// Stript Hermes CLI-headers, resume-commando's en sessie-info uit het
+    /// antwoord. Wat overblijft is het pure bericht van de agent.
+    private func schoonAntwoord(_ antwoord: String) -> String {
+        var uit = antwoord
+        // Verwijder Hermes CLI-header (⚕ Hermes lijn + afgeronde boxen)
+        if let range = uit.range(of: "─────────────────────────") {
+            uit = String(uit[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        // Strip "Resume this session with:" blok
+        if let resumeRange = uit.range(of: "Resume this session with:") {
+            uit = String(uit[..<resumeRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        // Strip eventuele "hermes --resume" regel
+        let regels = uit.components(separatedBy: "\n")
+            .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("hermes -") }
+        uit = regels.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        return uit.isEmpty ? antwoord : uit
+    }
+
+    /// Splitst het antwoord in "redenatie" (alles vóór het laatste ─ blok
+    /// en het pure antwoord erna). Als er geen duidelijke splitsing is,
+    /// is alles antwoord.
+    private func splitAntwoord(_ antwoord: String) -> (redenatie: String?, antwoord: String) {
+        // Hermes CLI-output: de reasoning zit tussen ╭─ en ──────────
+        // Het pure antwoord komt na de laatste ────────── scheiding
+        let delen = antwoord.components(separatedBy: "─────────────────────────")
+        if delen.count >= 2 {
+            let redenatie = delen.dropLast().joined(separator: "───").trimmingCharacters(in: .whitespacesAndNewlines)
+            let puur = delen.last?.trimmingCharacters(in: .whitespacesAndNewlines) ?? antwoord
+            let red = redenatie
+                .replacingOccurrences(of: "Resume this session with:", with: "")
+                .components(separatedBy: "\n")
+                .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("hermes -") }
+                .joined(separator: "\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return (red.isEmpty ? nil : red, puur.isEmpty ? antwoord : puur)
+        }
+        return (nil, antwoord)
+    }
+
     private func chatBlok(_ b: AgentChatBericht) -> some View {
         VStack(alignment: .leading, spacing: 6) {
+            // Gebruikersbericht
             Text(b.bericht)
                 .font(Thema.tekst(12))
                 .padding(10)
                 .frame(maxWidth: 420, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Thema.kleur(.papierZacht)))
+
             if let antwoord = b.antwoord {
-                Text(antwoord)
-                    .font(Thema.tekst(12))
-                    .foregroundStyle(Thema.kleur(.inkt))
-                    .padding(10)
-                    .frame(maxWidth: 420, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 8)
-                        .stroke(Thema.kleur(.lijn)))
-                    .textSelection(.enabled)
+                let (redenatie, puurAntwoord) = splitAntwoord(antwoord)
+
+                // Redenatie (in- en uitklapbaar)
+                if let red = redenatie, toonRedenatie {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Redenatie").font(Thema.tekst(9, gewicht: .semibold))
+                            .tracking(1.5).foregroundStyle(Thema.kleur(.gedempt))
+                        Text(red)
+                            .font(Thema.tekst(10))
+                            .foregroundStyle(Thema.kleur(.zacht))
+                            .padding(8)
+                            .frame(maxWidth: 420, alignment: .leading)
+                            .background(RoundedRectangle(cornerRadius: 6)
+                                .stroke(Thema.kleur(.lijn), style: StrokeStyle(dash: [3, 3])))
+                    }
+                }
+
+                // Het pure antwoord van de agent
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(gekozenAgent.capitalized)
+                        .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
+                        .foregroundStyle(Thema.kleur(.gedempt))
+                    Text(puurAntwoord)
+                        .font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.inkt))
+                        .textSelection(.enabled)
+                }
+                .padding(10)
+                .frame(maxWidth: 420, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 8)
+                    .stroke(Thema.kleur(.lijn)))
+
             } else {
                 HStack(spacing: 6) {
                     Text("wacht op antwoord")
