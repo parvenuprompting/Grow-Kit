@@ -68,6 +68,10 @@ CATEGORIEEN: dict[str, dict] = {
         "naam": "Account",
         "velden": [("Accountnaam", False), ("Wachtwoord", True)],
     },
+    "notitie": {
+        "naam": "Notities",
+        "velden": [("Onderwerp", False), ("Notitie", True)],
+    },
 }
 
 # ---------------------------------------------------------------------------

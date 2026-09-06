@@ -21,12 +21,12 @@ from kern import growkit_kloon as kloon
 
 
 class TestCategorieen(unittest.TestCase):
-    """De vijf categorieën en hun veldtemplates uit VaultCategory.swift."""
+    """De zes categorieën en hun veldtemplates uit VaultCategory.swift."""
 
-    def test_vijf_categorieen(self):
+    def test_zes_categorieen(self):
         self.assertEqual(
             set(kloon.CATEGORIEEN),
-            {"wachtwoord", "apikey", "bank", "crypto", "account"},
+            {"wachtwoord", "apikey", "bank", "crypto", "account", "notitie"},
         )
 
     def test_veldtemplates_kloppen_met_origineel(self):

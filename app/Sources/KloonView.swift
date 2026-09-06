@@ -85,6 +85,7 @@ struct KloonView: View {
         ("bank", "Bank / IBAN", [("IBAN", true), ("Naam rekeninghouder", false)]),
         ("crypto", "Crypto", [("Wallet", false), ("Private key / seed", true)]),
         ("account", "Account", [("Accountnaam", false), ("Wachtwoord", true)]),
+        ("notitie", "Notities", [("Onderwerp", false), ("Notitie", true)]),
     ]
 
     var body: some View {

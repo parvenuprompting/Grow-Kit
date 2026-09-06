@@ -14,7 +14,7 @@ class TestKloonAdapter(unittest.TestCase):
     def test_categorieen(self):
         uit = adapter.COMMANDOS["klooncategorieen"]({})
         self.assertEqual(set(uit["data"]["categorieen"]),
-                         {"wachtwoord", "apikey", "bank", "crypto", "account"})
+                         {"wachtwoord", "apikey", "bank", "crypto", "account", "notitie"})
 
     def test_lijst(self):
         with mock.patch.object(kloon, "lijst", return_value=[{"id": "a", "titel": "X"}]):
