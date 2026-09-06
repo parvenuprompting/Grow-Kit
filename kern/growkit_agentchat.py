@@ -80,16 +80,22 @@ def _lees_alle(ssh, pad: str, timeout: int) -> dict[str, dict]:
 
 def draad(agent: str, *, uitvoerder=at._standaard_uitvoerder,
           timeout: int = 25) -> dict:
-    """De gespreksdraad: berichten (bron=agentchat) met hun antwoorden."""
+    """De gespreksdraad: berichten (bron=agentchat) met hun antwoorden.
+
+    Leest uit ALLE mappen (wachtrij, bezig, afgerond) zodat de poller
+    berichten veilig kan verplaatsen zonder de draad te breken.
+    """
     agent = agent.strip().lower()
     if agent not in at._AGENTEN:
         return {"ok": False, "fout": f"Onbekende agent '{agent}'."}
     try:
-        berichten = _lees_alle(ssh=uitvoerder, pad=f"{at.WACHTRIJ_ROOT}/{agent}/wachtrij",
-                               timeout=timeout)
-        berichten.update(_lees_alle(ssh=uitvoerder, pad=f"{at.WACHTRIJ_ROOT}/{agent}/bezig",
-                                    timeout=timeout))
-        antwoorden = _lees_alle(ssh=uitvoerder, pad=f"{at.WACHTRIJ_ROOT}/{agent}/antwoorden",
+        berichten: dict[str, dict] = {}
+        for sub in ("wachtrij", "bezig", "afgerond"):
+            berichten.update(_lees_alle(
+                ssh=uitvoerder, pad=f"{at.WACHTRIJ_ROOT}/{agent}/{sub}",
+                timeout=timeout))
+        antwoorden = _lees_alle(ssh=uitvoerder,
+                                pad=f"{at.WACHTRIJ_ROOT}/{agent}/antwoorden",
                                 timeout=timeout)
     except ConnectionError:
         return {"ok": False, "fout": "VPS onbereikbaar — draad onbekend."}
