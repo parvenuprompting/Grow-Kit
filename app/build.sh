@@ -8,6 +8,18 @@ ACTUEEL="$(xcodegen --version | awk '{print $NF}')"
 [ "$ACTUEEL" = "$XCODEGEN_PINNED" ] || { echo "FAIL: xcodegen $ACTUEEL, verwacht $XCODEGEN_PINNED"; exit 1; }
 
 xcodegen generate
+
+# Compatibiliteit: xcodegen schrijft project-format 77 (Xcode 16+). Op een
+# machine met Xcode 15 (bijv. de macos-14 GitHub-runner) verlagen we het
+# formaat naar 56 zodat xcodebuild het leest. Op Xcode 16+ is 77 prima.
+if ! xcodebuild -version | grep -qE "Xcode (1[6-9]|[2-9][0-9]\.)"; then
+  PBX="GrowKit.xcodeproj/project.pbxproj"
+  if [ -f "$PBX" ] && grep -q "objectVersion = 77" "$PBX"; then
+    sed -i.bak 's/objectVersion = 77/objectVersion = 56/' "$PBX" && rm -f "$PBX.bak"
+    echo "project-formaat verlaagd naar 56 voor deze Xcode"
+  fi
+fi
+
 mkdir -p .build
 xcodebuild -project GrowKit.xcodeproj -scheme GrowKit \
   -configuration Debug -destination 'platform=macOS' \
