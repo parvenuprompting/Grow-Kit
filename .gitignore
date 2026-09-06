@@ -1,18 +1,17 @@
-# Groeilaag is per-installatie, niet per-repo
-groei/logboek.json
-groei/takenlijst.md
-groei/slijper-logboek.json
-# Reviewconfig is per-machine (mag leveranciers-IDs bevatten, geen secrets)
-reviewconfig.json
-__pycache__/
-*.pyc
-
-# macOS
-.DS_Store
 
 # App-buildartefacten (gegenereerd)
-app/GrowKit.xcodeproj/
-app/.build/
-
+# Groeilaag is per-installatie, niet per-repo
 # Lokaal configuratiebestand (kan secrets bevatten)
+# Reviewconfig is per-machine (mag leveranciers-IDs bevatten, geen secrets)
+# macOS
+*.pyc
+.DS_Store
 .env
+.hermes/
+__pycache__/
+app/.build/
+app/GrowKit.xcodeproj/
+groei/logboek.json
+groei/slijper-logboek.json
+groei/takenlijst.md
+reviewconfig.json

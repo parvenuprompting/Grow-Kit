@@ -244,24 +244,31 @@ struct GraafView: View {
     /// Tab-balk: "Alles" + één tab per sectie (hub). Herpositionsseert de
     /// knopen zodra de tab wisselt, en zoomt uit bij grote tabbladen.
     private var tabBalk: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(beschikbareTabs, id: \.self) { naam in
-                    let gekozen = tab == naam
-                    Button(action: { wisselTab(naam) }) {
-                        Text(naam == "alles" ? "Alles" : naam)
-                            .font(Thema.tekst(10, gewicht: gekozen ? .semibold : .regular))
-                            .padding(.horizontal, 10).padding(.vertical, 4)
-                            .background(Capsule().fill(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.papierZacht)))
-                            .foregroundStyle(gekozen ? Thema.kleur(.papier) : Thema.kleur(.gedempt))
-                            .overlay(Capsule().stroke(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.lijn)))
+        VStack(spacing: 2) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(beschikbareTabs, id: \.self) { naam in
+                        let gekozen = tab == naam
+                        Button(action: { wisselTab(naam) }) {
+                            Text(naam == "alles" ? "Alles" : naam)
+                                .font(Thema.tekst(10, gewicht: gekozen ? .semibold : .regular))
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(Capsule().fill(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.papierZacht)))
+                                .foregroundStyle(gekozen ? Thema.kleur(.papier) : Thema.kleur(.gedempt))
+                                .overlay(Capsule().stroke(gekozen ? Thema.kleur(.inkt) : Thema.kleur(.lijn)))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, 12)
             }
-            .padding(.horizontal, 12)
+            .frame(height: 30)
+            if tab == "alles" {
+                Text("Tik op een sectie om haar documenten te zien")
+                    .font(Thema.tekst(9)).foregroundStyle(Thema.kleur(.gedempt))
+                    .padding(.horizontal, 14)
+            }
         }
-        .frame(height: 30)
     }
 
     private func wisselTab(_ naam: String) {
@@ -391,12 +398,24 @@ struct GraafView: View {
                 .contentShape(Rectangle())
                 .onHover { hoverKnoop = $0 ? knoop.id : nil }
         case "hub":
-            Text(knoop.label)
-                .font(Thema.display(15, cursief: true))
-                .foregroundStyle(Thema.kleur(isHover ? .inkt : .zacht))
-                .padding(6)
-                .contentShape(Rectangle())
-                .onHover { hoverKnoop = $0 ? knoop.id : nil }
+            // Klik op een sectie in de "Alles"-weergave springt direct naar
+            // die sectie — het filter activeert zichzelf (fix 6 sept).
+            Button {
+                if tab == "alles" {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        tab = knoop.label
+                    }
+                }
+            } label: {
+                Text(knoop.label)
+                    .font(Thema.display(15, cursief: true))
+                    .foregroundStyle(Thema.kleur(isHover ? .inkt : .zacht))
+                    .padding(6)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onHover { hoverKnoop = $0 ? knoop.id : nil }
+            .help(tab == "alles" ? "Open sectie \(knoop.label)" : knoop.label)
         default:
             Button {
                 store.openKnoop(knoop, runner: runner, repoPad: repoPad, interpreter: interpreter)

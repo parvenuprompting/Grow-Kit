@@ -19,6 +19,9 @@ struct OverView: View {
                     Text("VERSIE 1.4.0 · BOUW 11 · EDITORIAL MONOCHROME")
                         .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.6)
                         .foregroundStyle(Thema.kleur(.gedempt))
+                    Text("GROW — Governed Reproducible Operational Workflow")
+                        .font(Thema.tekst(8)).tracking(1.2)
+                        .foregroundStyle(Thema.kleur(.zacht))
                 }
                 Spacer()
             }
