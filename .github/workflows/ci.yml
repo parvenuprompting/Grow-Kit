@@ -111,7 +111,7 @@ jobs:
       - name: Build GrowKit.app
         run: |
           cd app
-          bash build.sh
+          GROWKIT_CI=1 bash build.sh
 
       - name: App-bewijs
         run: |

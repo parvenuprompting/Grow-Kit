@@ -21,9 +21,16 @@ if ! xcodebuild -version | grep -qE "Xcode (1[6-9]|[2-9][0-9]\.)"; then
 fi
 
 mkdir -p .build
+# CI heeft geen "Mac Development"-certificaat: met GROWKIT_CI=1 bouwen we
+# zonder ondertekening (compileerbewijs), lokaal blijft ondertekening aan.
+SIGN_FLAG="CODE_SIGNING_ALLOWED=YES"
+if [ "${GROWKIT_CI:-0}" = "1" ]; then
+  SIGN_FLAG="CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO"
+  echo "CI-modus: ondertekening uit (compileerbewijs)"
+fi
 xcodebuild -project GrowKit.xcodeproj -scheme GrowKit \
   -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath .build build CODE_SIGNING_ALLOWED=YES > .build/log.txt 2>&1 \
+  -derivedDataPath .build build $SIGN_FLAG > .build/log.txt 2>&1 \
   || { tail -25 .build/log.txt; exit 1; }
 
 APP=".build/Build/Products/Debug/GrowKit.app"
