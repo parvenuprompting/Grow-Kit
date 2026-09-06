@@ -19,6 +19,7 @@ struct ContentView: View {
         case kloon = 92
         case gids = 93
         case automatiek = 94
+        case agenda = 95
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -39,14 +40,15 @@ struct ContentView: View {
             case .prompts: return "09"
             case .vangnet: return "10"
             case .audit: return "11"
-            case .securevault: return "12"
-            case .amnesia: return "13"
-            case .kloon: return "14"
-            case .hervatten: return "15"
-            case .taak: return "16"
-            case .rondleiding: return "17"
-            case .uitleg: return "18"
-            case .gids: return "19"
+            case .agenda: return "12"
+            case .securevault: return "13"
+            case .amnesia: return "14"
+            case .kloon: return "15"
+            case .hervatten: return "16"
+            case .taak: return "17"
+            case .rondleiding: return "18"
+            case .uitleg: return "19"
+            case .gids: return "20"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -67,6 +69,7 @@ struct ContentView: View {
             case .automatiek: return "Automatiek"
             case .vangnet: return "Vangnet"
             case .audit: return "Audit"
+            case .agenda: return "Agenda"
             case .hervatten: return "Hervatten"
             case .securevault: return "Secure Vault"
             case .amnesia: return "Amnesia Protocol"
@@ -95,6 +98,7 @@ struct ContentView: View {
             case .automatiek: return "Eén zin in, automation-plan uit — KairOS stelt voor"
             case .vangnet: return "Opvanglaag: wat is er vanzelf opgevangen"
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
+            case .agenda: return "Cron, wachtende goedkeuringen en taken — alles vastligt hier"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .securevault: return "Echte macOS-kluizen — AES-256 via hdiutil"
             case .amnesia: return "Gevoelige tekst veilig maken, lokaal en met jouw goedkeuring"
@@ -190,7 +194,7 @@ struct ContentView: View {
 
                     // WERK — Agent Chat eerst (hoofdfunctie), daarna de dagelijkse modi
                     zijbalkSectie("WERK")
-                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .automatiek, .graaf, .prompts, .vangnet, .audit]) { modus in
+                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .automatiek, .graaf, .prompts, .vangnet, .audit, .agenda]) { modus in
                         modusRij(modus)
                     }
 
@@ -380,6 +384,8 @@ struct ContentView: View {
                     VangnetView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .audit:
                     AuditView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .agenda:
+                    AgendaView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .home:
                     HomeView(runner: runner, koppelingen: koppelingen,
                              repoPad: $repoPad, interpreter: $interpreter) { modus in

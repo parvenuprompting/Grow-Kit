@@ -26,6 +26,7 @@ from kern import growkit_vault  # noqa: E402
 from kern import growkit_amnesia  # noqa: E402
 from kern import growkit_gids  # noqa: E402
 from kern import growkit_automatiek  # noqa: E402
+from kern import growkit_agenda  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -1349,6 +1350,14 @@ def cmd_automatiekvoorstel(invoer: dict) -> dict:
 
 
 
+def cmd_agenda(invoer: dict) -> dict:
+    """Agenda: alles wat vastligt — cron (Mac+VPS), ratificaties,
+    goedkeuringen, uitvoerbare taken — als genormaliseerde lijst."""
+    items = growkit_agenda.verzamel()
+    return {"ok": True, "data": {"items": items,
+                                 "teller": len(items)}}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1401,6 +1410,7 @@ COMMANDOS = {
     "automatiekstatus": cmd_automatiekstatus,
     "automatiekexport": cmd_automatiekexport,
     "automatiekvoorstel": cmd_automatiekvoorstel,
+    "agenda": cmd_agenda,
     "klooncategorieen": cmd_klooncategorieen,
     "kloonlijst": cmd_kloonlijst,
     "kloonlees": cmd_kloonlees,
