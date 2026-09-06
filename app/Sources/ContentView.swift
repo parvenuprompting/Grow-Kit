@@ -21,6 +21,7 @@ struct ContentView: View {
         case automatiek = 94
         case agenda = 95
         case telegram = 96
+        case cyberseed = 97
         // Fase A-mocks: de toekomstige functies, al zichtbaar (grijs, niet aanklikbaar)
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
@@ -47,10 +48,11 @@ struct ContentView: View {
             case .kloon: return "15"
             case .hervatten: return "16"
             case .taak: return "17"
-            case .rondleiding: return "19"
-            case .uitleg: return "20"
-            case .gids: return "21"
+            case .rondleiding: return "20"
+            case .uitleg: return "21"
+            case .gids: return "22"
             case .telegram: return "18"
+            case .cyberseed: return "19"
             case .skills: return "15"
             case .browser: return "16"
             case .ide: return "17"
@@ -73,6 +75,7 @@ struct ContentView: View {
             case .audit: return "Audit"
             case .agenda: return "Agenda"
             case .telegram: return "Telegram Connect"
+            case .cyberseed: return "CyberSeed"
             case .hervatten: return "Hervatten"
             case .securevault: return "Secure Vault"
             case .amnesia: return "Amnesia Protocol"
@@ -103,6 +106,7 @@ struct ContentView: View {
             case .audit: return "Wat hebben agenten gedaan, in simpele taal"
             case .agenda: return "Cron, wachtende goedkeuringen en taken — alles vastligt hier"
             case .telegram: return "Koppel de hele familie aan jouw eigen Telegram, stap voor stap"
+            case .cyberseed: return "Lokaal model met een eigen, zelfbijgewerkte SOUL — niets verlaat het huis"
             case .hervatten: return "Restdraai vanuit het logboek"
             case .securevault: return "Echte macOS-kluizen — AES-256 via hdiutil"
             case .amnesia: return "Gevoelige tekst veilig maken, lokaal en met jouw goedkeuring"
@@ -214,7 +218,7 @@ struct ContentView: View {
 
                     // LEREN — rondleiding, uitleg en de AI Gids
                     zijbalkSectie("LEREN")
-                    ForEach([Modi.telegram, .rondleiding, .uitleg, .gids]) { modus in
+                    ForEach([Modi.telegram, .cyberseed, .rondleiding, .uitleg, .gids]) { modus in
                         modusRij(modus)
                     }
                 }
@@ -414,6 +418,8 @@ struct ContentView: View {
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .telegram:
                     TelegramWizardView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                case .cyberseed:
+                    CyberSeedView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:
                     AgentChatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .skills:
