@@ -12,6 +12,7 @@ Contract:
 - Stateless: geen sessie-staat tussen aanroepen.
 """
 import json
+import re
 from datetime import datetime, timezone
 import sqlite3
 import sys
@@ -1463,7 +1464,45 @@ def cmd_cyberseedlog(invoer: dict) -> dict:
 
 def cmd_cyberseedinstellingen(invoer: dict) -> dict:
     """Alles voor het CyberSeed-tabblad in één aanroep: status, namen met
-    modellen/status/vergrendeling/grootte, RAM-klasse, chatlog-vulling."""
+    modellen/status/vergrendeling/grootte, RAM-klasse, chatlog-vulling.
+    Met zet_eigen_cloud=<naam> + model=<id>: bewaar eigen cloud-model
+    (leeg = wissen). Staat in ~/.growkit/cyberseed/eigen_cloud.json."""
+    zet_naam = str(invoer.get("zet_eigen_cloud", "")).strip()
+    if zet_naam:
+        model = str(invoer.get("model", "")).strip()
+        if model and not re.match(r"^[A-Za-z0-9._/-]+:[A-Za-z0-9._-]+$|^[A-Za-z0-9._/-]+$", model):
+            raise AdapterFout("model-id lijkt niet geldig (verwacht vendor/model)")
+        if model:
+            # Tier-validatie (NuNu-punt 2 verfijnd): een eigen model moet
+            # binnen ±1 tier van de naam passen. Te zwaar op Sprout = dure
+            # vragen worden nóg duurder; te licht op Amazone = teleurstellend.
+            tier_volgorde = ["sprout", "root", "leaf", "tree", "jungle",
+                             "amazone"]
+            if zet_naam in tier_volgorde and model in set(
+                    sum((v for v in growkit_ram.manifest()["cloud"].values()),
+                        [])):
+                naam_tier = tier_volgorde.index(zet_naam)
+                model_tier = next(
+                    (i for i, opties in enumerate(
+                        growkit_ram.manifest()["cloud"].values())
+                     for m in opties if m == model), None)
+                if model_tier is not None and abs(model_tier - naam_tier) > 1 \
+                        and not invoer.get("force"):
+                    raise AdapterFout(
+                        f"{model} past niet bij {zet_naam}: {abs(model_tier - naam_tier)} "
+                        f"tiers verschil (max 1). Bewuste keuze? Stuur "
+                        f"force=true mee — het wordt gelogd in de routinglog.")
+                waarschuwing = ("" if model_tier is None or
+                                abs(model_tier - naam_tier) <= 1
+                                else "met forse tier-afwijking (bewust)")
+            else:
+                waarschuwing = "eigen model-id (niet in bekende lijst)"
+        else:
+            waarschuwing = ""
+        growkit_cyberseed.zet_eigen_cloud(zet_naam, model or None)
+        melding = "bewaard" if model else "gewist"
+        return {"ok": True, "data": {"naam": zet_naam, "resultaat": melding,
+                                     "notitie": waarschuwing}}
     s = growkit_cyberseed.ollama_status()
     return {"ok": True, "data": {
         "ollama": s,
@@ -1474,6 +1513,7 @@ def cmd_cyberseedinstellingen(invoer: dict) -> dict:
         "namen": growkit_cyberseed.installatie_status(),
         "cloud_opties": {n: growkit_ram.cloud_opties(n)
                          for n in growkit_cyberseed._NAAM_PROMPTS},
+        "eigen_cloud": growkit_cyberseed.eigen_cloud(),
         "titels": {k: v["titel"] for k, v in
                    growkit_cyberseed.cyberseed_namen().items()},
         "chatlog_vulling": growkit_cyberseed.chatlog_vulling(),

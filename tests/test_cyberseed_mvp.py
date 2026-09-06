@@ -210,10 +210,13 @@ class TestCloudOpties(unittest.TestCase):
                           cloud_model="moonshotai/kimi-k3")
         self.assertEqual(k["model_id"], "moonshotai/kimi-k3")
 
-    def test_ongeldige_cloud_keuze_valt_op_default(self):
+    def test_expliciete_keuze_is_leidend_ook_onbekend(self):
+        # Een expliciet meegegeven cloud_model (UI-dropdown of eigen-invoer)
+        # is leidend — de tier-validatie gebeurt bij het vastzetten in de
+        # adapter (zie test_cyberseed_eigen), niet bij elke chatbeurt.
         k = cs.kies_model("x", naam="leaf", modus="cloud",
                           cloud_model="nep/model")
-        self.assertEqual(k["model_id"], ram.cloud_default("leaf"))
+        self.assertEqual(k["model_id"], "nep/model")
 
 
 if __name__ == "__main__":

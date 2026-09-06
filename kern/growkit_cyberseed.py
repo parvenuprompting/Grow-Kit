@@ -317,6 +317,36 @@ def _log_regel(rol: str, tekst: str) -> None:
 # Modus- en naam-keuze (lichte routering — review-punt 2, NuNu 6 sept)
 # ---------------------------------------------------------------------------
 
+def _eigen_cloud_pad() -> Path:
+    return _basis_pad() / "eigen_cloud.json"
+
+
+def eigen_cloud() -> dict:
+    """{naam: model-id} — gebruikerseigen cloud-toewijzing (overschrijft
+    de manifest-dropdown voor die naam)."""
+    pad = _eigen_cloud_pad()
+    if not pad.exists():
+        return {}
+    try:
+        return json.loads(pad.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def zet_eigen_cloud(naam: str, model: str | None) -> None:
+    """Bewaar of wis (model=None) de eigen cloud-keuze voor een naam."""
+    if naam not in _NAAM_PROMPTS:
+        raise ValueError(f"Onbekende naam: {naam}")
+    stand = eigen_cloud()
+    if model:
+        stand[naam] = model
+    else:
+        stand.pop(naam, None)
+    pad = _eigen_cloud_pad()
+    pad.parent.mkdir(parents=True, exist_ok=True)
+    pad.write_text(json.dumps(stand, ensure_ascii=False, indent=1))
+
+
 def kies_model(bericht: str, naam: str | None = None,
                modus: str | None = None,
                cloud_model: str | None = None) -> dict:
@@ -335,9 +365,11 @@ def kies_model(bericht: str, naam: str | None = None,
     if modus == "lokaal" and ram.is_vergrendeld(klasse, naam):
         naam, teruggevallen = "sprout", True
     if modus == "cloud":
-        opties = ram.cloud_opties(naam)
-        if cloud_model and cloud_model in opties:
-            model_id = cloud_model          # expliciete keuze binnen de opties
+        eigen = eigen_cloud().get(naam, "")
+        if cloud_model:
+            model_id = cloud_model              # expliciete keuze (UI-dropdown of eigen)
+        elif eigen:
+            model_id = eigen                    # gebruiker heeft eigen id vastgezet
         else:
             model_id = ram.cloud_default(naam)  # eerste optie = default
     else:

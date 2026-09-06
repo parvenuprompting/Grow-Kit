@@ -29,6 +29,7 @@ struct CyberSeedView: View {
     @State private var gekozenNaam = "sprout"
     @State private var gekozenModus = "lokaal"
     @State private var gekozenCloudModel: [String: String] = [:]
+    @State private var eigenInvoer: [String: String] = [:]
     @State private var tabData: [String: Any]? = nil
 
     var body: some View {
@@ -251,30 +252,82 @@ struct CyberSeedView: View {
                     }
                 }
             }
+
+            if !vergrendeld {
+                cloudOptieRij(sleutel)
+            }
         }
         .padding(.vertical, 4)
-
-        if gekozenNaam == sleutel && gekozenModus == "cloud" && !vergrendeld {
-            cloudOptieRij(sleutel)
-        }
     }
 
     private func cloudOptieRij(_ sleutel: String) -> some View {
-        let opties = cloudOptiesVoor(sleutel)
-        return HStack {
-            Text("model:").font(Thema.tekst(10))
-                .foregroundStyle(Thema.kleur(.gedempt))
-            Picker("", selection: bindingCloud(sleutel, opties)) {
-                ForEach(opties, id: \.self) { o in
-                    Text(o).tag(o)
+        var opties = cloudOptiesVoor(sleutel)
+        let eigen = eigenCloudModel(sleutel)
+        if !eigen.isEmpty && !opties.contains(eigen) { opties.append(eigen) }
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Text("cloud-model:").font(Thema.tekst(10))
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                Picker("", selection: bindingCloud(sleutel, opties)) {
+                    ForEach(opties, id: \.self) { o in
+                        Text(o).tag(o)
+                    }
+                }
+                .labelsHidden()
+                .font(Thema.tekst(10))
+                Spacer()
+            }
+            HStack {
+                TextField("eigen OpenRouter-model-id (bijv. vendor/model)",
+                          text: bindingEigen(sleutel))
+                    .textFieldStyle(.plain)
+                    .font(Thema.tekst(10)).monospaced()
+                    .padding(6)
+                    .background(RoundedRectangle(cornerRadius: 6)
+                        .stroke(Thema.kleur(.lijn)))
+                PillKnop(titel: "Bewaar", gevuld: false, compact: true) {
+                    bewaarEigen(sleutel)
                 }
             }
-            .labelsHidden()
-            .font(Thema.tekst(10))
-            Spacer()
+            Text("De eigen id overschrijft de dropdown voor deze naam. Systeemprompt hoort bij de naam, niet bij het model.")
+                .font(Thema.tekst(9)).foregroundStyle(Thema.kleur(.gedempt))
         }
         .padding(.leading, 17)
-        .padding(.bottom, 4)
+        .padding(.bottom, 6)
+    }
+
+    private func eigenCloudModel(_ sleutel: String) -> String {
+        if let d = tabData,
+           let eigen = d["eigen_cloud"] as? [String: String] {
+            return eigen[sleutel] ?? ""
+        }
+        return ""
+    }
+
+    private func bindingEigen(_ sleutel: String) -> Binding<String> {
+        Binding(
+            get: { eigenInvoer[sleutel] ?? eigenCloudModel(sleutel) },
+            set: { eigenInvoer[sleutel] = $0 })
+    }
+
+    private func bewaarEigen(_ sleutel: String) {
+        let waarde = (eigenInvoer[sleutel] ?? "").trimmingCharacters(in: .whitespaces)
+        Task {
+            let r = await roep("cyberseedinstellingen",
+                               ["zet_eigen_cloud": sleutel, "model": waarde])
+            await MainActor.run {
+                if let r, r.ok {
+                    meldingOk = true
+                    melding = waarde.isEmpty
+                        ? "Eigen cloud-model gewist voor \(sleutel)."
+                        : "Eigen cloud-model bewaard voor \(sleutel)."
+                    laadAlles()
+                } else {
+                    meldingOk = false
+                    melding = r?.fout ?? "Bewaren mislukt."
+                }
+            }
+        }
     }
 
     private func cloudOptiesVoor(_ sleutel: String) -> [String] {
