@@ -12,6 +12,7 @@ Contract:
 - Stateless: geen sessie-staat tussen aanroepen.
 """
 import json
+from datetime import datetime, timezone
 import sqlite3
 import sys
 from pathlib import Path
@@ -24,6 +25,7 @@ from kern import growkit_prompts  # noqa: E402
 from kern import growkit_vault  # noqa: E402
 from kern import growkit_amnesia  # noqa: E402
 from kern import growkit_gids  # noqa: E402
+from kern import growkit_automatiek  # noqa: E402
 from seed import laad_profielen  # noqa: E402
 
 
@@ -1254,6 +1256,99 @@ def cmd_agentchat(invoer: dict) -> dict:
                       "geschiedenis, wisgeschiedenis")
 
 
+def cmd_automatiektoevoegen(invoer: dict) -> dict:
+    """Automatiek: plan opslaan (titel + zes blokken)."""
+    titel = str(invoer.get("titel", "")).strip()
+    blokken = invoer.get("blokken")
+    if not titel or not isinstance(blokken, dict):
+        raise AdapterFout("ontbrekende velden: titel, blokken")
+    try:
+        plan = growkit_automatiek.voeg_toe(titel, blokken)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan}}
+
+
+def cmd_automatieklijst(invoer: dict) -> dict:
+    """Automatiek: overzicht van plannen (titel, status, tijden)."""
+    return {"ok": True, "data": {"plannen": growkit_automatiek.lijst()}}
+
+
+def cmd_automatieklees(invoer: dict) -> dict:
+    """Automatiek: één plan volledig."""
+    plan_id = str(invoer.get("id", "")).strip()
+    if not plan_id:
+        raise AdapterFout("ontbrekend veld: id")
+    try:
+        plan = growkit_automatiek.lees(plan_id)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan}}
+
+
+def cmd_automatiekstatus(invoer: dict) -> dict:
+    """Automatiek: statuswissel. klaar=True valideert alle zes blokken;
+    een onvolledig plan wordt netjes geweigerd."""
+    plan_id = str(invoer.get("id", "")).strip()
+    if not plan_id:
+        raise AdapterFout("ontbrekend veld: id")
+    try:
+        plan = growkit_automatiek.lees(plan_id)
+        if invoer.get("klaar"):
+            plan = growkit_automatiek.zet_klaar(plan)
+        plan = growkit_automatiek.bewaar(plan)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    return {"ok": True, "data": {"plan": plan}}
+
+
+def cmd_automatiekexport(invoer: dict) -> dict:
+    """Automatiek: exporteer een plan (markdown of json)."""
+    plan_id = str(invoer.get("id", "")).strip()
+    formaat = str(invoer.get("formaat", "markdown")).strip().lower()
+    if not plan_id:
+        raise AdapterFout("ontbrekend veld: id")
+    if formaat not in ("markdown", "json"):
+        raise AdapterFout("formaat: kies markdown of json")
+    try:
+        plan = growkit_automatiek.lees(plan_id)
+    except ValueError as e:
+        raise AdapterFout(str(e))
+    if formaat == "json":
+        inhoud = growkit_automatiek.export_json(plan)
+    else:
+        inhoud = growkit_automatiek.export_markdown(plan)
+    return {"ok": True, "data": {"formaat": formaat, "inhoud": inhoud}}
+
+
+def cmd_automatiekvoorstel(invoer: dict) -> dict:
+    """Automatiek: één zin van de mens → voorstelverzoek in de wachtrij
+    van KairOS (bron=agentchat-pijplijn, getagd als automatiek). De
+    poller voedt het aan KairOS; zijn JSON-antwoord wordt elders
+    gevalideerd. De adapter interpreteert niets — transport alleen."""
+    wens = str(invoer.get("wens", "")).strip()
+    van = str(invoer.get("van", "")).strip()
+    if not wens:
+        raise AdapterFout("ontbrekend veld: wens (wat wil je automatiseren?)")
+    from kern import growkit_agenttaak as at
+    taak_id = "auto-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")[:-3]
+    bericht = (
+        "Automatiek-verzoek: zet deze wens om in een GrowKit-Automatiek-plan "
+        "volgens het zes-blokken-model (doel_en_trigger, bronnen, stappen, "
+        "kwaliteit, uitvoering, randvoorwaarden). Wens: " + wens + " — "
+        'Antwoord ALLÉÉN met geldige JSON: {"titel": …, "blokken": …} '
+        "volgens schema-versie 1. Geen uitleg, alleen JSON."
+    )
+    r = at.verstuur("kairos", taak_id, bericht,
+                    contract={"blokken": []}, van=van,
+                    uitvoerder=at._standaard_uitvoerder, timeout=20)
+    if not r.get("ok"):
+        raise AdapterFout(r.get("fout", "wachtrij onbereikbaar"))
+    return {"ok": True, "data": {"taak_id": taak_id, "agent": "kairos",
+                                 "wens": wens, "van": van}}
+
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1300,6 +1395,12 @@ COMMANDOS = {
     "amnesiamarker": cmd_amnesiamarker,
     "amnesiasynth": cmd_amnesiasynth,
     "gids": cmd_gids,
+    "automatiektoevoegen": cmd_automatiektoevoegen,
+    "automatieklijst": cmd_automatieklijst,
+    "automatieklees": cmd_automatieklees,
+    "automatiekstatus": cmd_automatiekstatus,
+    "automatiekexport": cmd_automatiekexport,
+    "automatiekvoorstel": cmd_automatiekvoorstel,
     "klooncategorieen": cmd_klooncategorieen,
     "kloonlijst": cmd_kloonlijst,
     "kloonlees": cmd_kloonlees,
