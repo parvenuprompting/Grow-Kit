@@ -11,7 +11,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 ADAPTER = REPO / "adapter.py"
-PY = Path.home() / ".hermes" / "hermes-agent" / "venv" / "bin" / "python"
+# Voorkeur: de hermes-venv (Mac). Overal waar die niet bestaat (CI),
+# val terug op de actieve interpreter — dezelfde waarop de tests draaien.
+_PY_HERMES = Path.home() / ".hermes" / "hermes-agent" / "venv" / "bin" / "python"
+PY = _PY_HERMES if _PY_HERMES.exists() else Path(sys.executable)
 
 
 def roep(invoer: dict) -> dict:
