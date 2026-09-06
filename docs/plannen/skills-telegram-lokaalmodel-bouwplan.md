@@ -1,4 +1,4 @@
-# Bouwplan: Skills-beheer · Telegram Connect · Eigen LLM (KairOS-mini)
+# Bouwplan: Skills-beheer · Telegram Connect · Eigen LLM (CyberSeed)
 
 **Status:** plan (6 sept 2026) — uitvoering in fases, elke fase apart
 commitbaar en CI-bewaakt. Prioriteit in deze volgorde.
@@ -60,7 +60,7 @@ Telegram zelf; de wizard begeleidt, de mens doet de stappen.
 
 ---
 
-## Functie C — Eigen lokaal LLM "KairOS-mini" (scherm 22 · SYSTEEM)
+## Functie C — Eigen lokaal LLM "CyberSeed" (scherm 22 · SYSTEEM)
 
 **Wat:** een lokaal draaiend LLM op de Mac (via Ollama, dat er al staat)
 dat een **eigen, automatisch bijgewerkte SOUL.md** krijgt — een samenge-
@@ -78,15 +78,15 @@ gesprek, zonder context-window-problemen.
 **Fase C1 — fundament (TDD):**
 - `kern/growkit_lokaalmodel.py`:
   - `ollama_bereikbaar()` → GET `http://localhost:11434/api/tags`;
-  - `model_getrouw()` → herkent een "kairos-mini"-model in de tag-lijst
-    (downloadsuggestie als het ontbreekt: bijv. `qwen3:8b` of `gemma3:8b`);
+  - `model_getrouw()` → herkent een "cyberseed"-model in de tag-lijst
+    (downloadsuggestie als het ontbreekt: bijv. `qwen3:8b` of `gemma3:8b`, daarna lokaal getagd als `cyberseed:8b`);
   - `soul_snapshot()` → genereert de actuele SOUL-snapshot uit bestaande
     GrowKit-bronnen (géén nieuwe infra):
     profiel (`profiel lees`) + laatste N logboekregels (`audit`) +
     openstaande ratificaties (`ratificeer lijst`) + saldo (`saldo`) +
     actieve bomen (`bomen`) + samenvatting van de laatste chatdraad.
     Vast formaat, ≤ 4k tokens, gestructureerd (kopjes + bullets);
-  - `soul_snapshot_bewaar()` → `~/.growkit/kairos-mini/SOUL.md`;
+  - `soul_snapshot_bewaar()` → `~/.growkit/cyberseed/SOUL.md`;
   - `chat(bericht)` → POST naar Ollama `/api/chat` met
     `system: inhoud van SOUL.md` + `keep_alive: 24h`;
   - `verfris_soul_cron()` → idempotente functie voor de Mac-cron:
@@ -106,7 +106,7 @@ dat `verfris_soul_cron()` draait. Aan/uit-knop in het scherm.
 - Privacybord: "Dit model draait volledig op deze Mac. Niets verlaat het
   huis." (dat is de kern van je Drive-bron.)
 
-**Fase C4 — later (optioneel):** VPS-koppeling (KairOS-mini ook op de
+**Fase C4 — later (optioneel):** VPS-koppeling (CyberSeed ook op de
 server), fijn-afstemming op eigen chatgeschiedenis (LoRA) — bewust **niet**
 in dit plan; eerst het basis-loopje bewijzen.
 
@@ -122,6 +122,6 @@ in dit plan; eerst het basis-loopje bewijzen.
 | B2 | Levende status | agentstatus-integratie |
 | C1 | Lokaalmodel-kern + SOUL-snapshot | unittests + E2E tegen echte Ollama |
 | C2 | Mac-cron | launchd aan/uit bewezen |
-| C3 | KairOS-mini-scherm | build + visueel + eerste lokaal gesprek |
+| C3 | CyberSeed-schermirOS-mini-scherm | build + visueel + eerste lokaal gesprek |
 
 Elke fase: eigen commit, CI moet groen, push pas na akkoord.
