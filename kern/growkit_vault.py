@@ -26,6 +26,7 @@ Publieke functies:
 from __future__ import annotations
 
 import json
+import getpass
 import os
 import secrets
 import string
@@ -165,7 +166,7 @@ def keychain_sla_op(kluispad: str, wachtwoord: str) -> bool:
             [
                 "security", "add-generic-password",
                 "-s", f"GrowKit SecureVault: {kluispad}",
-                "-a", os.getlogin(),
+                "-a", getpass.getuser(),
                 "-w", wachtwoord,
                 "-U",  # update als het item al bestaat
             ],

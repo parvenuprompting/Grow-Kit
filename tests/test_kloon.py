@@ -57,6 +57,12 @@ class TestCategorieen(unittest.TestCase):
 
 
 class TestMasterSleutel(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain bestaat niet op CI')
+
     """Master-sleutel: in de Sleutelhangar, nooit in plaintext op schijf."""
 
     def test_nieuwe_sleutel_wordt_gemaakt_en_gemaakt_blijft(self):
@@ -82,6 +88,12 @@ class TestMasterSleutel(unittest.TestCase):
 
 
 class TestEncryptie(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain bestaat niet op CI')
+
     """AES-GCM: zelfde sleutel ontsleutelt, verkeerde sleutel faalt."""
 
     def test_rondje_encryptie(self):
@@ -109,6 +121,12 @@ class TestEncryptie(unittest.TestCase):
 
 
 class TestKluisBestand(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain bestaat niet op CI')
+
     """Geheimen landen nooit in plaintext op schijf."""
 
     def setUp(self):
@@ -168,6 +186,12 @@ class TestKluisBestand(unittest.TestCase):
 
 
 class TestLog(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain bestaat niet op CI')
+
     """Elke actie komt in het append-only log (huisregel van het huis)."""
 
     def test_log_wordt_geboekt(self):
@@ -183,3 +207,4 @@ class TestLog(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -11,6 +11,12 @@ from kern import growkit_kloon as kloon  # noqa: E402
 
 
 class TestKloonAdapter(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain/hdiutil bestaat niet op CI')
+
     def test_categorieen(self):
         uit = adapter.COMMANDOS["klooncategorieen"]({})
         self.assertEqual(set(uit["data"]["categorieen"]),

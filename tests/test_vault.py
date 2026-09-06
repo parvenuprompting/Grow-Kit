@@ -243,7 +243,13 @@ class TestKluisOpenEnDicht(unittest.TestCase):
 
 
 class TestKluisZoeker(unittest.TestCase):
-    """Systeem-brede kluiszoeker (Spotlight via mdfind), zoals v2.2.0."""
+    """Systeem-brede kluiszoeker (Spotlight via mdfin    @classmethod
+    def setUpClass(cls):
+        import sys as _sys, unittest as _u
+        if _sys.platform != 'darwin':
+            raise _u.SkipTest('macOS-only: Keychain/hdiutil bestaat niet op CI')
+
+d), zoals v2.2.0."""
 
     def test_zoek_geeft_paden_terug(self):
         with _fake_run({"stdout": "/a/kluis1.dmg\n/b/kluis2.sparsebundle\n"}):
