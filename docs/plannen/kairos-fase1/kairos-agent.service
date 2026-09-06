@@ -1,0 +1,59 @@
+# kairos-agent.service — GrowKit Agent als systeemdienst op KairOS OS
+#
+# Fase 1 van het KairOS OS bouwplan.
+# Installatie (op de Pi, eenmalig):
+#   sudo cp kairos-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now kairos-agent
+#
+# Bewijs dat het een systeemdienst is (verificatie-eis 1):
+#   systemctl is-active kairos-agent          -> "active"
+#   systemctl show -p MainPID kairos-agent    -> PID van het agent-proces
+#   systemctl cat kairos-agent                -> deze definitie
+
+[Unit]
+Description=KairOS OS — GrowKit Agent (systeemdienst, fase 1)
+Documentation=file:///opt/kairos/docs/plannen/kairos-fase1/bouwplan-fase1.md
+# De agent draait bewust ZONDER de VPS-poller: de Pi is souverein in fase 1.
+# De wachtrij naar de VPS is bewust NIET aanwezig; de netwerkmonitor-timer
+# (kairos-netwerkmonitor.timer) bewaakt dit.
+After=network-online.target ollama.service
+Wants=network-online.target
+Requires=ollama.service
+
+[Service]
+Type=notify
+User=kairos
+Group=kairos
+# Werkboom: de GrowKit-repo staat op de Pi in /opt/kairos (eigenaar: kairos).
+WorkingDirectory=/opt/kairos
+Environment=PYTHONUNBUFFERED=1
+Environment=OLLAMA_HOST=http://127.0.0.1:11434
+# Startcommando: de dienstmodus van de agent-loop. Deze modus (--dienst)
+# levert stap P5: een non-interactieve loop (geen formuliervraag) met
+# systemd watchdog-hartslag (sd_notify). Tot P5 klaar is, is deze regel
+# bewust niet startbaar — de dienst gaat pas aan met echte code erachter.
+ExecStart=/opt/kairos/.venv/bin/python /opt/kairos/loop.py --dienst
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+WatchdogSec=120
+
+# Hardening: geen root, geen nieuwe privileges, besturingssysteem dicht.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+# Schrijfruimte: alleen de werkboom (ProtectHome raakt /opt niet).
+ReadWritePaths=/opt/kairos
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

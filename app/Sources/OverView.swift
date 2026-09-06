@@ -32,6 +32,25 @@ struct OverView: View {
                 .font(Thema.tekst(12))
                 .fixedSize(horizontal: false, vertical: true)
 
+            HStack(spacing: 12) {
+                Link(destination: URL(string: "https://x.com/GrowKitHarnas")!) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bird")   // X heeft geen SF-symbool; vogel als knipoog
+                        Text("@GrowKitHarnas op X")
+                    }
+                    .font(Thema.tekst(11))
+                }
+                Link(destination: URL(string: "https://github.com/parvenuprompting/Grow-Kit")!) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left.forwardslash.chevron.right")
+                        Text("GitHub")
+                    }
+                    .font(Thema.tekst(11))
+                }
+                Spacer()
+            }
+            .foregroundStyle(Thema.kleur(.gedempt))
+
             VStack(alignment: .leading, spacing: 8) {
                 grensRij(getal: "2", tekst: "taken per agent — meer is een subagent")
                 grensRij(getal: "8", tekst: "agents gelijktijdig — 16 taken totaal")

@@ -1,0 +1,10 @@
+KairOS fase 1 — bewijs lokale modelrespons (gemma3:1b via Ollama, 127.0.0.1)
+Gedraaid op de Mac; op de Pi wordt dezelfde testset offline herhaald.
+
+--- Testvraag 1 (stijl: één korte Nederlandse zin) ---
+VRAAG: Zeg in één zin wat een vangnet doet.
+ANTWOORD: Het vangnet is een software die data analyse en -manipulation uitvoert om beveiligingsincidenten te detecteren en te heropzoeken.
+
+--- Testvraag 4 (met systeem-prompt: past bij de persoon) ---
+VRAAG: Wie ben je en wat doe je?
+ANTWOORD: Ik ben Vangnet, jouw specialist voor Tiëndo.

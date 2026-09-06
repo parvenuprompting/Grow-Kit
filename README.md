@@ -9,6 +9,7 @@
 [![Privacy](https://img.shields.io/badge/privacy-100%25_local-success?style=flat-square)]()
 [![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
 [![Encryption](https://img.shields.io/badge/secrets-AES--256_GCM-orange?style=flat-square)]()
+[![X](https://img.shields.io/badge/X-@GrowKitHarnas-black?style=flat-square)](https://x.com/GrowKitHarnas)
 
 **GROW** = **G**overned **R**eproducible **O**perational **W**orkflow — de wet waar elke stap onder draait.
 
@@ -147,7 +148,7 @@ Geïnspireerd door het "Zen of Reticulum"-principe: **een tool is nooit neutraal
 
 ## Over de maker
 
-Ik ben **Tiëndo**, vrachtwagenchauffeur. Ik bouw dit project in mijn eentje, in de avonden naast fulltime werk. Dit is een **build-in-public** project: je ziet het groeien, inclusief de missers. Vragen? Open een issue.
+Ik ben **Tiëndo**, vrachtwagenchauffeur. Ik bouw dit project in mijn eentje, in de avonden naast fulltime werk. Dit is een **build-in-public** project: je ziet het groeien, inclusief de missers. Volg de voortgang op [X (@GrowKitHarnas)](https://x.com/GrowKitHarnas). Vragen? Open een issue.
 
 ## Licentie
 
