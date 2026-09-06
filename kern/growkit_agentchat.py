@@ -45,8 +45,8 @@ def zuiver_antwoord(tekst: str) -> str:
             return puur
 
     # Geen box: alles vóór 'Resume this session with:' en na de init-regels
-    if "Resume this session with:" in tekst:
-        tekst = tekst.split("Resume this session with:")[0]
+    regels = [r for r in tekst.splitlines()
+              if not r.lstrip().startswith("Resume this session with:")]
     gestript = [r for r in regels
                 if r.strip()
                 and not r.lstrip().startswith("Query:")
@@ -71,9 +71,14 @@ def _scan_tekst(tekst: str) -> str | None:
     return None
 
 
-def stuur(agent: str, tekst: str, *, uitvoerder=at._standaard_uitvoerder,
+def stuur(agent: str, tekst: str, *, van: str = "",
+          uitvoerder=at._standaard_uitvoerder,
           timeout: int = 20) -> dict:
-    """Chatbericht → wachtrij van de agent (bron=agentchat)."""
+    """Chatbericht → wachtrij van de agent (bron=agentchat).
+
+    `van` = naam van de mens die praat; de agent weet dan wie hem
+    aanspreekt, wat ook de TITULATUUR-regel in de SOUL ondersteunt.
+    """
     if not tekst.strip():
         return {"ok": False, "fout": "Een leeg bericht kan niemand bereiken."}
     treffer = _scan_tekst(tekst)
@@ -84,6 +89,7 @@ def stuur(agent: str, tekst: str, *, uitvoerder=at._standaard_uitvoerder,
     taak_id = "chat-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")[:-3]
     return at.verstuur(agent, taak_id, tekst.strip(),
                        contract={"blokken": []},   # bron=agentchat, geen contract
+                       van=van.strip(),
                        uitvoerder=_stuur_uitvoerder(uitvoerder), timeout=timeout)
 
 
@@ -102,24 +108,39 @@ def _stuur_uitvoerder(uitvoerder):
 
 
 def _lees_alle(ssh, pad: str, timeout: int) -> dict[str, dict]:
-    """ls + cat: alles onder pad. SSH-code 255 = echte verbindingfout."""
+    """Alles onder pad in ÉÉN SSH-roundtrip: find + cat + scheidingsmarker.
+
+    Voorheen één SSH-call per bestand — bij 20 berichten 20 roundtrips
+    van elk ~0,5s. Nu: één commando, bestanden gescheiden door een
+    unieke marker-regel zodat JSON-multilines veilig blijven.
+    """
+    marker = "===GROWKIT_BESTAND==="
+    script = ('for f in ' + pad + '/*.json; do '
+              '[ -f "$f" ] || continue; '
+              'echo "' + marker + '"; echo "FILE:$f"; cat "$f"; done 2>/dev/null')
     code, uit = ssh(["ssh", "-o", "BatchMode=yes",
                      "-o", f"ConnectTimeout={max(timeout - 5, 5)}",
-                     at.HOST, f"ls {pad}/*.json 2>/dev/null"], None, timeout)
+                     at.HOST, script], None, timeout)
     if code == 255:
         raise ConnectionError("VPS onbereikbaar")
     if code != 0:
         return {}
+
     resultaat: dict[str, dict] = {}
-    for bestand in [l.strip() for l in uit.splitlines() if l.strip()]:
-        naam = bestand.split("/")[-1]
-        c, doc = ssh(["ssh", "-o", "BatchMode=yes", at.HOST, f"cat {bestand}"],
-                     None, timeout)
-        if c == 0:
-            try:
-                resultaat[naam] = json.loads(doc)
-            except json.JSONDecodeError:
-                resultaat[naam] = {"fout": "onleesbaar document"}
+    blokken = uit.split(marker)
+    for blok in blokken:
+        blok = blok.strip("\n")
+        if not blok:
+            continue
+        regels = blok.splitlines()
+        if not regels or not regels[0].startswith("FILE:"):
+            continue
+        naam = regels[0][5:].strip().split("/")[-1]
+        inhoud = "\n".join(regels[1:])
+        try:
+            resultaat[naam] = json.loads(inhoud)
+        except json.JSONDecodeError:
+            resultaat[naam] = {"fout": "onleesbaar document"}
     return resultaat
 
 
@@ -155,6 +176,7 @@ def draad(agent: str, *, uitvoerder=at._standaard_uitvoerder,
             "taak_id": taak_id,
             "bericht": doc.get("titel", ""),
             "tijd": doc.get("aangemeld_op", ""),
+            "van": doc.get("van", ""),
             "antwoord": (antwoord_doc or {}).get("antwoord"),
             "antwoord_tijd": (antwoord_doc or {}).get("afgerond_op"),
         })

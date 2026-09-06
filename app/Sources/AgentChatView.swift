@@ -1,14 +1,15 @@
-// AgentChatView (ronde 4) — het grote chatvenster: praat met de familie.
+// AgentChatView (ronde 5) — het grote chatvenster: praat met de familie.
 //
-// Fixes 6 sept:
-// - Auto-verversing: elke 15s wordt de draad stilletjes ververst
-// - Conversaties blijven staan: store is een singleton per agent
-// - Hermes-header weg: antwoorden worden geschoond van CLI-headers
-// - Reasoning-toggle: knop om de denkstappen van de agent te tonen/verbergen
-// - Antwoord-label toont agentnaam, niet "Hermes"
+// Ronde 5 (6 sept, UX):
+// - Bericht verschijnt DIRECT na versturen (optimistisch), geen flash/weg-dan-terug
+// - Typing-indicator: animatie van 3 stippen terwijl het antwoord onderweg is
+// - Antwoorden in markdown (kopjes, lijsten, code) i.p.v. lap tekst
+// - Auto-verversing 15s (stil); scroll naar beneden bij nieuw bericht
+// - Conversaties per agent bewaard (singleton stores)
+// - "van"-veld: de agent weet wie er praat (profiel-naam, werkt voor elke gebruiker)
+// - Reasoning-toggle; antwoordlabel = agentnaam; Hermes-CLI-meuk weg
 
 import SwiftUI
-import AppKit
 
 // MARK: - Singleton stores (conversaties overleven tab-wissels)
 
@@ -19,6 +20,7 @@ final class AgentChatStore: ObservableObject {
     @Published var geladen = false
     @Published var fout: String?
     @Published var bezigVersturen = false
+    @Published var wachtOpAntwoord = false
 
     static func voor(agent: String) -> AgentChatStore {
         let sleutel = agent.lowercased()
@@ -26,6 +28,16 @@ final class AgentChatStore: ObservableObject {
         let nieuw = AgentChatStore()
         _stores[sleutel] = nieuw
         return nieuw
+    }
+
+    /// Voeg het eigen bericht direct toe (optimistisch) — het komt pas
+    /// van de VPS terug bij de volgende verversing, maar de gebruiker
+    /// ziet het nú.
+    func voegLokaalToe(tekst: String) {
+        let tijd = ISO8601DateFormatter().string(from: Date())
+        draad.append(AgentChatBericht(taakId: "lokaal-" + tijd, bericht: tekst,
+                                      tijd: tijd, antwoord: nil))
+        wachtOpAntwoord = true
     }
 
     func laadDraad(agent: String, runner: Runner, repoPad: String, interpreter: String,
@@ -47,22 +59,28 @@ final class AgentChatStore: ObservableObject {
                         taakId: item["taak_id"] as? String ?? "",
                         bericht: item["bericht"] as? String ?? "",
                         tijd: item["tijd"] as? String ?? "",
-                        antwoord: item["antwoord"] as? String)
+                        antwoord: item["antwoord"] as? String ?? nil)
+                }
+                // Wacht-indicator uit als het laatste bericht een antwoord heeft
+                if let laatste = draad.last {
+                    wachtOpAntwoord = (laatste.antwoord == nil)
+                } else {
+                    wachtOpAntwoord = false
                 }
                 geladen = true
             }
         }
     }
 
-    func stuur(agent: String, tekst: String, runner: Runner, repoPad: String,
-               interpreter: String, daarna: @escaping () -> Void) {
+    func stuur(agent: String, tekst: String, van: String, runner: Runner,
+               repoPad: String, interpreter: String, daarna: @escaping () -> Void) {
         guard !tekst.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         bezigVersturen = true
         Task {
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
                                            commando: "agentchat",
                                            invoer: ["actie": "stuur", "agent": agent,
-                                                    "bericht": tekst])
+                                                    "bericht": tekst, "van": van])
             await MainActor.run {
                 bezigVersturen = false
                 if let r, r.ok {
@@ -70,6 +88,7 @@ final class AgentChatStore: ObservableObject {
                     daarna()
                 } else {
                     fout = r?.fout ?? "Versturen mislukt."
+                    wachtOpAntwoord = false
                 }
             }
         }
@@ -96,6 +115,7 @@ struct AgentChatView: View {
     @State private var agentenGeladen = false
     @State private var toonRedenatie = false
     @State private var autoVerversTimer: Timer?
+    @State private var gebruikersNaam: String = ""
 
     private var store: AgentChatStore {
         AgentChatStore.voor(agent: gekozenAgent)
@@ -112,8 +132,25 @@ struct AgentChatView: View {
             }
         }
         .background(Thema.kleur(.papier))
-        .onAppear { laadAgenten() }
+        .onAppear {
+            laadAgenten()
+            laadGebruiker()
+        }
         .onDisappear { autoVerversTimer?.invalidate(); autoVerversTimer = nil }
+    }
+
+    private func laadGebruiker() {
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "profiel", invoer: ["actie": "lees"])
+            await MainActor.run {
+                if let r, r.ok,
+                   let profiel = r.data["profiel"] as? [String: Any],
+                   let naam = profiel["naam"] as? String, !naam.isEmpty {
+                    gebruikersNaam = naam
+                }
+            }
+        }
     }
 
     // MARK: - Agenten laden
@@ -182,7 +219,6 @@ struct AgentChatView: View {
                 Text("de familie.").font(Thema.display(30, cursief: true))
                     .foregroundStyle(Thema.kleur(.zacht))
                 Spacer()
-                // Reasoning toggle
                 PillKnop(titel: toonRedenatie ? "Redenatie aan" : "Redenatie uit",
                          gevuld: toonRedenatie, compact: true) {
                     toonRedenatie.toggle()
@@ -260,8 +296,18 @@ struct AgentChatView: View {
                             chatBlok(bericht)
                                 .id(bericht.id)
                         }
+                        if store.wachtOpAntwoord {
+                            typingIndicator
+                                .id("typing")
+                        }
                     }
                     .padding(24)
+                }
+                .onChange(of: store.draad.count) { _ in
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        proxy.scrollTo(store.wachtOpAntwoord ? "typing" : store.draad.last?.id,
+                                       anchor: .bottom)
+                    }
                 }
             }
             Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
@@ -269,37 +315,22 @@ struct AgentChatView: View {
         }
     }
 
-    /// Stript Hermes CLI-headers, resume-commando's en sessie-info uit het
-    /// antwoord. Wat overblijft is het pure bericht van de agent.
-    private func schoonAntwoord(_ antwoord: String) -> String {
-        var uit = antwoord
-        // Verwijder Hermes CLI-header (⚕ Hermes lijn + afgeronde boxen)
-        if let range = uit.range(of: "─────────────────────────") {
-            uit = String(uit[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Typing-indicator: drie pulserende stippen — de agent "typt".
+    private var typingIndicator: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<3, id: \.self) { i in
+                TypingStip(vertraging: Double(i) * 0.2)
+            }
         }
-        // Strip "Resume this session with:" blok
-        if let resumeRange = uit.range(of: "Resume this session with:") {
-            uit = String(uit[..<resumeRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        // Strip eventuele "hermes --resume" regel
-        let regels = uit.components(separatedBy: "\n")
-            .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("hermes -") }
-        uit = regels.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
-        return uit.isEmpty ? antwoord : uit
+        .padding(.horizontal, 12).padding(.vertical, 10)
     }
 
-    /// Splitst het antwoord in "redenatie" (alles vóór het laatste ─ blok
-    /// en het pure antwoord erna). Als er geen duidelijke splitsing is,
-    /// is alles antwoord.
     private func splitAntwoord(_ antwoord: String) -> (redenatie: String?, antwoord: String) {
-        // Hermes CLI-output: de reasoning zit tussen ╭─ en ──────────
-        // Het pure antwoord komt na de laatste ────────── scheiding
         let delen = antwoord.components(separatedBy: "─────────────────────────")
         if delen.count >= 2 {
             let redenatie = delen.dropLast().joined(separator: "───").trimmingCharacters(in: .whitespacesAndNewlines)
             let puur = delen.last?.trimmingCharacters(in: .whitespacesAndNewlines) ?? antwoord
             let red = redenatie
-                .replacingOccurrences(of: "Resume this session with:", with: "")
                 .components(separatedBy: "\n")
                 .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("hermes -") }
                 .joined(separator: "\n")
@@ -309,9 +340,17 @@ struct AgentChatView: View {
         return (nil, antwoord)
     }
 
+    @ViewBuilder
     private func chatBlok(_ b: AgentChatBericht) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             // Gebruikersbericht
+            HStack(alignment: .bottom, spacing: 8) {
+                Text(gebruikersNaam.isEmpty ? "Jij" : gebruikersNaam)
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                Text(formatteerTijd(b.tijd))
+                    .font(Thema.tekst(8)).foregroundStyle(Thema.kleur(.gedempt))
+            }
             Text(b.bericht)
                 .font(Thema.tekst(12))
                 .padding(10)
@@ -321,7 +360,6 @@ struct AgentChatView: View {
             if let antwoord = b.antwoord {
                 let (redenatie, puurAntwoord) = splitAntwoord(antwoord)
 
-                // Redenatie (in- en uitklapbaar)
                 if let red = redenatie, toonRedenatie {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Redenatie").font(Thema.tekst(9, gewicht: .semibold))
@@ -336,35 +374,40 @@ struct AgentChatView: View {
                     }
                 }
 
-                // Het pure antwoord van de agent
+                // Antwoord van de agent — met naam-label en markdown-opmaak
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(gekozenAgent.capitalized)
-                        .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
-                        .foregroundStyle(Thema.kleur(.gedempt))
-                    Text(puurAntwoord)
+                    HStack(alignment: .bottom, spacing: 8) {
+                        Text(gekozenAgent.capitalized)
+                            .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.5)
+                            .foregroundStyle(Thema.kleur(.gedempt))
+                        if let t = b.antwoordTijd {
+                            Text(formatteerTijd(t))
+                                .font(Thema.tekst(8)).foregroundStyle(Thema.kleur(.gedempt))
+                        }
+                    }
+                    // Simpele markdown: kopjes, bullets, code worden netjes getoond
+                    MarkdownTekst(tekst: puurAntwoord)
                         .font(Thema.tekst(12))
                         .foregroundStyle(Thema.kleur(.inkt))
                         .textSelection(.enabled)
                 }
                 .padding(10)
-                .frame(maxWidth: 420, alignment: .leading)
+                .frame(maxWidth: 480, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 8)
                     .stroke(Thema.kleur(.lijn)))
-
-            } else {
-                HStack(spacing: 6) {
-                    Text("wacht op antwoord")
-                        .font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
-                    Circle().fill(Thema.kleur(.lijn)).frame(width: 4, height: 4)
-                    Circle().fill(Thema.kleur(.lijn)).frame(width: 4, height: 4)
-                    Circle().fill(Thema.kleur(.lijn)).frame(width: 4, height: 4)
-                }
-                .padding(.horizontal, 10)
             }
-            Text(b.tijd).font(Thema.tekst(8)).tracking(0.5)
-                .foregroundStyle(Thema.kleur(.gedempt))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func formatteerTijd(_ iso: String) -> String {
+        // ISO → HH:MM
+        if let datum = ISO8601DateFormatter().date(from: iso) {
+            let f = DateFormatter()
+            f.dateFormat = "HH:mm"
+            return f.string(from: datum)
+        }
+        return iso
     }
 
     private var invoerRij: some View {
@@ -396,10 +439,74 @@ struct AgentChatView: View {
         }
         let tekst = nieuwBericht
         nieuwBericht = ""
-        store.stuur(agent: gekozenAgent, tekst: tekst, runner: runner,
-                    repoPad: repoPad, interpreter: interpreter) {
+        // Optimistisch: direct tonen
+        store.voegLokaalToe(tekst: tekst)
+        store.stuur(agent: gekozenAgent, tekst: tekst, van: gebruikersNaam,
+                    runner: runner, repoPad: repoPad, interpreter: interpreter) {
             store.laadDraad(agent: gekozenAgent, runner: runner,
                             repoPad: repoPad, interpreter: interpreter)
         }
     }
+}
+
+// MARK: - Typing-stip (geanimeerd)
+
+struct TypingStip: View {
+    let vertraging: Double
+    @State private var pulseren = false
+
+    var body: some View {
+        Circle()
+            .fill(Thema.kleur(.gedempt))
+            .frame(width: 5, height: 5)
+            .opacity(pulseren ? 1.0 : 0.3)
+            .animation(.easeInOut(duration: 0.6).repeatForever().delay(vertraging),
+                       value: pulseren)
+            .onAppear { pulseren = true }
+    }
+}
+
+// MARK: - Simpele markdown-rendering voor antwoorden
+
+struct MarkdownTekst: View {
+    let tekst: String
+
+    private var regels: [String] {
+        tekst.components(separatedBy: "\n")
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(Array(regels.enumerated()), id: \.offset) { _, regel in
+                if regel.hasPrefix("### ") {
+                    Text(String(regel.dropFirst(4)))
+                        .font(Thema.tekst(12, gewicht: .semibold))
+                } else if regel.hasPrefix("## ") {
+                    Text(String(regel.dropFirst(3)))
+                        .font(Thema.tekst(13, gewicht: .semibold))
+                } else if regel.hasPrefix("# ") {
+                    Text(String(regel.dropFirst(2)))
+                        .font(Thema.tekst(14, gewicht: .bold))
+                } else if regel.hasPrefix("- ") || regel.hasPrefix("• ") {
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("•").font(Thema.tekst(12))
+                        Text(String(regel.dropFirst(2)))
+                            .font(Thema.tekst(12))
+                    }
+                } else if regel.hasPrefix("```") {
+                    Text(regel)
+                        .font(.system(size: 11, design: .monospaced))
+                        .padding(6)
+                        .background(RoundedRectangle(cornerRadius: 4).fill(Thema.kleur(.papierZacht)))
+                } else if !regel.isEmpty {
+                    Text(regel).font(Thema.tekst(12))
+                }
+            }
+        }
+    }
+}
+
+// Extensie voor antwoordTijd op AgentChatBericht
+extension AgentChatBericht {
+    var antwoordTijd: String? { nil }
 }

@@ -32,7 +32,7 @@ def _standaard_uitvoerder(commando: list[str], stdin: str | None,
 
 
 def verstuur(agent: str, taak_id: str, titel: str, *,
-             contract: dict | None = None,
+             contract: dict | None = None, van: str = "",
              uitvoerder=_standaard_uitvoerder, timeout: int = 20) -> dict:
     agent = agent.strip().lower()
     taak_id = taak_id.strip()
@@ -50,6 +50,8 @@ def verstuur(agent: str, taak_id: str, titel: str, *,
         "bron": "growkit-ui",
         "aangemeld_op": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
+    if van:
+        document["van"] = van
     if contract:
         document["contract"] = contract
     doel = f"{WACHTRIJ_ROOT}/{agent}/wachtrij/{taak_id}.json"

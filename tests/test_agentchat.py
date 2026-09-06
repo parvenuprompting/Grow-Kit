@@ -34,6 +34,14 @@ class NepSSH:
                 return 3, ""
             self.geplaatst[m.group(0)] = stdin
             return 0, ""
+        if regel.startswith("for f in "):
+            # Nieuw protocol: één roundtrip, bestanden achter markers
+            pad = regel[len("for f in "):].split("/*.json")[0]
+            delen = []
+            for k, inhoud in self.fs.items():
+                if k.startswith(pad + "/") and k.endswith(".json"):
+                    delen.append("===GROWKIT_BESTAND===\nFILE:" + k + "\n" + inhoud)
+            return 0, "\n".join(delen)
         if regel.startswith("ls "):
             pad = regel[3:].split("/*")[0].split(" 2>/dev")[0]
             return 0, "\n".join(k for k in self.fs if k.startswith(pad + "/"))

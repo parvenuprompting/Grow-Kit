@@ -1239,7 +1239,8 @@ def cmd_agentchat(invoer: dict) -> dict:
     actie = str(invoer.get("actie", "draad")).strip()
     agent = str(invoer.get("agent", "")).strip()
     if actie == "stuur":
-        return ac.stuur(agent, str(invoer.get("bericht", "")))
+        return ac.stuur(agent, str(invoer.get("bericht", "")),
+                        van=str(invoer.get("van", "")))
     if actie == "draad":
         return ac.draad(agent)
     raise AdapterFout("onbekende agentchat-actie — kies: stuur, draad")
