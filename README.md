@@ -99,7 +99,7 @@ De motor die het zaadje laat groeien heet het **GrowKit Grow Protocol**. Het bes
 | `kern/` | 32 modules — het volledige fundament |
 | `profielen/` | Bomen: JSON-stappenplannen met gecodeerd bewijs |
 | `groei/` | Groeilaag-documentatie en slijper-logboek |
-| `testing/` | 532 unittesten + 20 end-to-end-scripts |
+| `testing/` | 538 unittesten + 20 end-to-end-scripts |
 
 ### De 32 kernbestanden in `kern/`
 
@@ -177,7 +177,6 @@ growkit/
 │   └── project.yml          ← XcodeGen-specificatie
 ├── docs/
 │   ├── HOE-HET-WERKT.md     ← de complete uitleg
-│   ├── screenshots/         ← app-screenshots
 │   ├── research/            ← harnas-analyse
 │   └── mockups/             ← UI-mockups
 └── README.md
