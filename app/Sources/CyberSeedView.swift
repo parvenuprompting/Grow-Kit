@@ -26,6 +26,8 @@ struct CyberSeedView: View {
     @State private var meldingOk = false
     @State private var bevestigWis = false
     @State private var launchAgentAan = false
+    private let tierVolgorde = ["sprout", "root", "leaf", "tree",
+                                "jungle", "amazone"]
     @State private var gekozenNaam = "sprout"
     @State private var gekozenModus = "lokaal"
     @State private var gekozenCloudModel: [String: String] = [:]
@@ -176,7 +178,11 @@ struct CyberSeedView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let d = tabData, let namen = d["namen"] as? [String: [String: Any]] {
                     let titels = d["titels"] as? [String: String] ?? [:]
-                    ForEach(namen.keys.sorted(), id: \.self) { sleutel in
+                    ForEach(namen.keys.sorted { (a, b) -> Bool in
+                        let ia = tierVolgorde.firstIndex(of: a) ?? 99
+                        let ib = tierVolgorde.firstIndex(of: b) ?? 99
+                        return ia < ib
+                    }, id: \.self) { sleutel in
                         naamRij(sleutel,
                                 titels[sleutel] ?? sleutel,
                                 namen[sleutel] ?? [:])
