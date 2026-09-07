@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS_14%2B-black?style=flat-square)]()
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-618_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-648_groen-success?style=flat-square)]()
 [![Agents](https://img.shields.io/badge/agent-familie-7_teal?style=flat-square)]()
 [![Privacy](https://img.shields.io/badge/privacy-100%25_local-success?style=flat-square)]()
 [![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
@@ -55,7 +55,7 @@ Native macOS-app (SwiftUI) in editorial-monochrome stijl. Zijmenu:
 | 17 | Taak | Boom-pad + governor → takenlijst met bewijs |
 | **LEREN** | | |
 | 18 | **Telegram Connect** | De familie koppelen aan jouw eigen Telegram, stap voor stap |
-| 19 | **CyberSeed** | Lokaal model (Sprout v0.5) met een eigen, zelfbijgewerkte SOUL — niets verlaat het huis |
+| 19 | **CyberSeed** | Zes niveaus (Sprout → Amazone), lokaal (Ollama) of frontier-cloud (OpenRouter), eigen SOUL |
 | 20 | Rondleiding | Het ontwerp in vijf schermen |
 | 21 | Uitleg | De motor uitgelegd |
 | 22 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
@@ -82,7 +82,22 @@ Voor wie verder wil kijken:
 
 - **Python-kern** (`kern/`, 32 modules): scope-poort, stappen-motor met faalcontract, vijf machine-controles, review-laag, ratificatie, leesroute, crash-herstel, boom-register, vangnet (SQLite), agent-familie, Knowledge Graph, prompt-bibliotheek, Secure Vault (hdiutil), Amnesia (anonimiseren), Digitale Kloon (AES-256-GCM via `cryptography` in een repo-eigen `.venv` — bewuste uitzondering op stdlib-only), Best Practices.
 - **Adapter** (`adapter.py`): JSON-CLI met 61 commando's over de kern — de enige poort tussen app en motor.
-- **CyberSeed** (`kern/growkit_cyberseed.py`): het lokale model (Sprout v0.5, Ollama-basis `qwen3:8b`) met een zelfbijgewerkte SOUL-snapshot uit GrowKit-data — profiel, open ratificaties, saldo, laatste werk, actieve projecten. Chat lokaal via HTTP; chatlog append-only; wissen alleen met `bevestig=true`. Niets verlaat de Mac.
+- **CyberSeed** (`kern/growkit_cyberseed.py` + `kern/growkit_ram.py`): zes modelniveaus — Sprout v0.5, Root v1.0, Leaf v1.5, Tree v2.0, Jungle v2.5, Amazone v3.0 — elk met een eigen systeemprompt op autonomie-schaal (governance in alle tiers). Per niveau kies je **lokaal** (Ollama, RAM-klasse bepaalt het model; te zware namen zijn vergrendeld met min-RAM-uitleg) of **cloud** (OpenRouter, frontier-opties per naam). Zelfbijgewerkte SOUL-snapshot uit GrowKit-data; routinglog per aanroep; chatlog append-only; wissen alleen met `bevestig=true`. Eigen OpenRouter-model per naam mogelijk mét tier-validatie (±1 niveau, `force=true` voor bewuste keuze). Lokaal is de eindbestemming — cloud is de brug. Niets verlaat de Mac bij lokaal.
+
+### CyberSeed: de zes niveaus
+
+| Niveau | Naam | Lokaal (24 GB Mac) | Cloud-opties (OpenRouter) |
+|---|---|---|---|
+| 1 | **Sprout v0.5** — instap, kort | qwen3:4b | gemini-3.5-flash · gpt-5.6-luna · glm-5.3-flash |
+| 2 | **Root v1.0** — SOUL-bewust, suggereert | qwen3:8b | deepseek-v4-pro · gpt-5.6-terra |
+| 3 | **Leaf v1.5** — taakspecifiek (Vangnet) | qwen3:14b | qwen3.8-max · kimi-k2.6 |
+| 4 | **Tree v2.0** — coördinator/orkestratie | gpt-oss:20b | claude-sonnet-5 · glm-5.2 |
+| 5 | **Jungle v2.5** — patronen, zwaar | qwen3.6:27b | grok-4.6 · kimi-k3 · gpt-5.6-sol |
+| 6 | **Amazone v3.0** — frontier | qwen3:32b | claude-opus-5 · claude-fable-5.1 · gpt-6-astra |
+
+- Lokaal: RAM-klasse bepaalt het model per niveau (8–15 / 16–23 / 24–36 / 48–64 / 96+ GB); op een 24 GB Mac zijn alle zes beschikbaar. Volledige mapping: `kern/data/cyberseed_models.json`.
+- Cloud: eerste optie is de standaard; eigen model-id per niveau kan via scherm 19 (met tier-validatie).
+- De systeemprompt hoort bij de **naam**, niet bij het model — Sprout gedraagt zich als Sprout, welk model er ook onder hangt.
 - **Automatiek** (`kern/growkit_automatiek.py`): het zes-blokken-model (doel & trigger, bronnen, stappen, kwaliteit, uitvoering, randvoorwaarden) uit de Automatiek-planner; secrets-scanner weigert plannen met keys; `automatiekvoorstel` stuurt je wens naar KairOS, zijn JSON-antwoord wordt een plan.
 - **Agent Chat-pijplijn**: bericht → `~/.../agenttaken/<agent>/wachtrij/*.json` op de VPS → poller (cron, 1 min) → `hermes chat -q --profile <agent>` met `[van: NAAM]`-prefix → antwoord gepuurd van CLI-meuk (`zuiver_antwoord`) + redenatie apart bewaard → antwoorden/<id>.json.
 - **Chat-geschiedenis**: wissen = verplaatsen naar `<agent>/geschiedenis/` (antwoorden als `antwoord-*.json`); definitief wissen vereist `bevestig=true`. Elk antwoord kan een `redenatie`-veld meedragen (het denkproces, per bericht in- en uitklapbaar).
@@ -119,7 +134,7 @@ Grow-Kit/
 ├── kern/                    ← 32 modules
 ├── profielen/               ← bomen: JSON-stappenplannen met gecodeerd bewijs
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 618 tests + 20 E2E-scripts
+├── tests/                   ← 648 tests + 20 E2E-scripts
 ├── app/                     ← macOS SwiftUI-app (22 views)
 │   ├── Sources/             ← views + Thema/Bouwstenen
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
@@ -138,7 +153,7 @@ Elke push en PR draait automatisch **CI** (GitHub Actions):
 2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
 3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
-- **618 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
+- **648 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
 - Elke nieuwe slice TDD: eerst rood, dan groen, dan end-to-end
