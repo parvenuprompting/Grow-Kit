@@ -81,7 +81,7 @@ De agents kennen de gebruiker bij naam (het `van`-veld in elk chatbericht) en sp
 Voor wie verder wil kijken:
 
 - **Python-kern** (`kern/`, 32 modules): scope-poort, stappen-motor met faalcontract, vijf machine-controles, review-laag, ratificatie, leesroute, crash-herstel, boom-register, vangnet (SQLite), agent-familie, Knowledge Graph, prompt-bibliotheek, Secure Vault (hdiutil), Amnesia (anonimiseren), Digitale Kloon (AES-256-GCM via `cryptography` in een repo-eigen `.venv` — bewuste uitzondering op stdlib-only), Best Practices.
-- **Adapter** (`adapter.py`): JSON-CLI met 61 commando's over de kern — de enige poort tussen app en motor.
+- **Adapter** (`adapter.py`): JSON-CLI met 64 commando's over de kern — de enige poort tussen app en motor.
 - **CyberSeed** (`kern/growkit_cyberseed.py` + `kern/growkit_ram.py`): zes modelniveaus — Sprout v0.5, Root v1.0, Leaf v1.5, Tree v2.0, Jungle v2.5, Amazone v3.0 — elk met een eigen systeemprompt op autonomie-schaal (governance in alle tiers). Per niveau kies je **lokaal** (Ollama, RAM-klasse bepaalt het model; te zware namen zijn vergrendeld met min-RAM-uitleg) of **cloud** (OpenRouter, frontier-opties per naam). Zelfbijgewerkte SOUL-snapshot uit GrowKit-data; routinglog per aanroep; chatlog append-only; wissen alleen met `bevestig=true`. Eigen OpenRouter-model per naam mogelijk mét tier-validatie (±1 niveau, `force=true` voor bewuste keuze). Lokaal is de eindbestemming — cloud is de brug. Niets verlaat de Mac bij lokaal.
 
 ### CyberSeed: de zes niveaus
@@ -177,3 +177,5 @@ Buiten bereik getest: de software is ontworpen voor autonoom gebruik. De gebruik
 ## Bijdragen
 
 Pull requests zijn welkom. Elke bijdrage moet vergezeld zijn van de bijbehorende tests — eerst rood, dan groen. Bewijs telt.
+
+- **PANIC-knop** (`kern/growkit_panic.py`): één commando pauzeert alles — motor stopt, geen merges, geen pushes. Reden verplicht. Elke panic/herstel is een nieuwe append-only logboek-entry. Herstel nooit automatisch; de Baas beslist. Adapter-commando's: `panic`, `panicherstel`, `panicstatus`.
