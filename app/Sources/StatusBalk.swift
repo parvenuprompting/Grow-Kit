@@ -34,7 +34,7 @@ final class StatusBalkStore: ObservableObject {
         format.dateFormat = "EEEE d MMMM"
         datum = format.string(from: Date())
 
-        // Weer: Waddinxveen (huisbasis). Open-Meteo, geen sleutel nodig.
+        // Weer: huisbasis (Open-Meteo, geen sleutel nodig).
         Task {
             let url = URL(string: "https://api.open-meteo.com/v1/forecast?latitude=52.04&longitude=4.66&current=temperature_2m,weather_code")!
             if let (data, _) = try? await URLSession.shared.data(from: url),
