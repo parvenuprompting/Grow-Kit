@@ -28,6 +28,7 @@ from kern import growkit_amnesia  # noqa: E402
 from kern import growkit_gids  # noqa: E402
 from kern import growkit_automatiek  # noqa: E402
 from kern import growkit_agenda  # noqa: E402
+from kern import growkit_panic  # noqa: E402
 from kern import growkit_telegram  # noqa: E402
 from kern import growkit_cyberseed  # noqa: E402
 from kern import growkit_ram  # noqa: E402
@@ -1528,6 +1529,30 @@ def cmd_cyberseedwis(invoer: dict) -> dict:
     return {"ok": True, "data": {"gewist": True}}
 
 
+def cmd_panic(invoer: dict) -> dict:
+    """PANIC-knop: pauzeer alles. Reden verplicht (waarom stop je?)."""
+    reden = str(invoer.get("reden", "")).strip()
+    if not reden:
+        raise AdapterFout("reden is verplicht — waarom activeer je de panic?")
+    doel = _doel_uit(invoer)
+    payload = growkit_panic.activeer_panic(doel, reden)
+    return {"ok": True, "panic": payload}
+
+
+def cmd_panic_herstel(invoer: dict) -> dict:
+    """Herstel na panic: nieuwe append-only entry, status uit. Idempotent."""
+    doel = _doel_uit(invoer)
+    payload = growkit_panic.herstel_na_panic(doel)
+    return {"ok": True, "panic": payload}
+
+
+def cmd_panic_status(invoer: dict) -> dict:
+    """Lees de huidige panic-status (voor rapportage en de GUI-knop)."""
+    doel = _doel_uit(invoer)
+    return {"ok": True, "panic": growkit_panic.lees_status(doel),
+            "actief": growkit_panic.is_panic_actief(doel)}
+
+
 COMMANDOS = {
     "status": cmd_status,
     "profielen": cmd_profielen,
@@ -1593,6 +1618,9 @@ COMMANDOS = {
     "kloonlees": cmd_kloonlees,
     "kloontoevoegen": cmd_kloontoevoegen,
     "kloonverwijder": cmd_kloonverwijder,
+    "panic": cmd_panic,
+    "panicherstel": cmd_panic_herstel,
+    "panicstatus": cmd_panic_status,
 }
 
 def main(argv: list[str]) -> int:
