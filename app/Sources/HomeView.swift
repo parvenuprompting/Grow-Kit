@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var saldoTekst: String = ""
     @State private var saldoLaag: Bool = false
     @State private var gebruikersNaam: String = "Gebruiker"
+    @State private var heroTekst: String = ""
 
     var body: some View {
         ScrollView {
@@ -40,9 +41,24 @@ struct HomeView: View {
                 .font(Thema.tekst(10, gewicht: .semibold)).tracking(3)
                 .foregroundStyle(Thema.kleur(.zacht))
             HStack(alignment: .firstTextBaseline, spacing: 0) {
-                Text("Goed om je te zien, ").font(Thema.display(30))
-                Text(gebruikersNaam + ".").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+                // ZT-3 dynamische hero: gebeurtenis-variant (goedkeuringen,
+                // saldo, nachtronde) wint van de kale dagdeel-begroeting.
+                Text((heroTekst.isEmpty ? begroetingTekst : heroTekst) + " ")
+                    .font(Thema.display(30))
+                if heroTekst.isEmpty {
+                    Text(gebruikersNaam + ".").font(Thema.display(30, cursief: true)).foregroundStyle(Thema.kleur(.zacht))
+                }
             }
+        }
+    }
+
+    // ZT-3: dagdeel-begroeting met nachtbug-afdekking (0-4 uur = morgen).
+    private var begroetingTekst: String {
+        let uur = Calendar.current.component(.hour, from: Date())
+        switch uur {
+        case 0...11: return "Goedemorgen, \(gebruikersNaam)"
+        case 12...17: return "Goedemiddag, \(gebruikersNaam)"
+        default: return "Goedenavond, \(gebruikersNaam)"
         }
     }
 
@@ -185,6 +201,23 @@ struct HomeView: View {
                 if let g, g.ok, let rest = g.data["resterend"] as? Double {
                     saldoTekst = String(format: "€ %.2f", rest)
                     saldoLaag = rest < 10.0
+                }
+                // ZT-3: hero-variant op prioriteit — goedkeuringen > saldo > nachtronde.
+                var goedkeuringenAantal = 0
+                if let ak = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                                   commando: "goedkeuringen", invoer: ["actie": "lijst"]),
+                   ak.ok, let items = ak.data["items"] as? [[String: Any]] {
+                    goedkeuringenAantal = items.count
+                }
+                let nachtrondeNieuws = false // nachtelijke bouwronde-koppeling volgt in een latere slice
+                let uur = Calendar.current.component(.hour, from: Date())
+                let variant = ZTHero.variant(uur: uur,
+                                             goedkeuringen: goedkeuringenAantal,
+                                             saldo: saldoLaag ? 0 : 100,
+                                             saldoDrempel: 10,
+                                             nachtronde: nachtrondeNieuws)
+                if let v = variant {
+                    heroTekst = ZTHero.tekstVoor(variant: v, goedkeuringen: goedkeuringenAantal)
                 }
             }
         }
