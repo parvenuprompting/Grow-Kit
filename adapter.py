@@ -342,6 +342,46 @@ def cmd_prompts(invoer: dict) -> dict:
     return {"ok": True, "data": data}
 
 
+def cmd_skillslijst(invoer: dict) -> dict:
+    """Skills-beheer fase A1 (ZT-6): beschikbare skill-bronnen."""
+    from kern import growkit_skills as sk
+    bronnen = invoer.get("bronnen")  # alleen voor tests; None = standaard
+    return {"ok": True, "data": {"bronnen": sk.lijst_bron(bronnen=bronnen)}}
+
+
+def cmd_skillslees(invoer: dict) -> dict:
+    """Skills-beheer fase A1: exacte SKILL.md-inhoud van één skill."""
+    from kern import growkit_skills as sk
+    bron = str(invoer.get("bron", "")).strip()
+    naam = str(invoer.get("naam", "")).strip()
+    if not bron or not naam:
+        raise AdapterFout("skillslees vereist 'bron' en 'naam'")
+    if not re.fullmatch(r"[A-Za-z0-9_\-]+", naam):
+        raise AdapterFout("ongeldige skill-naam")
+    inhoud = sk.lees(bron, naam, bronnen=invoer.get("bronnen"))
+    if inhoud is None:
+        return {"ok": False, "fout": f"skill '{naam}' niet gevonden in bron '{bron}'"}
+    return {"ok": True, "data": {"inhoud": inhoud}}
+
+
+def cmd_skillsschrijf(invoer: dict) -> dict:
+    """Skills-beheer fase A1: schrijf een SKILL.md — valideert eerst,
+    maakt bij overschrijven automatisch een backup (append-only geest)."""
+    from kern import growkit_skills as sk
+    bron = str(invoer.get("bron", "")).strip()
+    naam = str(invoer.get("naam", "")).strip()
+    inhoud = invoer.get("inhoud")
+    if not bron or not naam or not isinstance(inhoud, str):
+        raise AdapterFout("skillsschrijf vereist 'bron', 'naam' en 'inhoud' (tekst)")
+    if not re.fullmatch(r"[A-Za-z0-9_\-]+", naam):
+        raise AdapterFout("ongeldige skill-naam")
+    ok, reden = sk.valideer(inhoud)
+    if not ok:
+        return {"ok": False, "fout": f"gevalideerd: {reden}"}
+    resultaat = sk.schrijf(bron, naam, inhoud, bronnen=invoer.get("bronnen"))
+    return {"ok": True, "data": resultaat}
+
+
 def cmd_bomen(invoer: dict) -> dict:
     """Boom-lijst (Slice 1): recentste register-status per boom.
 
@@ -1578,6 +1618,9 @@ COMMANDOS = {
     "audit": cmd_audit,
     "bomen": cmd_bomen,
     "prompts": cmd_prompts,
+    "skillslijst": cmd_skillslijst,
+    "skillslees": cmd_skillslees,
+    "skillsschrijf": cmd_skillsschrijf,
     "levensignaal": cmd_levensignaal,
     "acties": cmd_acties,
     "inbox": cmd_inbox,

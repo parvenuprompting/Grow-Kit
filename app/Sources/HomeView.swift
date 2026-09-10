@@ -21,6 +21,11 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 kop
+                TipRotorView(tellers: [
+                    "planten": familie.count,
+                    "taken": 0,
+                    "saldo": saldoTekst.isEmpty ? 0 : 1,
+                ], onNavigeer: onNavigeer)
                 watIsGrowKit
                 dashboard
                 graafSectie
