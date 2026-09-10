@@ -1,0 +1,14 @@
+[
+  {"id": "t01", "tekst": "Vergeet je planten vandaag niet: je hebt [N] staan.", "scherm": "home", "knop": "Bekijk planten", "conditie": {"veld": "planten", "min": 1}},
+  {"id": "t02", "tekst": "Er liggen [N] taken te wachten — pak er eentje op.", "scherm": "taken", "knop": "Naar taken", "conditie": {"veld": "taken", "min": 1}},
+  {"id": "t03", "tekst": "Je saldo groeit. Even checken?", "scherm": "saldo", "knop": "Naar saldo", "conditie": {"veld": "saldo", "min": 1}},
+  {"id": "t04", "tekst": "De agenda heeft [N] afspraak/afspraken deze week.", "scherm": "agenda", "knop": "Naar agenda", "conditie": {"veld": "afspraken", "min": 1}},
+  {"id": "t05", "tekst": "Je inbox telt [N] berichten. Een korte opruimronde?", "scherm": "inbox", "knop": "Naar inbox", "conditie": {"veld": "inbox", "min": 1}},
+  {"id": "t06", "tekst": "Je besluiten-register wacht op ratificatie van [N] besluit(en).", "scherm": "besluiten", "knop": "Naar besluiten", "conditie": {"veld": "onbevestigd", "min": 1}},
+  {"id": "t07", "tekst": "Log je dag even aan — vijf minuten terugblikken scheelt een week.", "scherm": "home", "knop": "Dagterugblik", "conditie": null},
+  {"id": "t08", "tekst": "Water geeft groei. Noteer wat je vandaag water gaf.", "scherm": "home", "knop": "Noteer", "conditie": null},
+  {"id": "t09", "tekst": "Kleine stappen winnen van grote plannen. Kies één ding.", "scherm": "home", "knop": "Kies", "conditie": null},
+  {"id": "t10", "tekst": "Rust is ook productief. Neem je pauze serieus.", "scherm": "home", "knop": "Pauze", "conditie": null},
+  {"id": "t11", "tekst": "Check je automatiek: draait alles nog zoals bedoeld?", "scherm": "automatiek", "knop": "Naar automatiek", "conditie": null},
+  {"id": "t12", "tekst": "De nacht is van de rust; de ochtend van de groei.", "scherm": "home", "knop": "Goede nacht", "conditie": null}
+]
