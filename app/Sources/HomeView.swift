@@ -17,11 +17,18 @@ struct HomeView: View {
     @State private var saldoLaag: Bool = false
     @State private var gebruikersNaam: String = "Gebruiker"
     @State private var heroTekst: String = ""
+    // ZT-5 tip-rotor onder de hero.
+    @State private var tips: [Tip] = []
+    @State private var huidigeTip: Tip?
+    @State private var getoondVandaag: Set<String> = []
+    @State private var wissels: Int = 0
+    @State private var heroMoment: Date?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 kop
+                tipBalk
                 watIsGrowKit
                 dashboard
                 graafSectie
@@ -59,6 +66,36 @@ struct HomeView: View {
         case 0...11: return "Goedemorgen, \(gebruikersNaam)"
         case 12...17: return "Goedemiddag, \(gebruikersNaam)"
         default: return "Goedenavond, \(gebruikersNaam)"
+        }
+    }
+
+    // ZT-5: tip-rotor — conditie-tips vóór generiek, avondklok (>=23 of 0-4),
+    // 60 s rust na gebeurtenis-hero, max 3 "volgende"-wissels per sessie.
+    private var tipBalk: some View {
+        Group {
+            if let tip = huidigeTip {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text("TIP").font(Thema.tekst(9, gewicht: .semibold))
+                        .tracking(2).foregroundStyle(Thema.kleur(.gedempt))
+                    Text(tip.tekst).font(Thema.tekst(12))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if TipsRotor.magVolgende(wissels: wissels) {
+                        Button("Volgende") {
+                            getoondVandaag.insert(tip.id)
+                            wissels += 1
+                            huidigeTip = TipsRotor.kies(
+                                tips: tips, uur: Calendar.current.component(.hour, from: Date()),
+                                getoondVandaag: getoondVandaag,
+                                condities: saldoLaag ? ["saldo_laag"] : [],
+                                heroMoment: heroMoment)
+                        }
+                        .buttonStyle(.plain)
+                        .font(Thema.tekst(11, gewicht: .medium))
+                        .foregroundStyle(Thema.kleur(.zacht))
+                    }
+                }
+            }
         }
     }
 

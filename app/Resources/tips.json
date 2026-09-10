@@ -1,0 +1,14 @@
+[
+  {"id": "t01", "tekst": "Wist je dat je taken kunt plannen met een deadline?", "scherm": "taken", "knop": "Naar taken", "conditie": null},
+  {"id": "t02", "tekst": "Zet je saldo-drempel hoger dan je denkt nodig te hebben.", "scherm": "saldo", "knop": "Naar saldo", "conditie": "saldo_laag"},
+  {"id": "t03", "tekst": "Je kunt een memo inspreken in plaats van typen.", "scherm": "memo", "knop": "Naar memo", "conditie": null},
+  {"id": "t04", "tekst": "Er liggen [N] goedkeuringen te wachten op jouw blik.", "scherm": "goedkeuringen", "knop": "Naar goedkeuringen", "conditie": "goedkeuringen_open"},
+  {"id": "t05", "tekst": "De plant groeit sneller als je dagelijks een slice doet.", "scherm": "plant", "knop": "Naar plant", "conditie": null},
+  {"id": "t06", "tekst": "Je kunt agents koppelen via het Koppelingen-scherm.", "scherm": "koppelingen", "knop": "Naar koppelingen", "conditie": null},
+  {"id": "t07", "tekst": "Het vangnet bewaart je laatste staat — kijk gerust.", "scherm": "vangnet", "knop": "Naar vangnet", "conditie": null},
+  {"id": "t08", "tekst": "Rondleiding kwijt? Die staat onder Uitleg.", "scherm": "uitleg", "knop": "Naar uitleg", "conditie": null},
+  {"id": "t09", "tekst": "Sla gevoelige sleutels op in de kluis, niet in notities.", "scherm": "kluis", "knop": "Naar kluis", "conditie": null},
+  {"id": "t10", "tekst": "De agenda synchroniseert met je gezinsplanning.", "scherm": "agenda", "knop": "Naar agenda", "conditie": null},
+  {"id": "t11", "tekst": "Na [N] bouwrondes mag je de plant een extra water geven.", "scherm": "plant", "knop": "Naar plant", "conditie": null},
+  {"id": "t12", "tekst": "Paniekknop gevonden? Die staat rechtsboven bij het menu.", "scherm": "instellingen", "knop": "Naar instellingen", "conditie": null}
+]
