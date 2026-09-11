@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS_14%2B-black?style=flat-square)]()
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-648_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-701_groen-success?style=flat-square)]()
 [![Agents](https://img.shields.io/badge/agent-familie-7_teal?style=flat-square)]()
 [![Privacy](https://img.shields.io/badge/privacy-100%25_local-success?style=flat-square)]()
 [![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
@@ -134,7 +134,7 @@ Grow-Kit/
 ├── kern/                    ← 32 modules
 ├── profielen/               ← bomen: JSON-stappenplannen met gecodeerd bewijs
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 648 tests + 20 E2E-scripts
+├── tests/                   ← 701 tests + 20 E2E-scripts
 ├── app/                     ← macOS SwiftUI-app (22 views)
 │   ├── Sources/             ← views + Thema/Bouwstenen
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
@@ -153,7 +153,7 @@ Elke push en PR draait automatisch **CI** (GitHub Actions):
 2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
 3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
-- **648 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
+- **701 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
 - **20 end-to-end-scripts**: fase-testen + slice-E2E
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
 - Elke nieuwe slice TDD: eerst rood, dan groen, dan end-to-end
