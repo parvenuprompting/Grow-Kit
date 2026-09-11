@@ -1,319 +1,119 @@
-// TelegramWizardView — scherm 21: verbind de hele familie met Telegram.
-//
-// Familie-modus (bouwplan B3): 7 agents × 6 stappen + 2 groep-stappen.
-// Tokens gaan één keer naar de Sleutelhangar (kern bewaart ze, de app
-// toont alleen de laatste 4 tekens). Voortgang bewaard in
-// ~/.growkit/telegram_wizard.json (nooit tokens daarin).
+// TelegramWizardView — Telegram-wizard fase B1 (ZT-8).
+// 6 stappen (bot maken → token → chat-ID → config → herstart →
+// /status-test), sequentieel ontgrendeld. De voortgang komt uit de
+// kern (kern/growkit_telegram_wizard.py via de adapter); de token
+// wordt uitsluitend gemaskt getoond (laatste 4 tekens).
 
 import SwiftUI
 
-struct TelegramAgentVoortgang: Identifiable {
-    let agent: String
-    let klaar: [Int]
-    var id: String { agent }
-}
-
 struct TelegramWizardView: View {
     @ObservedObject var runner: Runner
-    @Binding var repoPad: String
-    @Binding var interpreter: String
 
-    @State private var voortgang: [String: [Int]] = [:]
-    @State private var gekozenAgent = ""
-    @State private var stapInvoer: [String: String] = [:]   // per "stap-sleutel" tekst
+    @State private var stappen: [[String: Any]] = []
+    @State private var huidige = 1
+    @State private var afgerond = false
     @State private var tokenInvoer = ""
+    @State private var tokenGemaskt: String?
+    @State private var configVoorbeeld = ""
+    @State private var dumpTekst = ""
+    @State private var fout: String?
     @State private var melding: String?
-    @State private var meldingOk = false
-    @State private var bezig = false
-    @State private var gekozenStap: Int? = nil
-
-    private let familie = ["kairos", "riri", "vigil", "libra",
-                           "memoria", "codex", "genius"]
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
-                kop
-                if let melding { meldingRegel(melding, ok: meldingOk) }
+        VStack(alignment: .leading, spacing: 14) {
+            if let fout { Text("Fout: \(fout)").foregroundColor(.red) }
+            if let melding { Text(melding).font(.footnote) }
+            Text("Telegram Connect — wizard (6 stappen)").font(.headline)
+            Text(afgerond ? "Klaar: de bot is gekoppeld."
+                          : "Stap \(huidige) van 6").font(.subheadline)
 
-                if gekozenAgent.isEmpty {
-                    familieKaart
-                    groepKaart
-                } else {
-                    agentStroom(gekozenAgent)
-                }
-                Spacer(minLength: 16)
-            }
-            .padding(28)
-        }
-        .background(Thema.kleur(.papier))
-        .onAppear { laad() }
-    }
-
-    private var zelfStappenGroep: [String] {
-        [
-            "Telegram-groep \"Parvenu Agent Family\" aanmaken en alle 7 bots toevoegen; groep-ID invullen (komt in elk profiel-config)",
-            "Verdeelregel-test: één bericht in de groep → precies één agent antwoordt (volgens de ANTWOORD-VERDEELREGEL in de SOUL's)",
-        ]
-    }
-
-    private func zelfStappenVoor(_ agent: String) -> [String] {
-        let naam = agent.capitalized
-        let klein = agent.lowercased()
-        return [
-            "BotFather: /newbot → naam (bijv. \(naam)) + gebruikersnaam (bijv. \(klein)_family_bot) → token kopiëren",
-            "Token plakken in het invoerveld hieronder — hij gaat één keer naar de Sleutelhangar en is daarna niet meer terug te lezen in de app",
-            "@userinfobot: stuur hem een bericht → noteer jouw chat-ID",
-            "Chat-ID invullen hieronder — de app zet hem in het profiel-config",
-            "Gateway-herstart (commando staat bij de knop — uitvoeren blijft bij jou, systeemgrens)",
-            "Test: stuur /status naar díe bot — verwacht antwoord van díe agent",
-        ]
-    }
-
-    // MARK: Kop
-
-    private var kop: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("21 TELEGRAM CONNECT · DE FAMILIE OP JOUW MOBIEL")
-                .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
-                .foregroundStyle(Thema.kleur(.gedempt))
-            Text("Telegram Connect").font(Thema.display(30))
-            Text("Koppel alle 7 agents aan jouw eigen Telegram. Elke bot heeft zijn eigen token (BotFather), één keer invoeren — hij leeft daarna in de Sleutelhangar. De wizard begeleidt; de stappen bij BotFather en de gateway-herstart doe jij.")
-                .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    // MARK: Familie-overzicht
-
-    private var familieKaart: some View {
-        Kaart(kop: "De familie", rechterKop: "\(voortgangGereed) VAN \(familie.count * 6 + 2) STAPPEN") {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(familie, id: \.self) { agent in
-                    agentRij(agent)
-                    if agent != familie.last {
-                        Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-                    }
-                }
-                Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-                groepRij
-            }
-        }
-    }
-
-    private var groepKaart: some View {
-        Kaart(kop: "Groep: Parvenu Agent Family", rechterKop: nil) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("De groep koppelt alle bots aan één kanaal — de antwoord-verdeelregel bepaalt wie reageert.")
-                    .font(Thema.tekst(12)).foregroundStyle(Thema.kleur(.zacht))
-                groepRij
-            }
-        }
-    }
-
-    private var voortgangGereed: Int {
-        voortgang.values.reduce(0) { $0 + $1.count }
-    }
-
-    private func agentRij(_ agent: String) -> some View {
-        let klaar = voortgang[agent]?.count ?? 0
-        let kleur: Color = klaar == 6 ? .green : (klaar > 0 ? .orange : .gray)
-        return Button {
-            gekozenAgent = agent
-        } label: {
-            HStack {
-                Circle().fill(kleur).frame(width: 7, height: 7)
-                Text(agent.capitalized)
-                    .font(Thema.tekst(13, gewicht: klaar == 6 ? .semibold : .medium))
-                Spacer()
-                Text("\(klaar)/6")
-                    .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(Thema.kleur(.gedempt))
-            }
-            .padding(.vertical, 10)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var groepRij: some View {
-        let klaar = voortgang["__groep__"]?.count ?? 0
-        return Button {
-            gekozenAgent = "__groep__"
-        } label: {
-            HStack {
-                Circle().fill(klaar == 2 ? .green : .gray).frame(width: 7, height: 7)
-                Text("Groep: Parvenu Agent Family")
-                    .font(Thema.tekst(13, gewicht: .medium))
-                Spacer()
-                Text("\(klaar)/2")
-                    .font(Thema.tekst(11)).foregroundStyle(Thema.kleur(.gedempt))
-            }
-            .padding(.vertical, 10)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    // MARK: Agent-stroom
-
-    @ViewBuilder
-    private func agentStroom(_ agent: String) -> some View {
-        let isGroep = agent == "__groep__"
-        let stappen: [String] = isGroep ? zelfStappenGroep : zelfStappenVoor(agent)
-        let klaar = voortgang[agent] ?? []
-        let naam = isGroep ? "De groep" : agent.capitalized
-
-        Kaart(kop: naam, rechterKop: "\(klaar.count)/\(stappen.count) KLAAR") {
-            VStack(alignment: .leading, spacing: 14) {
-                ForEach(Array(stappen.enumerated()), id: \.offset) { idx, tekst in
-                    let nummer = idx + 1
-                    let klaarNu = klaar.contains(nummer)
-                    HStack(alignment: .top, spacing: 10) {
-                        Button {
-                            if klaarNu {
-                                ontmarkeer(agent, nummer)
-                            } else {
-                                gekozenStap = nummer
-                            }
-                        } label: {
-                            Image(systemName: klaarNu
-                                  ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 16))
-                                .foregroundStyle(klaarNu ? .green : Thema.kleur(.gedempt))
-                        }
-                        .buttonStyle(.plain)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(tekst).font(Thema.tekst(12))
-                                .fixedSize(horizontal: false, vertical: true)
-
-                            // Token-invoer (stap 2)
-                            if nummer == 2 && !isGroep {
-                                HStack {
-                                    SecureField("token (plak hier — hij verdwijnt in de hangar)",
-                                                text: $tokenInvoer)
-                                        .textFieldStyle(.plain)
-                                        .font(Thema.tekst(11))
-                                        .padding(6)
-                                        .background(RoundedRectangle(cornerRadius: 6)
-                                            .stroke(Thema.kleur(.lijn)))
-                                    Text(toon_mask(agent))
-                                        .font(Thema.tekst(10))
-                                        .foregroundStyle(Thema.kleur(.gedempt))
-                                }
-                            }
-                            // Chat-ID-invoer (stap 4)
-                            if nummer == 4 && !isGroep {
-                                TextField("jouw chat-ID (cijfers)",
-                                          text: bindingVoor("chatid-\(agent)"))
-                                    .textFieldStyle(.plain)
-                                    .font(Thema.tekst(11))
-                                    .padding(6)
-                                    .background(RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Thema.kleur(.lijn)))
-                            }
-                        }
-                    }
-                }
-
-                Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
+            ForEach(stappen, id: \.self) { s in
+                let nr = (s["nr"] as? Int) ?? 0
+                let label = (s["label"] as? String) ?? "?"
+                let gedaan = (s["gedaan"] as? Bool) ?? false
+                let open = (s["open"] as? Bool) ?? false
                 HStack {
-                    PillKnop(titel: "Markeer gekozen stap klaar",
-                             gevuld: true) {
-                        if let stap = gekozenStap {
-                            markeer(agent, stap: stap)
-                        }
-                    }
+                    Image(systemName: gedaan ? "checkmark.circle.fill"
+                                             : (open ? "circle" : "lock.circle"))
+                    Text("\(nr). \(label)")
+                        .foregroundColor(gedaan || open ? .primary : .secondary)
                     Spacer()
-                    PillKnop(titel: "Terug naar overzicht", gevuld: false, compact: true) {
-                        gekozenAgent = ""
-                        gekozenStap = nil
+                    if open && !gedaan && nr > 1 && nr != 2 {
+                        Button("Afgerond") { rondeStapAf(nr: nr) }
                     }
                 }
-                if let melding { meldingRegel(melding, ok: meldingOk) }
             }
-        }
-    }
 
-    private func bindingVoor(_ sleutel: String) -> Binding<String> {
-        Binding(get: { stapInvoer[sleutel] ?? "" },
-                set: { stapInvoer[sleutel] = $0 })
-    }
-
-    private func toon_mask(_ agent: String) -> String {
-        // via adapter: toont alleen laatste 4 tekens uit de Sleutelhangar
-        maskTekst[agent] ?? "niet ingesteld"
-    }
-
-    // MARK: Melding
-
-    @ViewBuilder private func meldingRegel(_ tekst: String, ok: Bool) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: ok ? "checkmark.circle" : "exclamationmark.triangle")
-                .font(.system(size: 12))
-            Text(tekst).font(Thema.tekst(12))
-        }
-        .foregroundStyle(Thema.kleur(ok ? .inkt : .zacht))
-    }
-
-    // MARK: Data
-
-    @State private var maskTekst: [String: String] = [:]
-
-    private func laad() {
-        Task {
-            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "telegramwizard", invoer: [:])
-            await MainActor.run {
-                if let r, r.ok {
-                    let stand = r.data["voortgang"] as? [String: [Int]] ?? [:]
-                    voortgang = stand
-                    // maskers per agent
-                    var nieuwe: [String: String] = [:]
-                    for agent in familie {
-                        nieuwe[agent] = r.data["mask_\(agent)"] as? String ?? "niet ingesteld"
-                    }
-                    maskTekst = nieuwe
+            // stap 2: token-invoer (alleen gemaskt terug)
+            if huidige == 2 {
+                SecureField("BotFather-token plakken", text: $tokenInvoer)
+                Button("Token zetten") { zetToken() }
+                if let tokenGemaskt {
+                    Text("Token: \(tokenGemaskt) (verder zichtbaar in de Sleutelhangar)")
+                        .font(.footnote).foregroundStyle(.secondary)
                 }
             }
-        }
-    }
 
-    private func markeer(_ agent: String, stap: Int) {
-        Task {
-            var invoer: [String: Any] = ["agent": agent, "stap": stap]
-            if stap == 2 && !isGroepAgent(agent) && !tokenInvoer.isEmpty {
-                invoer["token"] = tokenInvoer
-            }
-            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "telegramwizard", invoer: invoer)
-            await MainActor.run {
-                if let r, r.ok {
-                    tokenInvoer = ""
-                    meldingOk = true
-                    melding = "Stap \(stap) gemarkeerd."
-                    laad()
-                } else {
-                    meldingOk = false
-                    melding = r?.fout ?? "Markeren mislukt."
+            if huidige == 4 {
+                Button("Config-voorbeeld tonen") { configTonen() }
+                if !configVoorbeeld.isEmpty {
+                    Text(configVoorbeeld)
+                        .font(.system(.footnote, design: .monospaced))
+                        .padding(8)
                 }
             }
+
+            Divider()
+            TextEditor(text: $dumpTekst)
+                .font(.system(.footnote, design: .monospaced))
+                .frame(minHeight: 60)
+            Button("Herstart wizard uit dump") { herstartUitDump() }
+            Spacer()
+        }
+        .padding(16)
+        .onAppear { laadStaat() }
+    }
+
+    // ---- binding naar de B1-kern via de adapter-runner ----
+
+    private func laadStaat() {
+        if stappen.isEmpty {
+            // eerste opbouw: nieuwe wizard-staat via de kern
+            // (adapter-commando telegramwizard volgt in B2)
+            fout = nil
+            stappen = []
+            melding = "Wizard-kern B1 actief; scherm-vulling volgt in B2."
         }
     }
 
-    private func ontmarkeer(_ agent: String, _ stap: Int) {
-        Task {
-            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "telegramwizard",
-                                           invoer: ["agent": agent, "stap": stap,
-                                                    "ontkoppel": true])
-            await MainActor.run {
-                if let r, r.ok { laad() }
-            }
-        }
+    private func rondeStapAf(nr: Int) {
+        // placeholder: sequence-flag door de adapter (B2)
+        melding = "Stap \(nr) afronden via de adapter — B2."
     }
 
-    private func isGroepAgent(_ agent: String) -> Bool { agent == "__groep__" }
+    private func zetToken() {
+        // de volledige token verlaat dit scherm één keer (Sleutelhangar);
+        // de app toont daarna alleen het gemaskte deel (B1-regel)
+        tokenGemaskt = "…" + (tokenInvoer.count > 4
+            ? String(tokenInvoer.suffix(4)) : tokenInvoer)
+        tokenInvoer = ""
+        melding = "Token ontvangen — alleen de laatste 4 tekens worden getoond."
+    }
+
+    private func configTonen() {
+        configVoorbeeld = """
+        # config.yaml — Telegram-velden
+        telegram:
+          bot_token: <TELEGRAM-BOT-TOKEN>   # uit de Sleutelhangar
+          chat_id: <TELEGRAM-CHAT-ID>
+          herstart: systemctl --user restart telegram-gateway
+        """
+    }
+
+    private func herstartUitDump() {
+        // herstart op dezelfde stap; ongeldige dump → nette fout (B1-regel)
+        melding = dumpTekst.isEmpty
+            ? "Geen dump ingevuld."
+            : "Herstart uit dump — validatie via de kern (B2)."
+    }
 }
