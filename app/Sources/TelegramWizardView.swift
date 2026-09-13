@@ -27,7 +27,7 @@ struct TelegramWizardView: View {
             Text(afgerond ? "Klaar: de bot is gekoppeld."
                           : "Stap \(huidige) van 6").font(.subheadline)
 
-            ForEach(stappen, id: \.self) { s in
+            ForEach(Array(stappen.enumerated()), id: \.offset) { _, s in
                 let nr = (s["nr"] as? Int) ?? 0
                 let label = (s["label"] as? String) ?? "?"
                 let gedaan = (s["gedaan"] as? Bool) ?? false

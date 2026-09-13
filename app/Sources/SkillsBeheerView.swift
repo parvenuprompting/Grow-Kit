@@ -72,8 +72,9 @@ struct SkillsBeheerView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Vergelijking (minimaal, oud → nieuw)").font(.subheadline)
             ForEach(diffRegels, id: \.self) { d in
-                let type = (d["type"] as? String) ?? ""
-                let regel = (d["regel"] as? String) ?? ""
+                // CI-fix 13 sept: waarden zijn String in een [String: String] — direct uitlezen
+                let type = d["type"] ?? ""
+                let regel = d["regel"] ?? ""
                 Text("\(type): \(regel)")
                     .font(.system(.footnote, design: .monospaced))
                     .foregroundColor(type == "verwijderd" ? .red : .green)
@@ -85,29 +86,38 @@ struct SkillsBeheerView: View {
 
     private func laadLijst() {
         fout = nil
-        runner.roep(repoPad: repoPad, interpreter: interpreter,
-                    commando: "skillslijst", invoer: [:]) { ok, uitvoer in
-            guard ok, let data = (uitvoer?["data"] as? [[String: String]]) else {
-                fout = "skillslijst faalde"; return
-            }
-            skills = data.compactMap { d in
-                guard let n = d["naam"] as? String else { return nil }
-                return ["naam": n]
+        Task {
+            // CI-fix 13 sept: async Runner-API; adapter geeft {"bronnen": [...]}
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "skillslijst", invoer: [:])
+            await MainActor.run {
+                guard let r, r.ok, let bronnen = r.data["bronnen"] as? [[String: Any]] else {
+                    fout = r?.fout ?? "skillslijst faalde"; return
+                }
+                skills = bronnen.compactMap { d in
+                    guard let id = d["id"] as? String else { return nil }
+                    let bestaat = (d["bestaat"] as? Bool) ?? false
+                    return ["naam": id + (bestaat ? "" : " (pad ontbreekt)")]
+                }
             }
         }
     }
 
     private func laadInhoud(naam: String) {
         fout = nil
-        runner.roep(repoPad: repoPad, interpreter: interpreter,
-                    commando: "skillslees",
-                    invoer: ["bron": "mac", "naam": naam]) { ok, uitvoer in
-            guard ok, let inhoud = uitvoer?["data"] as? [String: Any] else {
-                fout = "skillslees faalde"; return
+        Task {
+            // CI-fix 13 sept: async Runner-API; adapter geeft {"inhoud": "..."}
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "skillslees",
+                                           invoer: ["bron": "mac", "naam": naam])
+            await MainActor.run {
+                guard let r, r.ok, let inhoud = r.data["inhoud"] as? String else {
+                    fout = r?.fout ?? "skillslees faalde"; return
+                }
+                frontmatter = ""
+                body_inhoud = inhoud
+                nieuwTekst = inhoud
             }
-            frontmatter = (inhoud["frontmatter"] as? String) ?? ""
-            body_inhoud = (inhoud["body"] as? String) ?? ""
-            nieuwTekst = body_inhoud
         }
     }
 

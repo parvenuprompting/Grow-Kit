@@ -370,7 +370,9 @@ struct ContentView: View {
     @ViewBuilder
     private var detail: some View {
         VStack(spacing: 0) {
-            Group {
+            VStack(alignment: .leading, spacing: 0) {
+                // CI-fix 13 sept: was Group — SwiftUI.Group heeft een TableColumnBuilder-
+                // overload die de type-inferentie op de eerste case breekt.
                 switch geselecteerd {
                 case .status:
                     StatusView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
@@ -417,20 +419,13 @@ struct ContentView: View {
                 case .taak:
                     TaakView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .telegram:
-                    TelegramWizardView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
+                    TelegramWizardView(runner: runner)
                 case .cyberseed:
                     CyberSeedView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .agentchat:
                     AgentChatView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .skills:
-                    MockScherm(icoon: "square.stack.3d.up",
-                               titel: "Skills",
-                               belofte: "Zie in één oogopslag welke skills er op jouw GrowKit draaien — met per skill de machine-controles (evals) die bewijzen dat ze doen wat ze beloven.",
-                               komendeStappen: [
-                                "Lokale skills-browser: alle geïnstalleerde skills, leesbaar in gewone taal",
-                                "Skills-triade: instructie + referenties + evals als data bij de stap",
-                                "Machine-controles per stap, niet als vrije tekst ernaast",
-                                "Skills aan- of uitzetten zonder de kern te raken"])
+                    SkillsBeheerView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .browser:
                     MockScherm(icoon: "globe",
                                titel: "Browser",

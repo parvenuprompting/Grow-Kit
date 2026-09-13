@@ -16,7 +16,8 @@ from typing import Any
 
 # Standaardbronnen — overschrijfbaar via de bronnen-parameter (tests)
 STANDAARD_BRONNEN: dict[str, dict[str, str]] = {
-    "mac": {"pad": os.path.expanduser("~/hermes/skills")},
+    # 13 sept: pad gecorrigeerd — skills leven in ~/.hermes/skills, niet ~/hermes/skills
+    "mac": {"pad": os.path.expanduser("~/.hermes/skills")},
     "vps": {"pad": os.path.join("~", ".hermes", "profiles", "zero-trust", "skills")},
 }
 
