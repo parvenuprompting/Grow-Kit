@@ -28,6 +28,10 @@ Grow Kit is een **AI-werkbank met een harnas**. Je geeft een idee, een agent voe
 
 Volledige uitleg: **[`docs/HOE-HET-WERKT.md`](docs/HOE-HET-WERKT.md)**.
 
+## Sponsorware 🌳
+
+Grow Kit is MIT-opensource. De motor en de vijf bewijscontroles blijven altijd gratis. Wil je de groei steunen? Bekijk de [sponsor-tiers](SPONSORS.md) — van 🌱 Zaadje (€5/mnd) tot 🏛️ Boomgaard (€500/mnd).
+
 ## De app
 
 Native macOS-app (SwiftUI) in editorial-monochrome stijl. Zijmenu:

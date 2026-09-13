@@ -668,6 +668,58 @@ def cmd_vaultvormen(invoer: dict) -> dict:
     return {"ok": True, "data": {"vormen": growkit_vault.KLUIS_VORMEN}}
 
 
+def cmd_taakkoppel(invoer: dict) -> dict:
+    """S13 — taak koppelen aan een familielid (stap D familierij).
+
+    Acties: koppel (taak_id + eigenaar) en lijst (id/titel/eigenaar voor
+    het zijbalk-overzicht). De kern beslist; de adapter geeft alleen antwoord.
+    """
+    from kern.growkit_taken import koppel_eigenaar, taken_met_eigenaar
+    actie = str(invoer.get("actie", "lijst")).strip()
+    if actie == "koppel":
+        taak_id = str(invoer.get("taak_id", "")).strip()
+        eigenaar = str(invoer.get("eigenaar", "")).strip()
+        if not taak_id or not eigenaar:
+            return {"ok": False,
+                    "fout": "koppel heeft taak_id en eigenaar nodig"}
+        uitslag = koppel_eigenaar(_doel_uit(invoer) / "takenlijst.json",
+                                  taak_id, eigenaar)
+        return uitslag if uitslag.get("ok") else {
+            "ok": False, "fout": uitslag["fout"]}
+    if actie == "lijst":
+        return {"ok": True,
+                "taken": taken_met_eigenaar(_doel_uit(invoer) / "takenlijst.json")}
+    return {"ok": False, "fout": "onbekende actie — kies koppel of lijst"}
+
+
+def cmd_beleid(invoer: dict) -> dict:
+    """S12 — ThreatLocker politiek-laag: het beleidsregister doorgeven.
+
+    Bedienaar: de kern (growkit_beleid) beslist, de adapter geeft alleen
+    antwoorden terug. Een weigering is een gewoon antwoord (ok=false +
+    weigering-tekst), geen fout — de agent mag het lezen.
+    """
+    from kern import growkit_beleid as bl
+    actie = str(invoer.get("actie", "status")).strip()
+    if actie == "status":
+        return {"ok": True, "data": {"beleid": bl.alle_beleidsobjecten()}}
+    if actie == "controle":
+        agent = str(invoer.get("agent", "")).strip()
+        actiesoort = str(invoer.get("actiesoort", "")).strip()
+        if not agent or not actiesoort:
+            return {"ok": False, "fout": "controle heeft agent en actiesoort nodig"}
+        from kern.growkit_beleid import BELEID, NOOIT, toegestaan
+        geldige_acties = {a for b in BELEID.values() for a in b["toegestaan"]} | NOOIT
+        if actiesoort not in geldige_acties:
+            return {"ok": False,
+                    "fout": f"onbekende actiesoort '{actiesoort}' — "
+                            f"kies uit: {', '.join(sorted(geldige_acties))}"}
+        uitslag = bl.controleer(agent, actiesoort)
+        return {"ok": uitslag["ok"], **({"weigering": uitslag["weigering"]}
+                                        if uitslag["weigering"] else {})}
+    return {"ok": False, "fout": "onbekende actie — kies status of controle"}
+
+
 def cmd_vaultlijst(invoer: dict) -> dict:
     """Gevonden kluizen op deze Mac (Spotlight) + nu-open mountpunten.
 
@@ -1634,6 +1686,8 @@ COMMANDOS = {
     "saldo": cmd_saldo,
     "verbruik": cmd_verbruik,
     "vaultvormen": cmd_vaultvormen,
+    "beleid": cmd_beleid,
+    "taakkoppel": cmd_taakkoppel,
     "vaultlijst": cmd_vaultlijst,
     "vaultmaak": cmd_vaultmaak,
     "vaultopen": cmd_vaultopen,
