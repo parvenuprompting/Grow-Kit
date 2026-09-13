@@ -10,12 +10,12 @@ struct SkillsBeheerView: View {
     @Binding var repoPad: String
     @Binding var interpreter: String
 
-    @State private var skills: [[String: Any]] = []
+    @State private var skills: [[String: String]] = []
     @State private var gekozenNaam = ""
     @State private var frontmatter = ""
     @State private var body_inhoud = ""
     @State private var nieuwTekst = ""
-    @State private var diffRegels: [[String: Any]] = []
+    @State private var diffRegels: [[String: String]] = []
     @State private var fout: String?
     @State private var melding: String?
 
@@ -87,10 +87,13 @@ struct SkillsBeheerView: View {
         fout = nil
         runner.roep(repoPad: repoPad, interpreter: interpreter,
                     commando: "skillslijst", invoer: [:]) { ok, uitvoer in
-            guard ok, let data = (uitvoer?["data"] as? [[String: Any]]) else {
+            guard ok, let data = (uitvoer?["data"] as? [[String: String]]) else {
                 fout = "skillslijst faalde"; return
             }
-            skills = data
+            skills = data.compactMap { d in
+                guard let n = d["naam"] as? String else { return nil }
+                return ["naam": n]
+            }
         }
     }
 
@@ -122,12 +125,12 @@ struct SkillsBeheerView: View {
     }
 
     // Minimale tekstvergelijking (spiegel van kern/growkit_skills_scherm.vergelijk)
-    private func verGelijk(oud: String, nieuw: String) -> [[String: Any]] {
+    private func verGelijk(oud: String, nieuw: String) -> [[String: String]] {
         let oudeRegels = oud.split(separator: "\n", omittingEmptySubsequences: false)
         let nieuweRegels = nieuw.split(separator: "\n", omittingEmptySubsequences: false)
         let oudeSet = Set(oudeRegels)
         let nieuweSet = Set(nieuweRegels)
-        var uit: [[String: Any]] = []
+        var uit: [[String: String]] = []
         for r in oudeRegels where !nieuweSet.contains(r) {
             uit.append(["type": "verwijderd", "regel": String(r)])
         }
