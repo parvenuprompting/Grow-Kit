@@ -17,3 +17,5 @@ groei/takenlijst.md
 reviewconfig.json
 .testlock/
 .venv/
+
+venv/

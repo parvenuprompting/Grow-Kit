@@ -17,6 +17,10 @@ struct TaakView: View {
     @State private var taken: [[String: Any]] = []
     @State private var uitslag: String?
     @State private var draaiLog: [String] = []
+    // S13 — familie-leden voor het koppel-menu; eigenaars-keuze en zichtbaarheid
+    @State private var familieNamen: [String] = []
+    @State private var eigenaarKeuze = ""
+    @State private var koppelbaar = false
 
     var body: some View {
         groep
@@ -68,6 +72,18 @@ struct TaakView: View {
                     .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
                     .background(Thema.kleur(.papierZacht))
             }
+            VStack(alignment: .leading, spacing: 4) {
+                Text("EIGENAAR (S13)")
+                    .font(Thema.tekst(9, gewicht: .semibold)).tracking(2)
+                    .foregroundStyle(Thema.kleur(.gedempt))
+                Picker("Eigenaar", selection: $eigenaarKeuze) {
+                    ForEach(familieNamen, id: \.self) { Text($0) }
+                }
+                .pickerStyle(.menu)
+                .padding(8)
+                .overlay(Rectangle().stroke(Thema.kleur(.lijn)))
+                .background(Thema.kleur(.papierZacht))
+            }
             PillKnop(titel: "Laad taken") { laad() }
         }
     }
@@ -90,12 +106,31 @@ struct TaakView: View {
         let id = (t["id"] as? String) ?? "?"
         let titel = (t["titel"] as? String) ?? ""
         let geldig = (t["geldig"] as? Bool) ?? false
+        let eigenaar = (t["eigenaar"] as? String) ?? ""
         return HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(titel.isEmpty ? id : titel).font(Thema.tekst(12, gewicht: .semibold))
-                Text(id).font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+                HStack(spacing: 8) {
+                    Text(id).font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+                    // S13 — eigenaar uit het familie-register, in het overzicht
+                    if !eigenaar.isEmpty {
+                        Text("·").font(Thema.tekst(10)).foregroundStyle(Thema.kleur(.gedempt))
+                        Text(eigenaar.uppercased())
+                            .font(Thema.tekst(9, gewicht: .semibold)).tracking(1.2)
+                            .foregroundStyle(Thema.kleur(.inkt))
+                    }
+                }
             }
             Spacer()
+            if !eigenaar.isEmpty && koppelbaar {
+                PillKnop(titel: "Ontkoppel", compact: true) {
+                    koppelEigenaar(taak: id, naam: "")
+                }
+            } else if koppelbaar {
+                PillKnop(titel: "Koppel", compact: true) {
+                    koppelEigenaar(taak: id, naam: eigenaarKeuze)
+                }
+            }
             StatusBadge(tekst: geldig ? "GELDIG" : "ONGELDIG",
                         stijl: geldig ? .bewezen : .herziening)
             if geldig {
@@ -124,17 +159,45 @@ struct TaakView: View {
         let doel = boomPad.trimmingCharacters(in: .whitespaces)
         guard !doel.isEmpty else { fout = "Vul eerst het pad naar de boom."; return }
         Task {
+            // S13 — eerst de familie (voor het koppel-menu), dan de taken
+            let f = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "familie", invoer: ["actie": "status"])
+            let namen = ((f?.data["familie"] as? [[String: Any]]) ?? [])
+                .compactMap { $0["naam"] as? String }
             let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
-                                           commando: "taak",
-                                           invoer: ["doel": doel])
+                                           commando: "taakkoppel", invoer: ["doel": doel,
+                                                                            "actie": "lijst"])
             await MainActor.run {
                 geladen = true
+                familieNamen = namen
+                koppelbaar = !namen.isEmpty
                 guard let r, r.ok else {
+                    // taken via de gewone weg — het zijbalk-overzicht is extra
                     fout = r?.fout ?? "adapter reageerde niet — controleer Instellingen"
                     return
                 }
                 fout = nil
                 taken = r.data["taken"] as? [[String: Any]] ?? []
+                if eigenaarKeuze.isEmpty { eigenaarKeuze = namen.first ?? "" }
+            }
+        }
+    }
+
+    /// S13 — koppel of ontkoppel de eigenaar van een taak via de adapter.
+    private func koppelEigenaar(taak id: String, naam: String) {
+        let doel = boomPad.trimmingCharacters(in: .whitespaces)
+        guard !doel.isEmpty else { fout = "Vul eerst het pad naar de boom."; return }
+        Task {
+            let r = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                           commando: "taakkoppel",
+                                           invoer: ["doel": doel, "actie": "koppel",
+                                                    "taak_id": id, "eigenaar": naam])
+            await MainActor.run {
+                if let fouttekst = r?.fout {
+                    uitslag = "✕ " + fouttekst
+                    return
+                }
+                laad()   // lijst verversen; de adapter is de waarheid
             }
         }
     }

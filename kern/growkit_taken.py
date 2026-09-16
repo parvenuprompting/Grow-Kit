@@ -63,6 +63,37 @@ def laad_taken(pad: Path) -> list[dict]:
         ) from e
 
 
+# ---------------------------------------------------------------- S13 koppelen
+def koppel_eigenaar(pad: Path, taak_id: str, eigenaar: str) -> dict:
+    """Koppel een taak aan een familielid uit het familie-register.
+
+    De familie is wie hij is: alleen namen uit het register zijn geldig.
+    De eigenaar wordt altijd in de eigen schrijfwijze van het register
+    bewaard (register-genormaliseerd, hoofdletterongevoelig gezocht).
+    """
+    from kern.growkit_familie import FAMILIE
+    namen = {a["naam"].lower(): a["naam"] for a in FAMILIE}
+    gekozen = namen.get((eigenaar or "").strip().lower())
+    if gekozen is None:
+        return {"ok": False, "fout":
+                f"'{eigenaar}' staat niet in de familie — de familie is wie hij is."}
+    taken = laad_taken(pad)
+    taak = next((t for t in taken if t.get("id") == taak_id), None)
+    if taak is None:
+        return {"ok": False, "fout": f"taak '{taak_id}' bestaat niet in de takenlijst"}
+    taak["eigenaar"] = gekozen
+    Path(pad).write_text(json.dumps(taken, indent=2, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
+    return {"ok": True, "data": {"taak_id": taak_id, "eigenaar": gekozen}}
+
+
+def taken_met_eigenaar(pad: Path) -> list[dict]:
+    """Taken zoals het zijbalk-overzicht ze toont: id, titel, eigenaar."""
+    return [{"id": t.get("id", ""), "titel": t.get("titel", ""),
+             "eigenaar": t.get("eigenaar")}
+            for t in laad_taken(pad)]
+
+
 def valideer_taak(taak: dict) -> list[str]:
     """Poort-regel (§11, taak-type): geen bewijs-check → de taak bestaat niet."""
     bevindingen = []
