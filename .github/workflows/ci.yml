@@ -7,7 +7,7 @@ on:
 
 jobs:
   tests:
-    name: Tests (546, unittest)
+    name: Tests (814, unittest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,9 +98,21 @@ jobs:
 
       - name: Xcode 16 kiezen (project-format 77 vereist dit)
         run: |
-          ls /Applications | grep Xcode || true
-          sudo xcode-select -s /Applications/Xcode_16*.app/Contents/Developer || \
+          ls /Applications | grep -i xcode || true
+          # De glob mag niet als kale string doorgegeven worden: de shell zet
+          # meerdere matches om in één onbruikbaar argument. Kies bewust de
+          # nieuwste Xcode 16-bundel die echt een Contents/Developer heeft.
+          XCODE_APP=""
+          for kandidaat in $(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -Vr); do
+            if [ -d "$kandidaat/Contents/Developer" ]; then XCODE_APP="$kandidaat"; break; fi
+          done
+          if [ -n "$XCODE_APP" ]; then
+            echo "Xcode gekozen: $XCODE_APP"
+            sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          else
+            echo "Geen bruikbare Xcode_16*-bundel — terug naar de standaard-Xcode."
             sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          fi
           xcodebuild -version
 
       - name: XcodeGen (pinned 2.46.0)
