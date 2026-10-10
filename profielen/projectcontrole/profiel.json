@@ -1,0 +1,84 @@
+{
+  "profiel": "projectcontrole",
+  "status": "voorbeeld",
+  "beschrijving": "Controleert of een projectmap de basis op orde heeft en levert een kort rapport met tellingen. Draait volledig lokaal.",
+  "voorbeeld": {
+    "titel": "Projectcontrole",
+    "uitleg": "Grow Kit telt de kernbestanden, controleert of README, LICENSE en tests aanwezig zijn en legt het resultaat in een rapport. Jij leest het rapport en beslist.",
+    "criteria": [
+      "Het rapport controle/controle.md bestaat en is gelijk aan het sjabloon",
+      "Het aantal kernbestanden staat in controle/kernbestanden.txt",
+      "De basiscontrole (README, LICENSE, tests) staat in controle/basis.txt"
+    ]
+  },
+  "mappen": ["controle"],
+  "stappen": [
+    {
+      "id": "stap-001",
+      "commando": "mkdir -p controle",
+      "verwacht": "de map controle bestaat in de opdrachtmap",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -d controle && echo CONTROLE-OK",
+        "verwacht_substr": "CONTROLE-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": "mkdir -p ./controle",
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-002",
+      "commando": "cp \"{GROWKIT}/profielen/projectcontrole/sjablonen/controle.md\" ./controle/controle.md",
+      "verwacht": "controle/controle.md staat er en is identiek aan het sjabloon",
+      "bewijs": {
+        "type": "file_equals",
+        "sjabloon": "controle.md",
+        "pad": "controle/controle.md"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-003",
+      "commando": "find \"{GROWKIT}/kern\" -name '*.py' | wc -l | tr -d ' ' > controle/kernbestanden.txt",
+      "verwacht": "controle/kernbestanden.txt bevat het aantal kernbestanden",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -s controle/kernbestanden.txt && echo TELLING-OK",
+        "verwacht_substr": "TELLING-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-004",
+      "commando": "{ test -f \"{GROWKIT}/README.md\" && test -f \"{GROWKIT}/LICENSE\" && test -d \"{GROWKIT}/tests\"; } && printf 'basis in orde\\n' > controle/basis.txt",
+      "verwacht": "README, LICENSE en tests bestaan; controle/basis.txt legt dat vast",
+      "bewijs": {
+        "type": "file_exists",
+        "pad": "controle/basis.txt",
+        "bevat": "basis"
+      },
+      "bij_falen": {
+        "alternatief_commando": "printf 'basis onvolledig\\n' > controle/basis.txt",
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-005",
+      "mens_nodig": {
+        "instructie": "Lees controle/controle.md, controle/basis.txt en controle/kernbestanden.txt. Klopt deze controle? Bevestig of wijs af."
+      },
+      "verwacht": "jouw oordeel over de controle"
+    }
+  ]
+}

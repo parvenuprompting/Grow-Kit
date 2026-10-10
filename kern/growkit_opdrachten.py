@@ -10,7 +10,7 @@ import uuid
 
 from kern.growkit_opslag import transactie, voeg_gebeurtenissen_toe
 from kern.growkit_resultaat import bewijsrapport
-from kern.growkit_motor import voer_uit
+from kern.growkit_motor import voer_uit, machine_deel_voltooid, uitkomst
 from kern.growkit_hervat import reconstructie
 from kern.growkit_ratificatie import ratificeer_bulk, wacht_ratificatie_stappen
 from kern.growkit_panic import activeer_panic, herstel_na_panic, lees_status
@@ -137,7 +137,16 @@ def beoordeel(opdracht_id, goedgekeurd, toelichting):
         if wacht:
             ratificeer_bulk(log, wacht if goedgekeurd else [],
                             [] if goedgekeurd else [{'stap_id': s, 'reden': toelichting} for s in wacht])
-            status = 'gepauzeerd'
+            # Keur je de laatste mens-stappen goed en is er daarna niets meer te
+            # draaien, dan ís dat het eindresultaat: één bevestiging, geen tweede
+            # herstart-ronde. Staat er nog machinewerk open, dan blijft het bij
+            # 'gepauzeerd' — eerst draaien, daarna het resultaat beoordelen.
+            if goedgekeurd and machine_deel_voltooid(data['profiel'], log):
+                status = 'goedgekeurd'
+                voeg_gebeurtenissen_toe(log, [{'type': 'acceptatie', 'status': status,
+                                               'bewijs': toelichting, 'tijdstip': time.time()}])
+            else:
+                status = 'gepauzeerd'
         else:
             status = 'goedgekeurd' if goedgekeurd else 'afgekeurd'
             voeg_gebeurtenissen_toe(log, [{'type': 'acceptatie', 'status': status,

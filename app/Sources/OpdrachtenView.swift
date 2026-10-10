@@ -20,6 +20,7 @@ struct OpdrachtenView: View {
     @State private var fout: String?
     @State private var bezig = false
     @State private var nieuw = false
+    @State private var voorbeelden: [[String: Any]] = []
     // Dagoverzicht (verhuisd uit HomeView): alleen gevuld in de stand "Vandaag".
     @State private var gebruikersNaam = "Gebruiker"
     @State private var heroTekst = ""
@@ -63,6 +64,7 @@ struct OpdrachtenView: View {
                             Text("\(opdrachten.filter { ($0["status"] as? String) == "goedgekeurd" }.count) van \(opdrachten.count) opdrachten door jou goedgekeurd")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
+                        voorbeeldLijst
                     }.padding(22)
                 }.frame(width: 280)
                 Divider()
@@ -178,6 +180,43 @@ struct OpdrachtenView: View {
         }
     }
 
+    // MARK: - Voorbeeldopdrachten (drie lokale demo's, advies 5)
+
+    /// Drie kant-en-klare opdrachten uit de repo. Ze komen uit de adapter, niet uit
+    /// een tweede lijst in Swift — anders kan de demo losraken van het echte plan.
+    private var voorbeeldLijst: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if !voorbeelden.isEmpty {
+                Text("VOORBEELDEN").font(Thema.tekst(10, gewicht: .semibold)).tracking(3)
+                    .foregroundStyle(Thema.kleur(.zacht)).padding(.top, 10)
+                Text("Kies er één. Je ziet eerst het plan, daarna beslis jij of het mag draaien.")
+                    .font(.caption).foregroundStyle(.secondary)
+                ForEach(voorbeelden.indices, id: \.self) { i in
+                    let v = voorbeelden[i]
+                    Button {
+                        Task { await startVoorbeeld(v) }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(v["titel"] as? String ?? "Voorbeeld").fontWeight(.medium)
+                            Text(v["uitleg"] as? String ?? "").font(.caption)
+                                .foregroundStyle(.secondary).lineLimit(3)
+                            Text("\(v["stappen"] as? Int ?? 0) stappen · \(v["mens_stappen"] as? Int ?? 0) keer jouw besluit")
+                                .font(.caption2).foregroundStyle(Thema.kleur(.gedempt))
+                        }.frame(maxWidth: .infinity, alignment: .leading).padding(8)
+                    }.buttonStyle(.plain)
+                    .disabled(bezig)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1) }
+                }
+            }
+        }
+    }
+
+    @MainActor private func startVoorbeeld(_ v: [String: Any]) async {
+        await actie("nieuw", extra: ["titel": v["titel"] ?? "",
+                                     "profiel": v["profiel"] ?? "",
+                                     "criteria": v["criteria"] ?? []])
+    }
+
     private var formulier: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Wat wil je bereiken?").font(Thema.display(26))
@@ -289,6 +328,10 @@ struct OpdrachtenView: View {
             if !fouten.isEmpty { fout = fouten.joined(separator: "\n") }
             let p = try await runner.roep(repoPad: repoPad, interpreter: interpreter, commando: "profielen", invoer: [:])
             profielen = p.data["profielen"] as? [[String: Any]] ?? []
+            if let v = try? await runner.roep(repoPad: repoPad, interpreter: interpreter,
+                                              commando: "opdrachten", invoer: ["actie": "voorbeelden"]) {
+                voorbeelden = v.data["voorbeelden"] as? [[String: Any]] ?? []
+            }
         } catch { fout = error.localizedDescription }
         if vandaag { await laadVandaag() }
     }

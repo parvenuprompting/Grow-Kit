@@ -1688,6 +1688,9 @@ def cmd_opdrachten(invoer: dict) -> dict:
                 data = opdrachten.uitvoeren(invoer.get("id"), invoer.get("plan_hash"), invoer.get("bevestig"))
             elif actie == "beoordeel":
                 data = opdrachten.beoordeel(invoer.get("id"), invoer.get("goedgekeurd"), str(invoer.get("toelichting", "")))
+            elif actie == "voorbeelden":
+                from kern import growkit_voorbeelden
+                data = {"voorbeelden": growkit_voorbeelden.voorbeelden()}
             elif actie in ("panic", "herstel"):
                 data = opdrachten.panic(invoer.get("id"), herstel=actie == "herstel")
             else:

@@ -1,0 +1,83 @@
+{
+  "profiel": "documentenoverzicht",
+  "status": "voorbeeld",
+  "beschrijving": "Maakt een overzicht van de documenten in een map: hoeveel markdown-bestanden, waar ze staan en wat er opvalt. Draait volledig lokaal.",
+  "voorbeeld": {
+    "titel": "Documentenoverzicht",
+    "uitleg": "Grow Kit telt de markdown-bestanden in de documentatiemap en zet de lijst in een overzicht. Jij leest het na en beslist.",
+    "criteria": [
+      "Het overzicht overzicht/overzicht.md bestaat en is gelijk aan het sjabloon",
+      "Het aantal markdown-bestanden staat in overzicht/markdown-aantal.txt",
+      "De bestandslijst staat in overzicht/markdown-lijst.txt"
+    ]
+  },
+  "mappen": ["overzicht"],
+  "stappen": [
+    {
+      "id": "stap-001",
+      "commando": "mkdir -p overzicht",
+      "verwacht": "de map overzicht bestaat in de opdrachtmap",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -d overzicht && echo OVERZICHT-OK",
+        "verwacht_substr": "OVERZICHT-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": "mkdir -p ./overzicht",
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-002",
+      "commando": "find \"{GROWKIT}/docs\" -name '*.md' | wc -l | tr -d ' ' > overzicht/markdown-aantal.txt",
+      "verwacht": "overzicht/markdown-aantal.txt bevat het aantal markdown-bestanden",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -s overzicht/markdown-aantal.txt && echo AANTAL-OK",
+        "verwacht_substr": "AANTAL-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-003",
+      "commando": "find \"{GROWKIT}/docs\" -name '*.md' > overzicht/markdown-lijst.txt",
+      "verwacht": "overzicht/markdown-lijst.txt bestaat",
+      "bewijs": {
+        "type": "file_exists",
+        "pad": "overzicht/markdown-lijst.txt"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-004",
+      "commando": "cp \"{GROWKIT}/profielen/documentenoverzicht/sjablonen/overzicht.md\" ./overzicht/overzicht.md",
+      "verwacht": "overzicht/overzicht.md staat er en is identiek aan het sjabloon",
+      "bewijs": {
+        "type": "file_equals",
+        "sjabloon": "overzicht.md",
+        "pad": "overzicht/overzicht.md"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-005",
+      "mens_nodig": {
+        "instructie": "Lees overzicht/overzicht.md, overzicht/markdown-aantal.txt en overzicht/markdown-lijst.txt. Is dit overzicht compleet genoeg? Bevestig of wijs af."
+      },
+      "verwacht": "jouw oordeel over het overzicht"
+    }
+  ]
+}
