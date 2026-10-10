@@ -72,7 +72,8 @@ class RouteAfleiding(unittest.TestCase):
         """Elk bekend netwerkcommando moet als extern worden herkend."""
         for commando in ("git push origin main", "git clone https://x.nl/r.git",
                          "git fetch --all", "pip install requests",
-                         "npm install left-pad", "nc -l 1234", "ftp server",
+                         "npm install left-pad", "nc -l 1234", "ncat -l 1234",
+                         "ftp server", "sftp gast@server",
                          "python -c 'import urllib.request'",
                          "python -c 'import requests'",
                          "ssh gast@server 'ls'", "scp bestand gast@server:/tmp",
@@ -84,8 +85,8 @@ class RouteAfleiding(unittest.TestCase):
         self.assertEqual(route.route(een_stap("GIT PUSH origin main"))["soort"], "cloud")
 
     def test_woordgrens_voorkomt_valse_alarmen(self):
-        """'sync' is geen rsync en 'ncat' is geen nc."""
-        for commando in ("cat sync.json", "python3 -m json.tool ncat.log",
+        """'sync' is geen rsync en 'curling' is geen curl."""
+        for commando in ("cat sync.json", "python3 -m json.tool macht.log",
                          "echo curling is een sport"):
             self.assertEqual(route.route(een_stap(commando))["soort"], "lokaal", commando)
 

@@ -13,7 +13,7 @@ SOORTEN = ("lokaal", "eigen_vps", "cloud")
 # Losse woorden matchen op woordgrens (\bssh\b), vaste reeksen letterlijk.
 _CLOUD = ("curl", "wget", "http://", "https://", "urllib", "requests",
           "git push", "git clone", "git fetch", "pip install", "npm install",
-          "ftp", "nc")
+          "ftp", "sftp", "nc", "ncat")
 _EIGEN_VPS = ("ssh", "scp", "rsync")
 
 
