@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS_14%2B-black?style=flat-square)]()
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-802_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-799_in_CI-success?style=flat-square)]()
 [![Agents](https://img.shields.io/badge/agent-familie-7_teal?style=flat-square)]()
 [![Privacy](https://img.shields.io/badge/privacy-lokaal_eerst-success?style=flat-square)](#wat-verlaat-je-machine)
 [![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
@@ -180,7 +180,7 @@ Elke push en PR draait automatisch **CI** (GitHub Actions):
 2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
 3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
-- **802 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
+- **799 in CI (Linux); 818 op macOS — 19 Digitale-Kloon-tests vereisen de macOS Keychain.** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
 - **13 end-to-end-scripts**: fase-testen + slice-E2E
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
 - Elke nieuwe slice TDD: eerst rood, dan groen, dan end-to-end
