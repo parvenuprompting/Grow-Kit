@@ -3,8 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from kern.growkit_motor import voer_uit, voer_stap_uit
+from kern.growkit_motor import (voer_uit, voer_stap_uit, uitkomst,
+                                machine_deel_voltooid)
 from kern.growkit_bewijs import controleer
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 from kern.growkit_panic import activeer_panic, is_panic_actief, lees_status
 from kern.growkit_ratificatie import wacht_ratificatie_stappen
 
@@ -53,3 +55,39 @@ class ExecutionGuards(unittest.TestCase):
         with patch('kern.growkit_motor.subprocess.run', side_effect=subprocess.TimeoutExpired('test', 300)):
             self.assertFalse(voer_uit({'stappen': [self.stap]}, self.doel, self.log, None))
         self.assertEqual(json.loads(self.log.read_text())[-1]['status'], 'gefaald')
+
+    # --- pauze is geen fout (advies 2, tweede ronde) -----------------------
+
+    def test_mens_pauze_heet_wacht_op_mens_en_niet_gefaald(self):
+        """Een mens-stap stopt de motor (pauze), maar is géén motor-faal."""
+        mens = {'id': 'stap-1', 'mens_nodig': {'instructie': 'Controleer'}}
+        self.assertFalse(voer_uit({'stappen': [self.stap, mens]}, self.doel, self.log, None))
+        self.assertEqual(uitkomst(self.log), 'wacht_op_mens')
+        # alle machine-stappen zijn klaar — alleen de mens wacht nog
+        self.assertTrue(machine_deel_voltooid({'stappen': [self.stap, mens]}, self.log))
+
+    def test_pauze_midden_in_het_plan_is_niet_voltooid(self):
+        """Stop je vóór een machine-stap, dan is het werk niet af: geen volmaak."""
+        profiel = {'stappen': [self.stap,
+                               {'id': 'stap-9', 'commando': 'touch negen',
+                                'bewijs': {'type': 'file_exists', 'pad': 'negen'}},
+                               {'id': 'stap-10', 'mens_nodig': {'instructie': 'Controleer'}}]}
+        voeg_gebeurtenissen_toe(self.log, [
+            {'stap': 'stap-2', 'status': 'geslaagd', 'bewijs': 'x', 'tijdstip': 'nu'},
+            {'stap': 'stap-10', 'status': 'wacht_op_mens', 'bewijs': 'x', 'tijdstip': 'nu'}])
+        self.assertEqual(uitkomst(self.log), 'wacht_op_mens')
+        self.assertFalse(machine_deel_voltooid(profiel, self.log))
+
+    def test_panic_is_gepauzeerd_en_niet_voltooid(self):
+        activeer_panic(self.doel, 'test')
+        self.assertFalse(voer_uit({'stappen': [self.stap]}, self.doel, self.log, None))
+        self.assertEqual(uitkomst(self.log), 'gepauzeerd')
+        self.assertFalse(machine_deel_voltooid({'stappen': [self.stap]}, self.log))
+
+    def test_echt_falen_wint_van_een_wachtende_mens(self):
+        """Een gefaalde stap mag nooit als 'wacht op de mens' doorgaan."""
+        voeg_gebeurtenissen_toe(self.log, [
+            {'stap': 'stap-1', 'status': 'geslaagd', 'bewijs': 'x', 'tijdstip': 'nu'},
+            {'stap': 'stap-2', 'status': 'wacht_op_mens', 'bewijs': 'x', 'tijdstip': 'nu'},
+            {'stap': 'stap-3', 'status': 'gefaald', 'bewijs': 'x', 'tijdstip': 'nu'}])
+        self.assertEqual(uitkomst(self.log), 'gefaald')

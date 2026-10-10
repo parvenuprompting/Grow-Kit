@@ -110,6 +110,11 @@ def voer_uit(profiel: dict, doel: Path, logboek: Path, sjablonen_map: Path | Non
              reviewconfig: dict | None = None, vangnet: Path | None = None) -> bool:
     """Volledige run. Mens-stappen pauzeren (wacht_op_mens), bewijs-stappen bewijzen.
 
+    True betekent: het hele plan is gelopen. False betekent: de run stopte —
+    vóór een mens-moment, op PANIC of na een mislukte stap. Wát de reden was,
+    staat in het logboek; gebruik `uitkomst()` om pauze van falen te scheiden.
+    Wie False als "mislukt" leest, noemt een pauze onterecht een motor-faal.
+
     `vangnet` is optioneel (Vangnet-fase 1): gezet betekent het dat elke
     stap-uitkomst en review-aanroep wordt vastgelegd. Faalt het vangnet,
     dan merkt de loop er niets van (fail-open)."""
@@ -133,3 +138,61 @@ def voer_uit(profiel: dict, doel: Path, logboek: Path, sjablonen_map: Path | Non
             print(f"  Stap {stap['id']} faalde na alternatief. Roep de mens.")
             return False
     return alles_geslaagd
+
+
+# --- uitkomst van een run: pauze is geen fout --------------------------------
+
+_MENS_STATUSSEN = ("wacht_op_mens", "review_ok_wacht_ratificatie")
+
+
+def _laatste_status_per_stap(logboek: Path) -> dict[str, str]:
+    """Laatst gelogde status per stap (append-only: het laatste wint)."""
+    if not logboek.exists():
+        return {}
+    try:
+        entries = json.loads(logboek.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    laatste: dict[str, str] = {}
+    for entry in entries:
+        if entry.get("stap"):
+            laatste[entry["stap"]] = entry.get("status")
+    return laatste
+
+
+def uitkomst(logboek: Path) -> str:
+    """Wat was de uitkomst van de laatste run?
+
+    'geslaagd' | 'wacht_op_mens' | 'gepauzeerd' | 'gefaald'.
+
+    Een mens-moment is geen fout: de motor stopte omdat jij moet beslissen.
+    'gefaald' wint altijd van de mens-statussen en 'gepauzeerd' (PANIC) daarna —
+    anders zou een echt gefaalde stap als "wacht op de mens" verdergaan.
+    """
+    statussen = set(_laatste_status_per_stap(logboek).values())
+    if "gefaald" in statussen:
+        return "gefaald"
+    if "gepauzeerd" in statussen:
+        return "gepauzeerd"
+    if statussen & set(_MENS_STATUSSEN):
+        return "wacht_op_mens"
+    return "geslaagd"
+
+
+def machine_deel_voltooid(profiel: dict, logboek: Path) -> bool:
+    """Zijn alle stappen zónder mens_nodig geslaagd?
+
+    Zo ja, dan is pauzeren geen half werk: de machine-kant is af en alleen jouw
+    bevestiging wacht nog (een boom volmaken en registreren mag dan). Pauzeert de
+    run vóór een latere machine-stap, dan is dit False — er is niets af te maken.
+    """
+    from kern.growkit_hervat import reconstructie
+
+    resultaat = reconstructie(logboek, profiel)
+    if resultaat.get("fout"):
+        return False
+    machine_stappen = [s for s in profiel.get("stappen", []) if not s.get("mens_nodig")]
+    if not machine_stappen:
+        return False
+    return all(resultaat["stappen"][s["id"]]["beslissing"] == "overslaan"
+               for s in machine_stappen)

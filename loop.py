@@ -87,11 +87,15 @@ def plant_profiel(invoer_fn=input) -> int:
             return 1
     sjablonen = PROFILES_DIR / naam / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel_pad, logboek, sjablonen, reviewconfig=reviewconfig)
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Pauze is geen fout: staat de mens-stap aan het eind van het plan, dan is de
+    # machine-kant af en mag de boom volmaakt en geregistreerd worden.
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel_pad, logboek)
         growkit_oerwoud.registreer_nieuwe_boom(doel_pad, invoer_fn=invoer_fn)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn=input) -> int:
@@ -156,9 +160,12 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
                                       PROFILES_DIR / profiel["profiel"] / "sjablonen",
                                       reviewconfig=reviewconfig)
     growkit_oerwoud.log_run_latch(logboek, "beeindigd")
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Ook bij hervatten: pauze vóór de mens is geen faal (zie plant_profiel).
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         growkit_oerwoud.volmaak_na_plant(doel, logboek)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 def ratificeer(doel: Path, invoer_fn=input) -> int:

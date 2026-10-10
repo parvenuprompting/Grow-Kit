@@ -104,16 +104,24 @@ def cmd_hervat(invoer: dict) -> dict:
         geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
                                           Path(__file__).parent / "profielen" / naam / "sjablonen",
                                           reviewconfig=reviewconfig)
-        if geslaagd:
+        stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+        # Ook hier: een pauze vóór de mens is geen faal. Is de machine-kant van
+        # het hele plan af, dan mag de boom volmaakt worden.
+        if geslaagd or (stop == "wacht_op_mens"
+                        and growkit_motor.machine_deel_voltooid(profiel, logboek)):
             growkit_oerwoud.volmaak_na_plant(doel, logboek)
     stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"],
                 "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
-    if not geslaagd:
+    if not geslaagd and stop != "wacht_op_mens":
+        if stop == "gepauzeerd":
+            raise AdapterFaal("PANIC actief — er starten geen nieuwe commando's; "
+                              "herstel handmatig", stappen)
         raise AdapterFaal("restdraai faalde na alternatief — roep de mens", stappen)
     return {"ok": True, "data": {"stappen": stappen,
-                                 "herstartpunt": resultaat["herstartpunt"]}}
+                                 "herstartpunt": resultaat["herstartpunt"],
+                                 "status": "geslaagd" if geslaagd else "wacht_op_mens"}}
 
 
 def cmd_taak(invoer: dict) -> dict:
@@ -166,7 +174,13 @@ def cmd_profielen(invoer: dict) -> dict:
 
 
 class AdapterFaal(Exception):
-    """Motor-faal: {"ok": false, "fout", "stappen"} met exit 2 (faalcontract)."""
+    """Motor-faal: {"ok": false, "fout", "stappen"} met exit 2 (faalcontract).
+
+    Alleen voor echt falen (een stap mislukt na zijn alternatief) en voor PANIC.
+    Een pauze vóór de mens (wacht_op_mens) is géén faal: die komt terug als
+    {"ok": true, ..., "status": "wacht_op_mens"} met exit 0 — de motor stopte
+    omdat jij moet beslissen, niet omdat er iets stuk is.
+    """
 
     def __init__(self, fout: str, stappen: list[dict]):
         super().__init__(fout)
@@ -244,7 +258,11 @@ def cmd_plant(invoer: dict) -> dict:
         geslaagd = growkit_motor.voer_uit(profiel, doel, logboek,
                                           Path(__file__).parent / "profielen" / naam / "sjablonen",
                                           reviewconfig=reviewconfig)
-        if geslaagd:
+        stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+        # Pauze is geen fout: is de machine-kant af, dan is de boom klaar en wacht
+        # alleen jouw bevestiging (een mens-stap aan het eind van het plan).
+        if geslaagd or (stop == "wacht_op_mens"
+                        and growkit_motor.machine_deel_voltooid(profiel, logboek)):
             growkit_oerwoud.volmaak_na_plant(doel, logboek)
             if brein_pad:
                 try:
@@ -256,10 +274,14 @@ def cmd_plant(invoer: dict) -> dict:
                 "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
-    if not geslaagd:
+    if not geslaagd and stop != "wacht_op_mens":
+        if stop == "gepauzeerd":
+            raise AdapterFaal("PANIC actief — er starten geen nieuwe commando's; "
+                              "herstel handmatig", stappen)
         raise AdapterFaal("motor-faal na alternatief — roep de mens", stappen)
     return {"ok": True, "data": {"stappen": stappen, "registratie": registratie,
-                                 "brein_pad": str(brein_pad) if brein_pad else None}}
+                                 "brein_pad": str(brein_pad) if brein_pad else None,
+                                 "status": "geslaagd" if geslaagd else "wacht_op_mens"}}
 
 
 def cmd_ratificeer(invoer: dict) -> dict:

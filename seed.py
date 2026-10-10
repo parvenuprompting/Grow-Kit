@@ -203,10 +203,13 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen, reviewconfig=reviewconfig)
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Pauze is geen fout (zie loop.py): machine-kant af → boom volmaken.
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel, logboek)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 if __name__ == "__main__":
