@@ -4,6 +4,8 @@ Eén brein, vele bomen: elke boom meldt zich aan in het register van het
 brein, stuurt VOORSTELLEN append-only door en leest het brein alleen-lezen.
 De drift-guard (§13) is hard: omgevings-specifieke staat reist nooit mee.
 """
+
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import datetime
 import json
 import os
@@ -187,7 +189,7 @@ def controleer_geboortebewijs(bestand: Path) -> list[str]:
 
 def log_geboorte_entry(logboek: Path, bewijstekst: str) -> None:
     """Append-only systeem-entry over het geboortebewijs (patroon: mijlpaal)."""
-    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries = []
     entries.append({
         "type": "geboorte",
         "stap": "geboortebewijs",
@@ -195,7 +197,7 @@ def log_geboorte_entry(logboek: Path, bewijstekst: str) -> None:
         "bewijs": bewijstekst,
         "tijdstip": _nu(),
     })
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, entries)
 
 
 def volmaak_na_plant(doel: Path, logboek: Path) -> bool:
@@ -269,7 +271,7 @@ def stuur_voorstellen(boom_doel: Path, brein_pad: Path) -> tuple[int, list[str]]
 
 def log_gebeurtenis(logboek: Path, bewijstekst: str) -> None:
     """Append-only gebeurtenis in het boom-logboek (doorstroom e.d.)."""
-    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries = []
     entries.append({
         "type": "doorstroom",
         "stap": "oerwoud",
@@ -277,7 +279,7 @@ def log_gebeurtenis(logboek: Path, bewijstekst: str) -> None:
         "bewijs": bewijstekst,
         "tijdstip": _nu(),
     })
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, entries)
 
 
 def status_data(doel: Path) -> dict:
@@ -579,13 +581,13 @@ def log_run_latch(logboek: Path, status: str) -> None:
     Bij aanvang van een loop-run: {"type": "run", "status": "gestart",
     "pid": os.getpid()}; bij normaal einde: status "beeindigd". Lees via
     levensignaal() — 'gestart' zonder levend pid = gestopt (crash)."""
-    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries = []
     entry = {"type": "run", "status": status, "tijdstip": _nu()}
     if status == "gestart":
         entry["pid"] = os.getpid()
     entries.append(entry)
     logboek.parent.mkdir(parents=True, exist_ok=True)
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, entries)
 
 
 def acties_overzicht(doel: Path) -> dict:
@@ -721,11 +723,10 @@ def curate_items(brein_pad: Path | None, items: list[dict]) -> list[dict]:
                 f.write(f"- {naam}: {reden}\n")
             status = "afgewezen"
             detail = reden
-        entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+        entries = []
         entries.append({"type": "curatie", "item": naam, "status": status,
                         "bewijs": detail, "tijdstip": _nu()})
-        logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
-                           encoding="utf-8")
+        voeg_gebeurtenissen_toe(logboek, entries)
         resultaten.append({"naam": naam, "status": status, "detail": detail})
     return resultaten
 

@@ -6,6 +6,7 @@ de Scope-poort blijft de enige invoerbescherming en de motor het enige
 uitvoeringspad. Kernregel in fase 4 (§11.1 hard): de loop voert niets uit
 dat niet de mensbevestiging heeft gehad.
 """
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import json
 import sys
 from pathlib import Path
@@ -77,7 +78,7 @@ def plant_profiel(invoer_fn=input) -> int:
     doel_pad.mkdir(parents=True, exist_ok=True)
     logboek = doel_pad / "logboek.json"
     if not logboek.exists():
-        logboek.write_text("[]", encoding="utf-8")
+        voeg_gebeurtenissen_toe(logboek, [])
     with open(PROFILES_DIR / naam / "profiel.json", encoding="utf-8") as f:
         profiel = json.load(f)
     profiel = growkit_motor.vervang_growkit_pad(profiel, REPO.resolve())
@@ -86,11 +87,15 @@ def plant_profiel(invoer_fn=input) -> int:
             return 1
     sjablonen = PROFILES_DIR / naam / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel_pad, logboek, sjablonen, reviewconfig=reviewconfig)
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Pauze is geen fout: staat de mens-stap aan het eind van het plan, dan is de
+    # machine-kant af en mag de boom volmaakt en geregistreerd worden.
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel_pad, logboek)
         growkit_oerwoud.registreer_nieuwe_boom(doel_pad, invoer_fn=invoer_fn)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn=input) -> int:
@@ -155,9 +160,12 @@ def hervat_boom(doel: Path | None = None, profiel: dict | None = None, invoer_fn
                                       PROFILES_DIR / profiel["profiel"] / "sjablonen",
                                       reviewconfig=reviewconfig)
     growkit_oerwoud.log_run_latch(logboek, "beeindigd")
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Ook bij hervatten: pauze vóór de mens is geen faal (zie plant_profiel).
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         growkit_oerwoud.volmaak_na_plant(doel, logboek)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 def ratificeer(doel: Path, invoer_fn=input) -> int:

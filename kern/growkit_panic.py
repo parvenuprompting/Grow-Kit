@@ -3,6 +3,8 @@
 # De Baas kan alleen via deze knop alles still zetten; herstart is handmatig.
 from __future__ import annotations
 
+from kern.growkit_opslag import voeg_gebeurtenissen_toe, schrijf_atomair
+
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,18 +23,13 @@ def _status_pad(doel: Path) -> Path:
 def _log_panic(logboek: Path, status: str, reden: str) -> None:
     """Append-only: elke panic/herstel is een nieuwe entry, nooit een verwijderde."""
     entries = []
-    if logboek.exists():
-        entries = json.loads(logboek.read_text(encoding="utf-8"))
     entries.append({
         "stap": "PANIC",
         "status": status,
         "bewijs": reden,
         "tijdstip": _nu(),
     })
-    logboek.write_text(
-        json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    voeg_gebeurtenissen_toe(logboek, entries)
 
 
 def activeer_panic(doel: Path, reden: str) -> dict:
@@ -48,10 +45,7 @@ def activeer_panic(doel: Path, reden: str) -> dict:
         "reden": reden,
         "tijdstip": _nu(),
     }
-    _status_pad(doel).write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    schrijf_atomair(_status_pad(doel), payload)
     logboek = doel / "logboek.json"
     _log_panic(logboek, "panic_actief", reden)
     return payload
@@ -68,10 +62,7 @@ def herstel_na_panic(doel: Path) -> dict:
         "reden": "hersteld na panic",
         "tijdstip": _nu(),
     }
-    pad.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    schrijf_atomair(pad, payload)
     logboek = doel / "logboek.json"
     _log_panic(logboek, "panic_hersteld", "herstel na panic")
     return payload
@@ -79,14 +70,7 @@ def herstel_na_panic(doel: Path) -> dict:
 
 def is_panic_actief(doel: Path) -> bool:
     """De motor roept dit vóór elke stap. Actieve panic = geen nieuwe stappen."""
-    pad = _status_pad(Path(doel))
-    if not pad.exists():
-        return False
-    try:
-        data = json.loads(pad.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return False
-    return bool(data.get("actief", False))
+    return lees_status(doel)["actief"]
 
 
 def lees_status(doel: Path) -> dict:
@@ -95,6 +79,9 @@ def lees_status(doel: Path) -> dict:
     if not pad.exists():
         return {"actief": False, "reden": "geen panic", "tijdstip": None}
     try:
-        return json.loads(pad.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {"actief": False, "reden": "status-bestand onleesbaar", "tijdstip": None}
+        data = json.loads(pad.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or type(data.get("actief")) is not bool:
+            raise ValueError("ongeldige panic-status")
+        return data
+    except (ValueError, OSError):
+        return {"actief": True, "reden": "status-bestand onleesbaar — herstel handmatig", "tijdstip": None}

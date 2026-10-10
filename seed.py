@@ -6,6 +6,8 @@ Gebruik:
     python3 seed.py --profiel tweede-brein --doel ~/mijn-brein
     python3 seed.py --slijp                  # Prompt-slijper (fase 3)
 """
+
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import argparse
 import datetime
 import json
@@ -60,7 +62,7 @@ def vraag_mijlpaal_bevestiging(profiel: dict, doel: Path, logboek: Path,
     if antwoord != "ja":
         print("  Geen bevestiging — geen actie.")
         return False
-    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries = []
     entries.append({
         "type": "mijlpaal",
         "stap": "mijlpaal-start",
@@ -68,7 +70,7 @@ def vraag_mijlpaal_bevestiging(profiel: dict, doel: Path, logboek: Path,
         "bewijs": "mijlpaal-controle bevestigd door de mens (§11.4)",
         "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     })
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, entries)
     return True
 
 
@@ -190,7 +192,7 @@ def main(argv: list[str] | None = None) -> int:
     doel.mkdir(parents=True, exist_ok=True)
     logboek = doel / "logboek.json"
     if not logboek.exists():
-        logboek.write_text("[]", encoding="utf-8")
+        voeg_gebeurtenissen_toe(logboek, [])
     profiel_pad = PROFILES_DIR / keuze["profiel"] / "profiel.json"
     with open(profiel_pad, encoding="utf-8") as f:
         profiel = json.load(f)
@@ -201,10 +203,13 @@ def main(argv: list[str] | None = None) -> int:
             return 1
     sjablonen = PROFILES_DIR / keuze["profiel"] / "sjablonen"
     geslaagd = growkit_motor.voer_uit(profiel, doel, logboek, sjablonen, reviewconfig=reviewconfig)
-    if geslaagd:
+    stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+    # Pauze is geen fout (zie loop.py): machine-kant af → boom volmaken.
+    if geslaagd or (stop == "wacht_op_mens"
+                    and growkit_motor.machine_deel_voltooid(profiel, logboek)):
         from kern import growkit_oerwoud
         growkit_oerwoud.volmaak_na_plant(doel, logboek)
-    return 0 if geslaagd else 2
+    return 0 if geslaagd or stop == "wacht_op_mens" else 2
 
 
 if __name__ == "__main__":

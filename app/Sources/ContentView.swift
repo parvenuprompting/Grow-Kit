@@ -26,42 +26,47 @@ struct ContentView: View {
         case agentchat = 100, skills, browser, ide, connectors
         case graaf = 110
         case prompts = 120
+        case opdrachten = 130
 
         var id: Int { rawValue }
         var nummer: String {
+            // Strikt oplopend: 00–02 zijn de hoofdingangen, 03+ zit onder
+            // "Gereedschappen". Eén nummer per modus, geen dubbele.
             switch self {
             case .home: return "00"
-            case .agentchat: return "01"
-            case .status: return "02"
-            case .planten: return "03"
-            case .goedkeuringen: return "04"
-            case .dialoog: return "05"
-            case .agenten: return "06"
-            case .automatiek: return "07"
-            case .graaf: return "08"
-            case .prompts: return "09"
-            case .vangnet: return "10"
-            case .audit: return "11"
-            case .agenda: return "12"
-            case .securevault: return "13"
-            case .amnesia: return "14"
-            case .kloon: return "15"
-            case .hervatten: return "16"
-            case .taak: return "17"
-            case .rondleiding: return "20"
-            case .uitleg: return "21"
-            case .gids: return "22"
-            case .telegram: return "18"
-            case .cyberseed: return "19"
-            case .skills: return "15"
-            case .browser: return "16"
-            case .ide: return "17"
-            case .connectors: return "18"
+            case .opdrachten: return "01"
+            case .prompts: return "02"
+            case .agentchat: return "03"
+            case .status: return "04"
+            case .planten: return "05"
+            case .goedkeuringen: return "06"
+            case .dialoog: return "07"
+            case .agenten: return "08"
+            case .automatiek: return "09"
+            case .graaf: return "10"
+            case .vangnet: return "11"
+            case .audit: return "12"
+            case .agenda: return "13"
+            case .securevault: return "14"
+            case .amnesia: return "15"
+            case .kloon: return "16"
+            case .hervatten: return "17"
+            case .taak: return "18"
+            case .telegram: return "19"
+            case .cyberseed: return "20"
+            case .skills: return "21"
+            case .browser: return "22"
+            case .ide: return "23"
+            case .connectors: return "24"
+            case .rondleiding: return "25"
+            case .uitleg: return "26"
+            case .gids: return "27"
             }
         }
         var naam: String {
             switch self {
-            case .home: return "Thuis"
+            case .opdrachten: return "Opdrachten"
+            case .home: return "Vandaag"
             case .rondleiding: return "Rondleiding"
             case .uitleg: return "Uitleg"
             case .gids: return "Best Practices"
@@ -87,12 +92,13 @@ struct ContentView: View {
             case .ide: return "IDE"
             case .connectors: return "Connectors"
             case .graaf: return "Knowledge Graph"
-            case .prompts: return "Prompts"
+            case .prompts: return "Bibliotheek"
             }
         }
         var beschrijving: String {
             switch self {
-            case .home: return "Startpunten en de dialoog binnen handbereik"
+            case .opdrachten: return "Plan, uitvoering, bewijs en resultaat op één plek"
+            case .home: return "Opdrachten en besluiten voor vandaag"
             case .rondleiding: return "De vijf schermen van het ontwerp"
             case .uitleg: return "Zes regels · de engine room"
             case .gids: return "Kerninzichten uit je eigen documenten"
@@ -193,34 +199,15 @@ struct ContentView: View {
             // ook op een klein venster.
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // THUIS — de landingspagina, altijd bereikbaar
-                    ForEach([Modi.home]) { modus in
+                    ForEach([Modi.home, .opdrachten, .prompts]) { modus in
                         modusRij(modus)
                     }
+                    DisclosureGroup("Gereedschappen") {
+                        ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .automatiek, .graaf, .vangnet, .audit, .agenda, .securevault, .amnesia, .kloon, .hervatten, .taak, .telegram, .cyberseed, .skills, .rondleiding, .uitleg, .gids]) { modus in
+                            modusRij(modus)
+                        }
+                    }.padding(.top, 16)
 
-                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-                    // WERK — Agent Chat eerst (hoofdfunctie), daarna de dagelijkse modi
-                    zijbalkSectie("WERK")
-                    ForEach([Modi.agentchat, .status, .planten, .goedkeuringen, .dialoog, .agenten, .automatiek, .graaf, .prompts, .vangnet, .audit, .agenda]) { modus in
-                        modusRij(modus)
-                    }
-
-                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-                    // SYSTEEM — Secure Vault eerst (privacy-fundering), dan herstel en taken
-                    zijbalkSectie("SYSTEEM")
-                    ForEach([Modi.securevault, .amnesia, .kloon, .hervatten, .taak]) { modus in
-                        modusRij(modus)
-                    }
-
-                    Rectangle().fill(Thema.kleur(.lijn)).frame(height: 1)
-
-                    // LEREN — rondleiding, uitleg en de AI Gids
-                    zijbalkSectie("LEREN")
-                    ForEach([Modi.telegram, .cyberseed, .rondleiding, .uitleg, .gids]) { modus in
-                        modusRij(modus)
-                    }
                 }
             }
             .scrollIndicators(.automatic)
@@ -398,8 +385,14 @@ struct ContentView: View {
                 case .agenda:
                     AgendaView(runner: runner, repoPad: $repoPad, interpreter: $interpreter)
                 case .home:
-                    HomeView(runner: runner, koppelingen: koppelingen,
-                             repoPad: $repoPad, interpreter: $interpreter) { modus in
+                    // "Vandaag" is het dagoverzicht bovenop het opdrachtendossier
+                    // (voorheen HomeView — dat bestand is opgegaan in dit scherm).
+                    OpdrachtenView(runner: runner, repoPad: $repoPad, interpreter: $interpreter,
+                                   vandaag: true) { modus in
+                        geselecteerd = modus
+                    }
+                case .opdrachten:
+                    OpdrachtenView(runner: runner, repoPad: $repoPad, interpreter: $interpreter) { modus in
                         geselecteerd = modus
                     }
                 case .rondleiding:

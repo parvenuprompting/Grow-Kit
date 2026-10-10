@@ -1,6 +1,10 @@
 {
   "profiel": "tweede-brein",
   "status": "bewezen-vorm",
+  "gegevensroute": {
+    "soort": "lokaal",
+    "uitleg": "Maakt mappen en bestanden op deze machine (of op de map die jij aanwijst). Geen netwerk, geen sleutel."
+  },
   "beschrijving": "Generiek tweede brein: een gecontroleerd geheugen naast een AI-agent. De agent leest en stelt voor, de mens keurt goed. Nooit overschrijven, alleen toevoegen.",
   "mappen": ["identiteit", "kennis", "projecten", "inbox", "logboek"],
   "stappen": [

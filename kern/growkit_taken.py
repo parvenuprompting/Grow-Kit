@@ -3,6 +3,8 @@
 Elke taak volgt het stappen-schema (§4): zonder `bewijs` met `type` bestaat
 de taak niet (poort-regel). Gebeurtenissen worden append-only gelogd.
 """
+
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import datetime
 import json
 from pathlib import Path
@@ -108,7 +110,7 @@ def valideer_taak(taak: dict) -> list[str]:
 def log_taakgebeurtenis(pad: Path, taak_id: str, status: str, bewijs: str) -> None:
     """Append-only gebeurtenis per taak; bestaande entries blijven staan."""
     pad.parent.mkdir(parents=True, exist_ok=True)
-    entries = json.loads(pad.read_text(encoding="utf-8")) if pad.exists() else []
+    entries = []
     entries.append({
         "type": "taak",
         "taak": taak_id,
@@ -116,7 +118,7 @@ def log_taakgebeurtenis(pad: Path, taak_id: str, status: str, bewijs: str) -> No
         "bewijs": bewijs,
         "tijdstip": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     })
-    pad.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(pad, entries)
 
 
 def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None,
@@ -161,7 +163,7 @@ def voer_taak_uit(doel: Path, taak: dict, reviewconfig=None,
     log_taakgebeurtenis(taken_logboek, taak_id, "bezig", "motor-start")
     boom_logboek = doel / "logboek.json"
     if not boom_logboek.exists():
-        boom_logboek.write_text("[]", encoding="utf-8")
+        voeg_gebeurtenissen_toe(boom_logboek, [])
     geslaagd = growkit_motor.voer_uit({"profiel": f"taak-{taak_id}", "stappen": [taak]},
                                       doel, boom_logboek, None, reviewconfig=reviewconfig,
                                       vangnet=growkit_motor.vangnet_pad_voor(doel))

@@ -1,0 +1,89 @@
+{
+  "profiel": "terugkerend-rapport",
+  "status": "voorbeeld",
+  "demo": true,
+  "gegevensroute": {
+    "soort": "lokaal",
+    "uitleg": "Leest de datum en telt scriptbestanden op deze machine. Er wordt niets verzonden en er is geen sleutel nodig."
+  },
+  "beschrijving": "Maakt een vast rapport van één pagina met de datum en de stand van zaken, zodat je het elke keer opnieuw kunt draaien. Draait volledig lokaal.",
+  "voorbeeld": {
+    "titel": "Terugkerend rapport",
+    "uitleg": "Grow Kit zet de datum van vandaag in het rapport en telt de kernbestanden. Elk rondje levert hetzelfde soort rapport op, dus je kunt het blijven herhalen.",
+    "criteria": [
+      "Het rapport rapport/rapport.md bestaat en is gelijk aan het sjabloon",
+      "De datum van vandaag staat in rapport/datum.txt",
+      "Het aantal scriptbestanden staat in rapport/scriptbestanden.txt"
+    ]
+  },
+  "mappen": ["rapport"],
+  "stappen": [
+    {
+      "id": "stap-001",
+      "commando": "mkdir -p rapport",
+      "verwacht": "de map rapport bestaat in de opdrachtmap",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -d rapport && echo RAPPORT-OK",
+        "verwacht_substr": "RAPPORT-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": "mkdir -p ./rapport",
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-002",
+      "commando": "date +%Y-%m-%d > rapport/datum.txt",
+      "verwacht": "rapport/datum.txt bestaat en legt de datum van vandaag vast",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -s rapport/datum.txt && echo DATUM-OK",
+        "verwacht_substr": "DATUM-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": false
+    },
+    {
+      "id": "stap-003",
+      "commando": "find \"{GROWKIT}/scripts\" -name '*.py' | wc -l | tr -d ' ' > rapport/scriptbestanden.txt",
+      "verwacht": "rapport/scriptbestanden.txt bevat het aantal scriptbestanden",
+      "bewijs": {
+        "type": "shell_check",
+        "commando": "test -s rapport/scriptbestanden.txt && echo SCRIPTS-OK",
+        "verwacht_substr": "SCRIPTS-OK"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-004",
+      "commando": "cp \"{GROWKIT}/profielen/terugkerend-rapport/sjablonen/rapport.md\" ./rapport/rapport.md",
+      "verwacht": "rapport/rapport.md staat er en is identiek aan het sjabloon",
+      "bewijs": {
+        "type": "file_equals",
+        "sjabloon": "rapport.md",
+        "pad": "rapport/rapport.md"
+      },
+      "bij_falen": {
+        "alternatief_commando": null,
+        "anders": "roep_mens"
+      },
+      "idempotent": true
+    },
+    {
+      "id": "stap-005",
+      "mens_nodig": {
+        "instructie": "Lees rapport/rapport.md, rapport/datum.txt en rapport/scriptbestanden.txt. Klopt dit rondje? Bevestig of wijs af."
+      },
+      "verwacht": "jouw oordeel over het rapport"
+    }
+  ]
+}

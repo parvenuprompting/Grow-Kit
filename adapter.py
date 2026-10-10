@@ -11,6 +11,7 @@ Contract:
 - Fouten: {"ok": false, "fout": "<NL>"} met exit 1 — nooit een traceback.
 - Stateless: geen sessie-staat tussen aanroepen.
 """
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import json
 import re
 from datetime import datetime, timezone
@@ -103,16 +104,24 @@ def cmd_hervat(invoer: dict) -> dict:
         geslaagd = growkit_motor.voer_uit({**profiel, "stappen": restdraai}, doel, logboek,
                                           Path(__file__).parent / "profielen" / naam / "sjablonen",
                                           reviewconfig=reviewconfig)
-        if geslaagd:
+        stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+        # Ook hier: een pauze vóór de mens is geen faal. Is de machine-kant van
+        # het hele plan af, dan mag de boom volmaakt worden.
+        if geslaagd or (stop == "wacht_op_mens"
+                        and growkit_motor.machine_deel_voltooid(profiel, logboek)):
             growkit_oerwoud.volmaak_na_plant(doel, logboek)
     stappen = [{"id": e["stap"], "status": e["status"], "bewijs": e["bewijs"],
                 "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
-    if not geslaagd:
+    if not geslaagd and stop != "wacht_op_mens":
+        if stop == "gepauzeerd":
+            raise AdapterFaal("PANIC actief — er starten geen nieuwe commando's; "
+                              "herstel handmatig", stappen)
         raise AdapterFaal("restdraai faalde na alternatief — roep de mens", stappen)
     return {"ok": True, "data": {"stappen": stappen,
-                                 "herstartpunt": resultaat["herstartpunt"]}}
+                                 "herstartpunt": resultaat["herstartpunt"],
+                                 "status": "geslaagd" if geslaagd else "wacht_op_mens"}}
 
 
 def cmd_taak(invoer: dict) -> dict:
@@ -165,7 +174,13 @@ def cmd_profielen(invoer: dict) -> dict:
 
 
 class AdapterFaal(Exception):
-    """Motor-faal: {"ok": false, "fout", "stappen"} met exit 2 (faalcontract)."""
+    """Motor-faal: {"ok": false, "fout", "stappen"} met exit 2 (faalcontract).
+
+    Alleen voor echt falen (een stap mislukt na zijn alternatief) en voor PANIC.
+    Een pauze vóór de mens (wacht_op_mens) is géén faal: die komt terug als
+    {"ok": true, ..., "status": "wacht_op_mens"} met exit 0 — de motor stopte
+    omdat jij moet beslissen, niet omdat er iets stuk is.
+    """
 
     def __init__(self, fout: str, stappen: list[dict]):
         super().__init__(fout)
@@ -238,12 +253,16 @@ def cmd_plant(invoer: dict) -> dict:
         doel.mkdir(parents=True, exist_ok=True)
         logboek = doel / "logboek.json"
         if not logboek.exists():
-            logboek.write_text("[]", encoding="utf-8")
+            voeg_gebeurtenissen_toe(logboek, [])
         profiel = growkit_motor.vervang_growkit_pad(profiel, REPO)
         geslaagd = growkit_motor.voer_uit(profiel, doel, logboek,
                                           Path(__file__).parent / "profielen" / naam / "sjablonen",
                                           reviewconfig=reviewconfig)
-        if geslaagd:
+        stop = None if geslaagd else growkit_motor.uitkomst(logboek)
+        # Pauze is geen fout: is de machine-kant af, dan is de boom klaar en wacht
+        # alleen jouw bevestiging (een mens-stap aan het eind van het plan).
+        if geslaagd or (stop == "wacht_op_mens"
+                        and growkit_motor.machine_deel_voltooid(profiel, logboek)):
             growkit_oerwoud.volmaak_na_plant(doel, logboek)
             if brein_pad:
                 try:
@@ -255,10 +274,14 @@ def cmd_plant(invoer: dict) -> dict:
                 "review_rol": e.get("review_rol"), "review_oordeel": e.get("review_oordeel")}
                for e in json.loads(logboek.read_text(encoding="utf-8"))
                if e.get("stap", "").startswith("stap-")]
-    if not geslaagd:
+    if not geslaagd and stop != "wacht_op_mens":
+        if stop == "gepauzeerd":
+            raise AdapterFaal("PANIC actief — er starten geen nieuwe commando's; "
+                              "herstel handmatig", stappen)
         raise AdapterFaal("motor-faal na alternatief — roep de mens", stappen)
     return {"ok": True, "data": {"stappen": stappen, "registratie": registratie,
-                                 "brein_pad": str(brein_pad) if brein_pad else None}}
+                                 "brein_pad": str(brein_pad) if brein_pad else None,
+                                 "status": "geslaagd" if geslaagd else "wacht_op_mens"}}
 
 
 def cmd_ratificeer(invoer: dict) -> dict:
@@ -1645,7 +1668,59 @@ def cmd_panic_status(invoer: dict) -> dict:
             "actief": growkit_panic.is_panic_actief(doel)}
 
 
+def cmd_opdrachten(invoer: dict) -> dict:
+    import contextlib
+    from kern import growkit_opdrachten as opdrachten
+    from kern.growkit_motor import vervang_growkit_pad
+    actie = invoer.get("actie", "lijst")
+    try:
+        with contextlib.redirect_stdout(sys.stderr):
+            if actie == "lijst":
+                data = opdrachten.lijst()
+            elif actie == "nieuw":
+                naam = str(invoer.get("profiel", ""))
+                profiel = vervang_growkit_pad(_laad_profiel(naam), REPO)
+                data = opdrachten.nieuw(str(invoer.get("titel", "")), invoer.get("criteria", []),
+                                         profiel, REPO / "profielen" / naam / "sjablonen")
+            elif actie == "lees":
+                data = opdrachten.lees(invoer.get("id"))
+            elif actie == "uitvoeren":
+                data = opdrachten.uitvoeren(invoer.get("id"), invoer.get("plan_hash"), invoer.get("bevestig"))
+            elif actie == "beoordeel":
+                data = opdrachten.beoordeel(invoer.get("id"), invoer.get("goedgekeurd"), str(invoer.get("toelichting", "")))
+            elif actie == "voorbeelden":
+                from kern import growkit_voorbeelden
+                data = {"voorbeelden": growkit_voorbeelden.voorbeelden()}
+            elif actie == "toestemming":
+                data = opdrachten.toestemming(invoer.get("id"), invoer.get("akkoord"),
+                                              str(invoer.get("toelichting", "")))
+            elif actie in ("panic", "herstel"):
+                data = opdrachten.panic(invoer.get("id"), herstel=actie == "herstel")
+            else:
+                raise ValueError("Onbekende opdrachtactie")
+    except (ValueError, OSError, KeyError, TypeError, AttributeError) as e:
+        raise AdapterFout(str(e)) from e
+    return {"ok": True, "data": data}
+
+
+def cmd_bewijsrapport(invoer: dict) -> dict:
+    from kern.growkit_resultaat import bewijsrapport
+    doel = _doel_uit(invoer)
+    naam = str(invoer.get("profiel", "")).strip()
+    if not naam:
+        raise AdapterFout("profiel is verplicht voor een bewijsrapport")
+    log = doel / "logboek.json"
+    try:
+        entries = json.loads(log.read_text()) if log.exists() else []
+        rapport = bewijsrapport(_laad_profiel(naam), entries)
+    except (ValueError, OSError) as e:
+        raise AdapterFout(f"Bewijsrapport niet leesbaar: {e}") from e
+    return {"ok": True, "data": rapport}
+
+
 COMMANDOS = {
+    "opdrachten": cmd_opdrachten,
+    "bewijsrapport": cmd_bewijsrapport,
     "status": cmd_status,
     "profielen": cmd_profielen,
     "plant": cmd_plant,

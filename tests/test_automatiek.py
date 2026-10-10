@@ -121,7 +121,8 @@ class TestSecrets(unittest.TestCase):
     def test_toevoegen_met_secret_geweigerd(self):
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch.object(am, "_opslag_pad",
-                                   return_value=Path(tmp) / "plannen.json"):
+                                   return_value=Path(tmp) / "plannen.json"), \
+                 mock.patch.object(am, "_log_pad", return_value=Path(tmp) / "log.json"):
                 with self.assertRaises(ValueError):
                     # CI-vrijstellings-marker in dezelfde regel: dit is een
                     # testfixture, geen echte key. Het patroon (ghp_+30) is
@@ -139,7 +140,8 @@ class TestOpslagEnExport(unittest.TestCase):
     def test_toevoegen_en_lijst_en_lezen(self):
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch.object(am, "_opslag_pad",
-                                   return_value=Path(tmp) / "plannen.json"):
+                                   return_value=Path(tmp) / "plannen.json"), \
+                 mock.patch.object(am, "_log_pad", return_value=Path(tmp) / "log.json"):
                 plan = am.voeg_toe(titel="Ochtendsamenvatting",
                                    blokken=_vol_blokken())
                 lijst = am.lijst()
