@@ -253,12 +253,50 @@ struct OpdrachtenView: View {
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(plan["acceptatiecriteria"] as? [String] ?? [], id: \.self) { Text("• " + $0) }
                 Text("Uitvoer: \(d["doel"] as? String ?? "")").textSelection(.enabled)
-                Text("Gegevensroute: \(plan["gegevensroute"] as? String ?? "Profielafhankelijk — controleer de commando’s vóór uitvoering")")
+                Text("Gegevensroute: \(routeLabel(d))").fontWeight(.medium)
+                if let r = d["gegevensroute"] as? [String: Any] {
+                    if let uitleg = r["uitleg"] as? String {
+                        Text(uitleg).font(.caption).foregroundStyle(.secondary)
+                    }
+                    if let waarschuwing = r["waarschuwing"] as? String {
+                        Text(waarschuwing).font(.caption).foregroundStyle(.red)
+                    }
+                    let verzendt = r["verzendt"] as? [String] ?? []
+                    if !verzendt.isEmpty {
+                        DisclosureGroup("Wat er deze opdracht verzonden kan worden (\(verzendt.count))") {
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(verzendt, id: \.self) { regel in
+                                    Text(regel).font(.system(.caption, design: .monospaced))
+                                        .textSelection(.enabled)
+                                }
+                            }
+                        }
+                    }
+                }
                 Text("Kosten: \(kosten(d)) · Looptijd: \(Int(d["seconden"] as? Double ?? 0)) s · Beslissingen: \(d["ingrepen"] as? Int ?? 0)")
             }.frame(maxWidth: .infinity, alignment: .leading).padding(6)
         }
         DisclosureGroup("Bekijk het volledige uitvoeringsplan") {
             Text(json(plan)).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
+        }
+        if cloudNodig(d) && !toestemmingGegeven(d) {
+            GroupBox("Deze opdracht gaat naar buiten (cloud)") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Er gaat inhoud naar een clouddienst. Zonder jouw expliciete toestemming start er niets — de motor weigert het ook als je op uitvoeren drukt.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    TextField("Waarom is dit hier goed?", text: $toelichting).textFieldStyle(.roundedBorder)
+                    Button("Toestemming geven — gegevens mogen naar buiten") {
+                        Task { await geefToestemming(true) }
+                    }.disabled(bezig || toelichting.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }.padding(6)
+            }
+        }
+        if cloudNodig(d) && toestemmingGegeven(d) {
+            HStack(spacing: 10) {
+                Text("Je gaf toestemming voor deze cloudroute.").font(.callout)
+                Button("Toestemming intrekken") { Task { await geefToestemming(false) } }
+                    .disabled(bezig || toelichting.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
         }
         if panic {
             Text("PANIC actief: er starten geen nieuwe commando’s. Een lopend commando wordt niet afgebroken.").foregroundStyle(.red)
@@ -268,7 +306,11 @@ struct OpdrachtenView: View {
                 if ["concept", "gepauzeerd", "bezig", "afgekeurd"].contains(status) {
                     Button(status == "concept" ? "Plan en grenzen goedkeuren · uitvoeren" : "Hervatten bevestigen") {
                         Task { await actie("uitvoeren", extra: ["bevestig": true, "plan_hash": d["plan_hash"] ?? ""]) }
-                    }.disabled(bezig)
+                    }.disabled(bezig || (cloudNodig(d) && !toestemmingGegeven(d)))
+                    if cloudNodig(d) && !toestemmingGegeven(d) {
+                        Text("Uitvoeren wacht op je toestemming hierboven — deze route gaat naar buiten.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 Button("Pauzeer nieuwe stappen", role: .destructive) { Task { await pauzeer() } }
             }
@@ -311,6 +353,20 @@ struct OpdrachtenView: View {
     }
 
     private func label(_ value: String) -> String { value.replacingOccurrences(of: "_", with: " ").capitalized }
+    // MARK: - Gegevensroute (advies 6)
+
+    private func routeSoort(_ d: [String: Any]) -> String {
+        (d["gegevensroute"] as? [String: Any])?["soort"] as? String ?? "lokaal"
+    }
+    private func routeLabel(_ d: [String: Any]) -> String {
+        switch routeSoort(d) {
+        case "cloud": return "Cloud — er gaat inhoud naar buiten"
+        case "eigen_vps": return "Eigen VPS — jouw server, niets daarbuiten"
+        default: return "Lokaal — er verlaat niets je machine"
+        }
+    }
+    private func cloudNodig(_ d: [String: Any]) -> Bool { routeSoort(d) == "cloud" }
+    private func toestemmingGegeven(_ d: [String: Any]) -> Bool { d["cloud_toestemming"] as? Bool ?? false }
     private func kosten(_ d: [String: Any]) -> String {
         guard let bedrag = d["kosten_eur"] as? Double else { return "niet gemeten" }
         return String(format: "€ %.2f", bedrag)
@@ -397,5 +453,8 @@ struct OpdrachtenView: View {
     }
     @MainActor private func oordeel(_ goed: Bool) async {
         await actie("beoordeel", extra: ["goedgekeurd": goed, "toelichting": toelichting])
+    }
+    @MainActor private func geefToestemming(_ akkoord: Bool) async {
+        await actie("toestemming", extra: ["akkoord": akkoord, "toelichting": toelichting])
     }
 }

@@ -4,9 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS_14%2B-black?style=flat-square)]()
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-701_groen-success?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-802_groen-success?style=flat-square)]()
 [![Agents](https://img.shields.io/badge/agent-familie-7_teal?style=flat-square)]()
-[![Privacy](https://img.shields.io/badge/privacy-100%25_local-success?style=flat-square)]()
+[![Privacy](https://img.shields.io/badge/privacy-lokaal_eerst-success?style=flat-square)](#wat-verlaat-je-machine)
 [![Made by](https://img.shields.io/badge/build_in_public-Ti%C3%ABndo-9cf?style=flat-square)]()
 [![Encryption](https://img.shields.io/badge/secrets-AES--256_GCM-orange?style=flat-square)]()
 [![X](https://img.shields.io/badge/X-@GrowKitHarnas-black?style=flat-square)](https://x.com/GrowKitHarnas)
@@ -34,35 +34,41 @@ Grow Kit is MIT-opensource. De motor en de vijf bewijscontroles blijven altijd g
 
 ## De app
 
-Native macOS-app (SwiftUI) in editorial-monochrome stijl. Zijmenu:
+Native macOS-app (SwiftUI) in editorial-monochrome stijl. De zijbalk begint met de
+drie hoofdingangen — **00 Vandaag**, **01 Opdrachten**, **02 Bibliotheek** — en al
+het gereedschap daaronder zit onder één uitklapper *Gereedschappen*.
 
 | Nr. | Scherm | Wat het doet |
 |---|---|---|
-| 00 | Thuis | Dashboard, mini-graaf, saldo |
-| **WERK** | | |
-| 01 | Agent Chat | Praat met de familie; Thought-blok per antwoord, gesprek wissen (→archief), geschiedenis |
-| 02 | Status | Identiteit, register, tellers, logboek |
-| 03 | Planten | Kiemkeuze → concept → motor met bewijs |
-| 04 | Goedkeuringen | Ratificatie: mens keurt goed of af |
-| 05 | Dialoog | Scope-poort, prompt-slijper, ronde tafel |
-| 06 | Agenten | Gouverneur: familie, observaties, taak-contracten |
-| 07 | **Automatiek** | Eén zin in, automation-plan uit — KairOS stelt voor, jij keurt |
-| 08 | Knowledge Graph | Brein-verbanden; klik op een sectie om in te zoeken |
-| 09 | Prompts | Gecureerde bibliotheek, variabelen invullen |
-| 10 | Vangnet | Opgevangen review-aanroepen en uitkomsten |
-| 11 | Audit | Volledig, append-only logboek |
-| **SYSTEEM** | | |
-| 12 | Secure Vault | Echte kluizen via macOS hdiutil (AES-256/APFS) |
-| 13 | Amnesia Protocol | Gevoelige tekst anonimiseren en herstellen |
-| 14 | Digitale Kloon | Persoonlijke kluis: 6 categorieën, AES-256-GCM, PIN + Touch ID |
-| 16 | Hervatten | Crash-herstel uit het logboek |
-| 17 | Taak | Boom-pad + governor → takenlijst met bewijs |
-| **LEREN** | | |
-| 18 | **Telegram Connect** | De familie koppelen aan jouw eigen Telegram, stap voor stap |
-| 19 | **CyberSeed** | Zes niveaus (Sprout → Amazone), lokaal (Ollama) of frontier-cloud (OpenRouter), eigen SOUL |
-| 20 | Rondleiding | Het ontwerp in vijf schermen |
-| 21 | Uitleg | De motor uitgelegd |
-| 22 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
+| 00 | **Vandaag** | Begroeting, de vier cijfers (familie, saldo, wacht op jou, geschiedenis) en de knowledge graph |
+| 01 | **Opdrachten** | Eén dossier per opdracht: plan, grenzen, uitvoering, bewijs, jouw oordeel — met drie lokale voorbeelden |
+| 02 | **Bibliotheek** | Gecureerde audit-prompts, letterlijk en alleen-lezen |
+| **Gereedschappen** | | |
+| 03 | Agent Chat | Praat met de familie; Thought-blok per antwoord, gesprek wissen (→archief), geschiedenis |
+| 04 | Status | Identiteit, register, tellers, logboek |
+| 05 | Planten | Kiemkeuze → concept → motor met bewijs |
+| 06 | Goedkeuringen | Ratificatie: mens keurt goed of af |
+| 07 | Dialoog | Scope-poort, prompt-slijper, ronde tafel |
+| 08 | Agenten | Gouverneur: familie, observaties, taak-contracten |
+| 09 | **Automatiek** | Eén zin in, automation-plan uit — KairOS stelt voor, jij keurt |
+| 10 | Knowledge Graph | Brein-verbanden; klik op een sectie om in te zoeken |
+| 11 | Vangnet | Opgevangen review-aanroepen en uitkomsten |
+| 12 | Audit | Volledig, append-only logboek |
+| 13 | Agenda | Cron, wachtende goedkeuringen en taken |
+| 14 | Secure Vault | Echte kluizen via macOS hdiutil (AES-256/APFS) |
+| 15 | Amnesia Protocol | Gevoelige tekst anonimiseren en herstellen |
+| 16 | Digitale Kloon | Persoonlijke kluis: 6 categorieën, AES-256-GCM, PIN + Touch ID |
+| 17 | Hervatten | Crash-herstel uit het logboek |
+| 18 | Taak | Boom-pad + governor → takenlijst met bewijs |
+| 19 | **Telegram Connect** | De familie koppelen aan jouw eigen Telegram, stap voor stap |
+| 20 | **CyberSeed** | Zes niveaus (Sprout → Amazone), lokaal (Ollama) of frontier-cloud (OpenRouter), eigen SOUL |
+| 21 | Skills | Welke skills draaien er op jouw GrowKit? |
+| 25 | Rondleiding | Het ontwerp in vijf schermen |
+| 26 | Uitleg | De motor uitgelegd |
+| 27 | Best Practices | Kerninzichten uit eigen onderzoek, met zoeken |
+
+Instellingen staat permanent onderaan de zijbalk. De nummers 22–24 zijn
+voorbereide schermen (browser, IDE, connectors) die nog niet in het menu staan.
 
 ## De agent-familie
 
@@ -84,8 +90,12 @@ De agents kennen de gebruiker bij naam (het `van`-veld in elk chatbericht) en sp
 
 Voor wie verder wil kijken:
 
-- **Python-kern** (`kern/`, 32 modules): scope-poort, stappen-motor met faalcontract, vijf machine-controles, review-laag, ratificatie, leesroute, crash-herstel, boom-register, vangnet (SQLite), agent-familie, Knowledge Graph, prompt-bibliotheek, Secure Vault (hdiutil), Amnesia (anonimiseren), Digitale Kloon (AES-256-GCM via `cryptography` in een repo-eigen `.venv` — bewuste uitzondering op stdlib-only), Best Practices.
-- **Adapter** (`adapter.py`): JSON-CLI met 64 commando's over de kern — de enige poort tussen app en motor.
+- **Python-kern** (`kern/`, 54 modules): scope-poort, stappen-motor met faalcontract, vijf machine-controles, review-laag, ratificatie, leesroute, crash-herstel, boom-register, vangnet (SQLite), agent-familie, Knowledge Graph, prompt-bibliotheek, Secure Vault (hdiutil), Amnesia (anonimiseren), Digitale Kloon (AES-256-GCM via `cryptography` in een repo-eigen `.venv` — bewuste uitzondering op stdlib-only), Best Practices.
+- **Adapter** (`adapter.py`): JSON-CLI met 74 commando's over de kern — de enige poort tussen app en motor.
+- **Opdrachtdossier** (`kern/growkit_opdrachten.py`): één blijvend dossier per opdracht — bevestigd plan met `plan_hash`, uitvoerslot tegen dubbel draaien, wachtende mens-stappen, oordeel en PANIC-herstel. Transactionele opslag (`kern/growkit_opslag.py`: flock + atomair schrijven).
+- **Pauze is geen fout** (`kern/growkit_motor.py`): `uitkomst()` benoemt wat een run deed (geslaagd · wacht_op_mens · gepauzeerd · gefaald) en `machine_deel_voltooid()` zegt of alleen nog jouw besluit openstaat. Een mens-moment levert exit 0 met status `wacht_op_mens`; een echt falen houdt exit 2.
+- **Gegevensroute** (`kern/growkit_route.py`): leidt per plan af of er iets de machine verlaat (lokaal · eigen VPS · cloud). Een profiel mag het zelf verklaren; verklaart het minder dan zijn commando's doen, dan wint het zwaarste en verschijnt er een waarschuwing. Cloud vraagt om expliciete toestemming — zonder die toestemming start de opdracht niet.
+- **Voorbeelden** (`kern/growkit_voorbeelden.py` + `profielen/`): drie lokale voorbeeldopdrachten (projectcontrole, documentenoverzicht, terugkerend rapport), elk met een eigen plan, sjablonen en een mens-stap. Eén bron: het profiel draagt zijn eigen voorbeeld-blok.
 - **CyberSeed** (`kern/growkit_cyberseed.py` + `kern/growkit_ram.py`): zes modelniveaus — Sprout v0.5, Root v1.0, Leaf v1.5, Tree v2.0, Jungle v2.5, Amazone v3.0 — elk met een eigen systeemprompt op autonomie-schaal (governance in alle tiers). Per niveau kies je **lokaal** (Ollama, RAM-klasse bepaalt het model; te zware namen zijn vergrendeld met min-RAM-uitleg) of **cloud** (OpenRouter, frontier-opties per naam). Zelfbijgewerkte SOUL-snapshot uit GrowKit-data; routinglog per aanroep; chatlog append-only; wissen alleen met `bevestig=true`. Eigen OpenRouter-model per naam mogelijk mét tier-validatie (±1 niveau, `force=true` voor bewuste keuze). Lokaal is de eindbestemming — cloud is de brug. Niets verlaat de Mac bij lokaal.
 
 ### CyberSeed: de zes niveaus
@@ -114,7 +124,7 @@ Voor wie verder wil kijken:
 git clone git@github.com:parvenuprompting/Grow-Kit.git
 cd Grow-Kit
 python3 -m venv .venv && .venv/bin/pip install cryptography
-.venv/bin/python -m unittest discover tests   # 546 tests
+.venv/bin/python -m unittest discover tests   # 802 tests
 
 python3 seed.py            # geleende-agent-modus: kiemkeuze + planten
 python3 loop.py            # het harnas: planten / hervatten / taak / ratificatie / status
@@ -127,6 +137,19 @@ python3 loop.py            # het harnas: planten / hervatten / taak / ratificati
 - VPS-verbinding: `export GROWKIT_HOST=gebruiker@jouw-vps` of zet het in `.env`.
 - Verdere uitleg: `SEED.md` → `profielen/INDEX.md` → **`docs/HOE-HET-WERKT.md`**.
 
+### Je eerste opdracht (één minuut)
+
+1. Open de app → **00 Vandaag**.
+2. Kies links onder **VOORBEELDEN** één van de drie: *Projectcontrole*,
+   *Documentenoverzicht* of *Terugkerend rapport*.
+3. Je ziet het plan, de afgesproken grenzen en de gegevensroute — er draait nog niets.
+4. Bevestig: de machine doet de stappen en legt per stap bewijs vast.
+5. De opdracht pauzeert bij het mens-moment. Lees het resultaat, geef je reden en
+   keur goed of wijs af.
+
+De drie voorbeelden werken **zonder VPS, zonder sleutel en zonder internet**: ze
+tellen en controleren alleen bestanden op jouw machine.
+
 ## Structuur
 
 ```
@@ -134,12 +157,12 @@ Grow-Kit/
 ├── SEED.md                  ← geboortebrief
 ├── seed.py                  ← plant-mechanisme
 ├── loop.py                  ← het harnas: orchestratie zonder agent
-├── adapter.py               ← JSON-CLI brug (61 commando's)
-├── kern/                    ← 32 modules
+├── adapter.py               ← JSON-CLI brug (74 commando's)
+├── kern/                    ← 54 modules
 ├── profielen/               ← bomen: JSON-stappenplannen met gecodeerd bewijs
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 701 tests + 20 E2E-scripts
-├── app/                     ← macOS SwiftUI-app (22 views)
+├── tests/                   ← 802 tests + 13 E2E-scripts
+├── app/                     ← macOS SwiftUI-app
 │   ├── Sources/             ← views + Thema/Bouwstenen
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
 │   └── build.sh             ← XcodeGen + xcodebuild
@@ -157,10 +180,37 @@ Elke push en PR draait automatisch **CI** (GitHub Actions):
 2. **Secrets-scan** — dezelfde key-patronen als het taak-contract, over elke diff; een echte key blokkeert de push
 3. **macOS-build** — GrowKit.app moet compileren met fonts ingebed (op main)
 
-- **701 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
-- **20 end-to-end-scripts**: fase-testen + slice-E2E
+- **802 tests groen** (unittest; de enige externe dependency is `cryptography` voor de Digitale Kloon, in een repo-eigen `.venv` — bewuste, gedocumenteerde keuze)
+- **13 end-to-end-scripts**: fase-testen + slice-E2E
 - Test 4 bewijst agent-onafhankelijkheid: harnas plant, crasht (`kill -9`), hervat en ratificeert — met alleen python3
 - Elke nieuwe slice TDD: eerst rood, dan groen, dan end-to-end
+
+## Wat verlaat je machine?
+
+Grow Kit is **lokaal-eerst**, en dat is een belofte die je per opdracht kunt
+controleren in plaats van op een badge te vertrouwen. Elke opdracht toont vóór het
+draaien zijn **gegevensroute**:
+
+| Route | Wat het betekent |
+|---|---|
+| **Lokaal** | Alles gebeurt op jouw machine. Geen sleutel, geen verbinding nodig. |
+| **Eigen VPS** | Er gaat iets naar je eigen server (`GROWKIT_HOST`) — niets daarbuiten. |
+| **Cloud** | Er gaat inhoud naar een clouddienst buiten je eigen systemen. |
+
+De route wordt afgeleid uit de commando's van het plan (`ssh`/`scp` → eigen VPS,
+`curl`/`wget`/`http(s)` → cloud). Verklaart een profiel mínder dan zijn commando's
+doen, dan wint het zwaarste en verschijnt er een waarschuwing — geen stille keuze.
+
+**Cloud start nooit vanzelf.** Is de route cloud, dan blijft de uitvoerknop dicht
+tot je met een reden toestemming geeft. Dat besluit landt in de geschiedenis en is
+net zo zichtbaar in te trekken. De motor weigert de uitvoering ook als een script
+het zonder toestemming probeert.
+
+Eerlijk over de rest van het huis: **Agent Chat** loopt via je eigen VPS,
+**CyberSeed** kiest per niveau lokaal (Ollama) of cloud (OpenRouter) — die keuze
+maak jij, en op een 24 GB Mac zijn alle zes niveaus lokaal beschikbaar. De drie
+voorbeeldopdrachten, de motor, de vijf bewijscontroles en de opslag zijn volledig
+lokaal, kosten € 0 en hebben geen sleutel nodig.
 
 ## Filosofie
 

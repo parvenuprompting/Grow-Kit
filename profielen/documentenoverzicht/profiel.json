@@ -1,6 +1,11 @@
 {
   "profiel": "documentenoverzicht",
   "status": "voorbeeld",
+  "demo": true,
+  "gegevensroute": {
+    "soort": "lokaal",
+    "uitleg": "Leest de documentatiemap op deze machine en telt bestanden. Er wordt niets verzonden en er is geen sleutel nodig."
+  },
   "beschrijving": "Maakt een overzicht van de documenten in een map: hoeveel markdown-bestanden, waar ze staan en wat er opvalt. Draait volledig lokaal.",
   "voorbeeld": {
     "titel": "Documentenoverzicht",

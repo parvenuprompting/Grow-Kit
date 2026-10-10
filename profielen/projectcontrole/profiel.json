@@ -1,6 +1,11 @@
 {
   "profiel": "projectcontrole",
   "status": "voorbeeld",
+  "demo": true,
+  "gegevensroute": {
+    "soort": "lokaal",
+    "uitleg": "Telt bestanden en controleert paden op deze machine. Er wordt niets verzonden en er is geen sleutel nodig."
+  },
   "beschrijving": "Controleert of een projectmap de basis op orde heeft en levert een kort rapport met tellingen. Draait volledig lokaal.",
   "voorbeeld": {
     "titel": "Projectcontrole",

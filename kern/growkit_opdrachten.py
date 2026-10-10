@@ -8,6 +8,7 @@ from pathlib import Path
 import time
 import uuid
 
+from kern import growkit_route
 from kern.growkit_opslag import transactie, voeg_gebeurtenissen_toe
 from kern.growkit_resultaat import bewijsrapport
 from kern.growkit_motor import voer_uit, machine_deel_voltooid, uitkomst
@@ -44,6 +45,8 @@ def nieuw(titel, criteria, profiel, sjablonen=None):
                     doel=str(pad.parent / 'resultaat'), status='concept',
                     aangemaakt=time.time(), seconden=0, ingrepen=0,
                     kosten_eur=0 if profiel.get('demo') else None,
+                    gegevensroute=growkit_route.route(profiel)['soort'],
+                    cloud_toestemming=False,
                     geschiedenis=[{'actie': 'concept', 'tijd': time.time()}])
     return lees(opdracht_id)
 
@@ -57,6 +60,7 @@ def lees(opdracht_id):
     data['plan_hash'] = _hash(data['profiel'])
     data['panic'] = lees_status(Path(data['doel']))
     data['wachtende_stappen'] = wacht_ratificatie_stappen(log)
+    data['gegevensroute'] = growkit_route.route(data['profiel'])
     return data
 
 
@@ -103,6 +107,10 @@ def uitvoeren(opdracht_id, plan_hash, bevestig=False):
         doel.mkdir(parents=True, exist_ok=True)
         if data['panic']['actief']:
             raise ValueError('PANIC actief — herstel handmatig vóór hervatten')
+        if (growkit_route.heeft_toestemming_nodig(data['profiel'])
+                and data.get('cloud_toestemming') is not True):
+            raise ValueError('Deze opdracht stuurt gegevens naar buiten (cloud) — '
+                             'geef eerst je toestemming op de opdrachtpagina')
         log = doel / 'logboek.json'
         herstel = reconstructie(log, data['profiel'])
         if herstel.get('fout'):
@@ -153,6 +161,21 @@ def beoordeel(opdracht_id, goedgekeurd, toelichting):
                                         'bewijs': toelichting, 'tijdstip': time.time()}])
         _wijzig(opdracht_id, 'menselijk_oordeel', status=status, toelichting=toelichting,
                 ingrepen=data['ingrepen'] + 1)
+    return lees(opdracht_id)
+
+
+def toestemming(opdracht_id, akkoord, toelichting):
+    """Expliciete toestemming voor een cloudroute (advies 6) — mét reden.
+
+    Zonder jouw akkoord start een cloud-opdracht niet. Het besluit landt in de
+    geschiedenis, dus intrekken (akkoord=False) is net zo zichtbaar als geven.
+    """
+    if type(akkoord) is not bool or not str(toelichting).strip():
+        raise ValueError('Geef je besluit en een korte reden')
+    with _uitvoerslot(opdracht_id):
+        data = lees(opdracht_id)
+        _wijzig(opdracht_id, 'cloudtoestemming', cloud_toestemming=akkoord,
+                toelichting=str(toelichting).strip(), ingrepen=data['ingrepen'] + 1)
     return lees(opdracht_id)
 
 

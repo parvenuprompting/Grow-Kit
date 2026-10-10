@@ -1,6 +1,11 @@
 {
   "profiel": "terugkerend-rapport",
   "status": "voorbeeld",
+  "demo": true,
+  "gegevensroute": {
+    "soort": "lokaal",
+    "uitleg": "Leest de datum en telt scriptbestanden op deze machine. Er wordt niets verzonden en er is geen sleutel nodig."
+  },
   "beschrijving": "Maakt een vast rapport van één pagina met de datum en de stand van zaken, zodat je het elke keer opnieuw kunt draaien. Draait volledig lokaal.",
   "voorbeeld": {
     "titel": "Terugkerend rapport",
