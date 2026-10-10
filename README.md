@@ -124,7 +124,7 @@ Voor wie verder wil kijken:
 git clone git@github.com:parvenuprompting/Grow-Kit.git
 cd Grow-Kit
 python3 -m venv .venv && .venv/bin/pip install cryptography
-.venv/bin/python -m unittest discover tests   # 802 tests
+.venv/bin/python -m unittest discover tests
 
 python3 seed.py            # geleende-agent-modus: kiemkeuze + planten
 python3 loop.py            # het harnas: planten / hervatten / taak / ratificatie / status
@@ -161,7 +161,7 @@ Grow-Kit/
 ├── kern/                    ← 54 modules
 ├── profielen/               ← bomen: JSON-stappenplannen met gecodeerd bewijs
 ├── groei/                   ← groeilaag-instructie
-├── tests/                   ← 802 tests + 13 E2E-scripts
+├── tests/                   ← unittest-suite + 13 E2E-scripts
 ├── app/                     ← macOS SwiftUI-app
 │   ├── Sources/             ← views + Thema/Bouwstenen
 │   ├── Fonts/               ← Fraunces + Inter (SIL OFL)
