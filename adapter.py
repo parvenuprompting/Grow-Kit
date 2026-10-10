@@ -1646,7 +1646,23 @@ def cmd_panic_status(invoer: dict) -> dict:
             "actief": growkit_panic.is_panic_actief(doel)}
 
 
+def cmd_bewijsrapport(invoer: dict) -> dict:
+    from kern.growkit_resultaat import bewijsrapport
+    doel = _doel_uit(invoer)
+    naam = str(invoer.get("profiel", "")).strip()
+    if not naam:
+        raise AdapterFout("profiel is verplicht voor een bewijsrapport")
+    log = doel / "logboek.json"
+    try:
+        entries = json.loads(log.read_text()) if log.exists() else []
+        rapport = bewijsrapport(_laad_profiel(naam), entries)
+    except (ValueError, OSError) as e:
+        raise AdapterFout(f"Bewijsrapport niet leesbaar: {e}") from e
+    return {"ok": True, "data": rapport}
+
+
 COMMANDOS = {
+    "bewijsrapport": cmd_bewijsrapport,
     "status": cmd_status,
     "profielen": cmd_profielen,
     "plant": cmd_plant,

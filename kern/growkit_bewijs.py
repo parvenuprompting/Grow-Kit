@@ -52,8 +52,14 @@ def _json_valid(bewijs: dict, doel: Path, **_) -> tuple[bool, str]:
         return False, f"json_valid: lengte {len(data)} != {bewijs['exacte_lengte']}"
     if "verplicht_veld" in bewijs:
         items = data if isinstance(data, list) else [data]
-        if not all(bewijs["verplicht_veld"] in item for item in items):
+        if not all(isinstance(item, dict) and bewijs["verplicht_veld"] in item for item in items):
             return False, f"json_valid: veld {bewijs['verplicht_veld']!r} ontbreekt"
+    if "verwacht_waarden" in bewijs:
+        if not isinstance(data, dict) or not isinstance(bewijs["verwacht_waarden"], dict):
+            return False, "json_valid: verwacht_waarden vereist objecten"
+        for sleutel, waarde in bewijs["verwacht_waarden"].items():
+            if sleutel not in data or type(data[sleutel]) is not type(waarde) or data[sleutel] != waarde:
+                return False, f"json_valid: waarde van {sleutel!r} wijkt af"
     return True, f"json_valid: {bewijs['pad']} OK"
 
 
