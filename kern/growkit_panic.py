@@ -79,14 +79,7 @@ def herstel_na_panic(doel: Path) -> dict:
 
 def is_panic_actief(doel: Path) -> bool:
     """De motor roept dit vóór elke stap. Actieve panic = geen nieuwe stappen."""
-    pad = _status_pad(Path(doel))
-    if not pad.exists():
-        return False
-    try:
-        data = json.loads(pad.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return False
-    return bool(data.get("actief", False))
+    return lees_status(doel)["actief"]
 
 
 def lees_status(doel: Path) -> dict:
@@ -95,6 +88,9 @@ def lees_status(doel: Path) -> dict:
     if not pad.exists():
         return {"actief": False, "reden": "geen panic", "tijdstip": None}
     try:
-        return json.loads(pad.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {"actief": False, "reden": "status-bestand onleesbaar", "tijdstip": None}
+        data = json.loads(pad.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or type(data.get("actief")) is not bool:
+            raise ValueError("ongeldige panic-status")
+        return data
+    except (ValueError, OSError):
+        return {"actief": True, "reden": "status-bestand onleesbaar — herstel handmatig", "tijdstip": None}

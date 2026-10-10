@@ -16,8 +16,8 @@ def _shell_check(bewijs: dict, doel: Path, **_) -> tuple[bool, str]:
     resultaat = subprocess.run(bewijs["commando"], shell=True, cwd=doel,
                                capture_output=True, text=True, timeout=60)
     tekst = resultaat.stdout + resultaat.stderr
-    geslaagd = bewijs["verwacht_substr"] in tekst
-    return geslaagd, f"shell_check: zocht '{bewijs['verwacht_substr']}', kreeg: {tekst.strip()[:200]!r}"
+    geslaagd = resultaat.returncode == bewijs.get("verwacht_exitcode", 0) and bewijs["verwacht_substr"] in tekst
+    return geslaagd, f"shell_check: exitcode {resultaat.returncode}; zocht '{bewijs['verwacht_substr']}', kreeg: {tekst.strip()[:200]!r}"
 
 
 def _http_check(bewijs: dict, doel: Path, **_) -> tuple[bool, str]:

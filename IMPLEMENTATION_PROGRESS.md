@@ -4,7 +4,7 @@ Branch: `codex/grow-kit-six-improvements`. Elke slice krijgt een eigen commit.
 Na een onderbreking: lees dit bestand, `git status`, `git log -8 --oneline`.
 
 ## Volgorde en acceptatie
-- [ ] Slice 1 (advies 2): mens-wachtstatus blokkeert vervolgstappen; panic vóór elke stap/poging; onleesbare panic blokkeert; shell-bewijs vereist exitcode. Regressietests.
+- [x] Slice 1 (advies 2): mens-wachtstatus blokkeert vervolgstappen; panic vóór elke stap/poging; onleesbare panic blokkeert; shell-bewijs vereist exitcode. Regressietests.
 - [ ] Slice 2 (advies 4): transactionele gebeurtenissen/opslag, behoud en import bestaande logs, crash/concurrentietests.
 - [ ] Slice 3 (advies 3): expliciete acceptatiecriteria en afzonderlijk technisch bewijs, inhoudelijk oordeel, menselijke goedkeuring.
 - [ ] Slice 4 (advies 1): één opdrachtpagina en compacte navigatie; bestaande hulpmiddelen blijven bereikbaar.
@@ -16,3 +16,6 @@ Voer gerichte regressietests per slice uit, daarna de volledige Python-suite en 
 
 ## Stand
 Repository opgehaald vanaf GitHub; werkboom schoon bij start. Graph-index aangemaakt (Verify): Users-tiendo-Projects-astra-vangrail-Grow-Kit. Eén bekende parse-gap: app/Sources/Koppelingen.swift:90; docs/scripts uitgesloten. Bronfallback waar nodig.
+
+### Slice 1
+39 gerichte tests groen; zes nieuwe regressietests eerst rood. Mens-wachtstappen zijn nu ratificeerbaar en stoppen de motor. PANIC blokkeert nieuwe commando’s en bewijscommando’s; lopende processen worden niet afgebroken (de UI moet dit expliciet tonen). Bestaande review-ok/bulk-ratificatie blijft behouden. Volledige suite gestart, resultaat volgt.

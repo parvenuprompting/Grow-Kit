@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 from kern.growkit_bewijs import controleer
+from kern.growkit_panic import is_panic_actief
 
 
 def vervang_growkit_pad(profiel: dict, growkit_root: Path) -> dict:
@@ -39,16 +40,26 @@ def _nu() -> str:
 
 def voer_stap_uit(stap: dict, doel: Path, sjablonen_map: Path | None) -> tuple[bool, str]:
     """Eén stap: commando → bewijs → (alternatief) → mens."""
-    resultaat = subprocess.run(stap["commando"], shell=True, cwd=doel,
-                               capture_output=True, text=True, timeout=300)
-    ok, bewijstekst = controleer(stap["bewijs"], doel, sjablonen_map=sjablonen_map)
-    if not ok and stap.get("bij_falen", {}).get("alternatief_commando"):
-        subprocess.run(stap["bij_falen"]["alternatief_commando"], shell=True, cwd=doel,
-                       capture_output=True, text=True, timeout=300)
-        ok, bewijstekst = controleer(stap["bewijs"], doel, sjablonen_map=sjablonen_map)
-        if not ok:
-            bewijstekst += " — ook na alternatief_commando"
-    return ok, bewijstekst
+    commando = stap["commando"]
+    alternatief = stap.get("bij_falen", {}).get("alternatief_commando")
+    pogingen = [commando] + ([alternatief] if alternatief else [])
+    for poging in pogingen:
+        if is_panic_actief(doel):
+            return False, "PANIC: geen nieuwe commando's; herstel handmatig."
+        try:
+            resultaat = subprocess.run(poging, shell=True, cwd=doel,
+                                       capture_output=True, text=True, timeout=300)
+            if is_panic_actief(doel):
+                return False, "PANIC: lopend commando beëindigd; bewijs en vervolg gepauzeerd."
+            if resultaat.returncode != 0:
+                ok, bewijstekst = False, f"commando faalde: exitcode {resultaat.returncode}"
+            else:
+                ok, bewijstekst = controleer(stap["bewijs"], doel, sjablonen_map=sjablonen_map)
+        except (subprocess.TimeoutExpired, OSError) as e:
+            ok, bewijstekst = False, f"uitvoering onderbroken: {type(e).__name__}"
+        if ok:
+            return True, bewijstekst
+    return False, bewijstekst
 
 
 def _log(logboek: Path, stap_id: str, status: str, bewijstekst: str,
@@ -66,7 +77,7 @@ def vangnet_pad_voor(doel: Path) -> Path:
 
 
 def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None,
-                       vangnet: Path | None = None) -> None:
+                       vangnet: Path | None = None) -> bool:
     """Mens-stap: reviewer eerst (indien geconfigureerd), anders klassiek mens-moment."""
     instructie = stap["mens_nodig"].get("instructie", "")
     rol = stap.get("review")
@@ -82,14 +93,15 @@ def _behandel_mensstap(stap: dict, logboek: Path, reviewconfig: dict | None,
                  "noot": "latere stappen bouwen mogelijk op deze nog-te-ratificeren stap"}
         _log(logboek, stap["id"], "review_ok_wacht_ratificatie", instructie, extra)
         print(f"  [review-ok] {stap['id']}: reviewer '{rol}' oordeelde geslaagd — wacht op ratificatie.")
-        return  # motor gaat door
+        return True  # expliciete review-ok mag door tot bulk-ratificatie
     if oordeel is not None:
         extra = {"review_rol": rol, "review_oordeel": oordeel}
         _log(logboek, stap["id"], "wacht_op_mens", instructie, extra)
         print(f"  [mens-moment] {stap['id']}: reviewer '{rol}' oordeelde '{oordeel}' — de mens beslist. {instructie}")
-        return
+        return False
     _log(logboek, stap["id"], "wacht_op_mens", instructie)
     print(f"  [mens-moment] {stap['id']}: {instructie}")
+    return False
 
 
 def voer_uit(profiel: dict, doel: Path, logboek: Path, sjablonen_map: Path | None,
@@ -101,9 +113,13 @@ def voer_uit(profiel: dict, doel: Path, logboek: Path, sjablonen_map: Path | Non
     dan merkt de loop er niets van (fail-open)."""
     alles_geslaagd = True
     for stap in profiel["stappen"]:
+        if is_panic_actief(doel):
+            _log(logboek, stap["id"], "gepauzeerd", "PANIC: herstel vereist vóór hervatten")
+            return False
         if stap.get("mens_nodig"):
-            _behandel_mensstap(stap, logboek, reviewconfig, vangnet)
-            continue  # fase 1: mens-momenten tonen we, auto-hervatten komt later
+            if not _behandel_mensstap(stap, logboek, reviewconfig, vangnet):
+                return False
+            continue
         ok, bewijstekst = voer_stap_uit(stap, doel, sjablonen_map)
         _log(logboek, stap["id"], "geslaagd" if ok else "gefaald", bewijstekst)
         if vangnet is not None:

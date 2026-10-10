@@ -27,7 +27,7 @@ def wacht_ratificatie_stappen(logboek: Path) -> list[str]:
         if sid not in laatste:
             volgorde.append(sid)
         laatste[sid] = entry.get("status")
-    return [sid for sid in volgorde if laatste[sid] == "review_ok_wacht_ratificatie"]
+    return [sid for sid in volgorde if laatste[sid] in ("review_ok_wacht_ratificatie", "wacht_op_mens")]
 
 
 def ratificeer_bulk(logboek: Path, geratificeer: list[str],
