@@ -7,7 +7,7 @@ Na een onderbreking: lees dit bestand, `git status`, `git log -8 --oneline`.
 - [x] Slice 1 (advies 2): mens-wachtstatus blokkeert vervolgstappen; panic vóór elke stap/poging; onleesbare panic blokkeert; shell-bewijs vereist exitcode. Regressietests.
 - [x] Slice 2 (advies 4): transactionele gebeurtenissen/opslag, behoud en import bestaande logs, crash/concurrentietests.
 - [x] Slice 3 (advies 3): expliciete acceptatiecriteria en afzonderlijk technisch bewijs, inhoudelijk oordeel, menselijke goedkeuring.
-- [ ] Slice 4 (advies 1): één opdrachtpagina en compacte navigatie; bestaande hulpmiddelen blijven bereikbaar.
+- [x] Slice 4 (advies 1): één opdrachtpagina en compacte navigatie; bestaande hulpmiddelen blijven bereikbaar.
 - [ ] Slice 5 (advies 5): drie lokale voorbeeldopdrachten met plan, bevestiging, uitvoering en bewijs zonder VPS.
 - [ ] Slice 6 (advies 6): gegevensroute en verzonden inhoud zichtbaar; cloudtoestemming afdwingen; documentatie corrigeren.
 
@@ -25,3 +25,6 @@ Repository opgehaald vanaf GitHub; werkboom schoon bij start. Graph-index aangem
 
 ### Slice 3
 12 tests groen. Bewijsrapport projecteert acceptatiecriteria en drie afzonderlijke oordelen per stap; technische checks geven geen inhoudelijke of menselijke goedkeuring. JSON-bewijs kan exacte veldwaarden/type controleren. Adaptercommando bewijsrapport beschikbaar; taakpagina in slice 4 gebruikt dezelfde projectie.
+
+### Slice 4
+4 gerichte tests groen (dossier van concept tot goedkeuring, wachten en hervatten, gelijktijdige uitvoering geweigerd, geen pad-ontsnapping via het id). Zijbalk: 00 Vandaag, 01 Opdrachten, 02 Bibliotheek, de rest onder Gereedschappen — nummering strikt oplopend, geen dubbele nummers meer. HomeView is opgegaan in het Vandaag-scherm (begroeting met ZT-3-variant, vier cijfers, knowledge graph) en daarna verwijderd: dat bestand was de enige echte buildbreker (`await MainActor.run` met een await erin). macOS-build groen met HomeView verwijderd. Let op: `opdrachten nieuw` werkt vandaag alleen met profiel tweede-brein; autonome-fabriek en dev-werkplaats hebben nog een leeg stappenplan (slice 5).

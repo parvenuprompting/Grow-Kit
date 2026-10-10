@@ -1646,6 +1646,35 @@ def cmd_panic_status(invoer: dict) -> dict:
             "actief": growkit_panic.is_panic_actief(doel)}
 
 
+def cmd_opdrachten(invoer: dict) -> dict:
+    import contextlib
+    from kern import growkit_opdrachten as opdrachten
+    from kern.growkit_motor import vervang_growkit_pad
+    actie = invoer.get("actie", "lijst")
+    try:
+        with contextlib.redirect_stdout(sys.stderr):
+            if actie == "lijst":
+                data = opdrachten.lijst()
+            elif actie == "nieuw":
+                naam = str(invoer.get("profiel", ""))
+                profiel = vervang_growkit_pad(_laad_profiel(naam), REPO)
+                data = opdrachten.nieuw(str(invoer.get("titel", "")), invoer.get("criteria", []),
+                                         profiel, REPO / "profielen" / naam / "sjablonen")
+            elif actie == "lees":
+                data = opdrachten.lees(invoer.get("id"))
+            elif actie == "uitvoeren":
+                data = opdrachten.uitvoeren(invoer.get("id"), invoer.get("plan_hash"), invoer.get("bevestig"))
+            elif actie == "beoordeel":
+                data = opdrachten.beoordeel(invoer.get("id"), invoer.get("goedgekeurd"), str(invoer.get("toelichting", "")))
+            elif actie in ("panic", "herstel"):
+                data = opdrachten.panic(invoer.get("id"), herstel=actie == "herstel")
+            else:
+                raise ValueError("Onbekende opdrachtactie")
+    except (ValueError, OSError, KeyError, TypeError, AttributeError) as e:
+        raise AdapterFout(str(e)) from e
+    return {"ok": True, "data": data}
+
+
 def cmd_bewijsrapport(invoer: dict) -> dict:
     from kern.growkit_resultaat import bewijsrapport
     doel = _doel_uit(invoer)
@@ -1662,6 +1691,7 @@ def cmd_bewijsrapport(invoer: dict) -> dict:
 
 
 COMMANDOS = {
+    "opdrachten": cmd_opdrachten,
     "bewijsrapport": cmd_bewijsrapport,
     "status": cmd_status,
     "profielen": cmd_profielen,
