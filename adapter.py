@@ -11,6 +11,7 @@ Contract:
 - Fouten: {"ok": false, "fout": "<NL>"} met exit 1 — nooit een traceback.
 - Stateless: geen sessie-staat tussen aanroepen.
 """
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import json
 import re
 from datetime import datetime, timezone
@@ -238,7 +239,7 @@ def cmd_plant(invoer: dict) -> dict:
         doel.mkdir(parents=True, exist_ok=True)
         logboek = doel / "logboek.json"
         if not logboek.exists():
-            logboek.write_text("[]", encoding="utf-8")
+            voeg_gebeurtenissen_toe(logboek, [])
         profiel = growkit_motor.vervang_growkit_pad(profiel, REPO)
         geslaagd = growkit_motor.voer_uit(profiel, doel, logboek,
                                           Path(__file__).parent / "profielen" / naam / "sjablonen",

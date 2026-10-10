@@ -16,6 +16,7 @@ wachtrij (gouverneur en faalcontract blijven de bewakers).
 """
 from __future__ import annotations
 
+from kern.growkit_opslag import transactie, schrijf_atomair, voeg_gebeurtenissen_toe
 import json
 import re
 import uuid
@@ -173,32 +174,54 @@ def _log_pad() -> Path:
 
 
 def _log(actie: str, detail: dict) -> None:
-    pad = _log_pad()
-    pad.parent.mkdir(parents=True, exist_ok=True)
-    regels = []
-    if pad.exists():
-        try:
-            regels = json.loads(pad.read_text())
-        except (json.JSONDecodeError, OSError):
-            regels = []
-    regels.append({"actie": actie, "tijd": _nu(), **detail})
-    pad.write_text(json.dumps(regels, ensure_ascii=False, indent=1))
+    voeg_gebeurtenissen_toe(_log_pad(), [{"actie": actie, "tijd": _nu(), **detail}])
+
+
+def _lees_json(pad: Path) -> list[dict]:
+    if not pad.exists():
+        return []
+    data = json.loads(pad.read_text())
+    if not isinstance(data, list) or not all(isinstance(x, dict) for x in data):
+        raise ValueError(f"Ongeldig opslagbestand: {pad}")
+    return data
+
+
+def _staat_pad() -> Path:
+    return _opslag_pad().with_suffix(".store.json")
 
 
 def _lees_alle() -> list[dict]:
-    pad = _opslag_pad()
-    if not pad.exists():
-        return []
-    try:
-        return json.loads(pad.read_text())
-    except (json.JSONDecodeError, OSError):
-        return []
+    # Eén snapshot bevat plannen én gebeurtenissen. Oude bestanden blijven
+    # compatibele exports; de oorspronkelijke data wordt bij eerste mutatie geïmporteerd.
+    if _staat_pad().exists():
+        return json.loads(_staat_pad().read_text())["plannen"]
+    return _lees_json(_opslag_pad())
 
 
-def _schrijf_alle(plannen: list[dict]) -> None:
-    pad = _opslag_pad()
-    pad.parent.mkdir(parents=True, exist_ok=True)
-    pad.write_text(json.dumps(plannen, ensure_ascii=False, indent=1))
+def _mutatie(plan: dict, actie: str) -> None:
+    with transactie(_staat_pad(), {}) as staat:
+        if not staat:
+            staat.update(plannen=_lees_json(_opslag_pad()), gebeurtenissen=_lees_json(_log_pad()))
+        plannen = staat["plannen"]
+        if actie == "toevoegen":
+            plannen.append(plan)
+        else:
+            for i, bestaand in enumerate(plannen):
+                if bestaand["id"] == plan["id"]:
+                    if plan.get("revisie", 0) != bestaand.get("revisie", 0):
+                        raise ValueError("Plan is ondertussen gewijzigd — laad het opnieuw")
+                    plan["revisie"] = bestaand.get("revisie", 0) + 1
+                    plannen[i] = plan
+                    break
+            else:
+                raise ValueError(f"Onbekend plan: {plan['id']}")
+        staat["gebeurtenissen"].append({"actie": actie, "tijd": _nu(), "id": plan["id"],
+                                       "status": plan["status"], "plan": plan.copy()})
+    # Serialize exports under the same lock, reading the latest committed state.
+    # A crash here leaves the authoritative store intact; next mutation refreshes exports.
+    with transactie(_staat_pad(), {}) as staat:
+        schrijf_atomair(_opslag_pad(), staat["plannen"])
+        schrijf_atomair(_log_pad(), staat["gebeurtenissen"])
 
 
 def voeg_toe(titel: str, blokken: dict) -> dict:
@@ -212,11 +235,7 @@ def voeg_toe(titel: str, blokken: dict) -> dict:
     plan["blokken"] = blokken
     if valideer_klaar(plan)["geldig"]:
         plan["status"] = "klaar"
-    plannen = _lees_alle()
-    plannen.append(plan)
-    _schrijf_alle(plannen)
-    _log("toevoegen", {"id": plan["id"], "titel": plan["titel"],
-                       "status": plan["status"]})
+    _mutatie(plan, "toevoegen")
     return plan
 
 
@@ -236,15 +255,14 @@ def lees(plan_id: str) -> dict:
 
 def bewaar(plan: dict) -> dict:
     """Plan terugwegen (na bewerking of status-wissel)."""
-    plannen = _lees_alle()
-    for i, p in enumerate(plannen):
-        if p["id"] == plan["id"]:
-            plan["gewijzigd"] = _nu()
-            plannen[i] = plan
-            _schrijf_alle(plannen)
-            _log("bewaar", {"id": plan["id"], "status": plan["status"]})
-            return plan
-    raise ValueError(f"Onbekend plan: {plan['id']}")
+    secret = _heeft_secret(plan.get("blokken", {}))
+    if secret:
+        raise ValueError(f"Secret geweigerd in plan: {secret}")
+    if plan.get("status") == "klaar" and not valideer_klaar(plan)["geldig"]:
+        raise ValueError("Een klaar plan moet volledig en geldig blijven")
+    plan["gewijzigd"] = _nu()
+    _mutatie(plan, "bewaar")
+    return plan
 
 
 # ---------------------------------------------------------------------------

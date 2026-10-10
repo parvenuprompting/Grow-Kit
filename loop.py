@@ -6,6 +6,7 @@ de Scope-poort blijft de enige invoerbescherming en de motor het enige
 uitvoeringspad. Kernregel in fase 4 (§11.1 hard): de loop voert niets uit
 dat niet de mensbevestiging heeft gehad.
 """
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import json
 import sys
 from pathlib import Path
@@ -77,7 +78,7 @@ def plant_profiel(invoer_fn=input) -> int:
     doel_pad.mkdir(parents=True, exist_ok=True)
     logboek = doel_pad / "logboek.json"
     if not logboek.exists():
-        logboek.write_text("[]", encoding="utf-8")
+        voeg_gebeurtenissen_toe(logboek, [])
     with open(PROFILES_DIR / naam / "profiel.json", encoding="utf-8") as f:
         profiel = json.load(f)
     profiel = growkit_motor.vervang_growkit_pad(profiel, REPO.resolve())

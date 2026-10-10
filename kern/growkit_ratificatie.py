@@ -4,6 +4,7 @@ Eén bron voor loop.py en de adapter: verzamelen van wachtende stappen en het
 append-only verwerken van bulk-beslissingen (geratificeerd / herziening_nodig
 mét reden en doorloop-vermelding). Geen auto-rollback; de mens blijft curator.
 """
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import datetime
 import json
 from pathlib import Path
@@ -61,5 +62,5 @@ def ratificeer_bulk(logboek: Path, geratificeer: list[str],
                  "bewijs": vermelding, "tijdstip": _nu()}
         entries.append(entry)
         geschreven.append(entry)
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, geschreven)
     return geschreven

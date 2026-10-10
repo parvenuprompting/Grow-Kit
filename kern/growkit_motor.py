@@ -9,6 +9,8 @@ status review_ok_wacht_ratificatie en de motor GAAT DOOR (ratificatie in
 bulk, later). 'gefaald'/'onduidelijk'/geen config → klassiek mens-moment.
 Machine-bewijs-stappen gaan nooit naar een reviewer.
 """
+
+from kern.growkit_opslag import voeg_gebeurtenissen_toe
 import datetime
 import json
 import subprocess
@@ -64,12 +66,12 @@ def voer_stap_uit(stap: dict, doel: Path, sjablonen_map: Path | None) -> tuple[b
 
 def _log(logboek: Path, stap_id: str, status: str, bewijstekst: str,
          extra: dict | None = None) -> None:
-    entries = json.loads(logboek.read_text(encoding="utf-8")) if logboek.exists() else []
+    entries = []
     entry = {"stap": stap_id, "status": status, "bewijs": bewijstekst, "tijdstip": _nu()}
     if extra:
         entry.update(extra)
     entries.append(entry)
-    logboek.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    voeg_gebeurtenissen_toe(logboek, entries)
 
 
 def vangnet_pad_voor(doel: Path) -> Path:
