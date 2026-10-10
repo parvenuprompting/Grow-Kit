@@ -123,7 +123,13 @@ def uitvoeren(opdracht_id, plan_hash, bevestig=False):
         try:
             ok = voer_uit({**data['profiel'], 'stappen': rest}, doel, log,
                           Path(data['sjablonen']) if data['sjablonen'] else None)
-            status = 'resultaat' if ok else ('wacht_op_mens' if wacht_ratificatie_stappen(log) else 'gepauzeerd')
+            if ok:
+                status = 'resultaat'
+            else:
+                stop = uitkomst(log)   # al geïmporteerd
+                status = {'wacht_op_mens': 'wacht_op_mens',
+                          'gepauzeerd': 'gepauzeerd',
+                          'gefaald': 'gefaald'}.get(stop, 'gefaald')
         except Exception as e:
             _wijzig(opdracht_id, 'onderbroken', status='gepauzeerd', fout=str(e))
             raise

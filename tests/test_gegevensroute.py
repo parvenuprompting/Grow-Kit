@@ -68,6 +68,27 @@ class RouteAfleiding(unittest.TestCase):
             self.assertEqual(uit["verzendt"], [], naam)
             self.assertEqual(uit["bron"], "verklaard", naam)
 
+    def test_uitgebreide_netwerksignalen_zijn_nooit_lokaal(self):
+        """Elk bekend netwerkcommando moet als extern worden herkend."""
+        for commando in ("git push origin main", "git clone https://x.nl/r.git",
+                         "git fetch --all", "pip install requests",
+                         "npm install left-pad", "nc -l 1234", "ftp server",
+                         "python -c 'import urllib.request'",
+                         "python -c 'import requests'",
+                         "ssh gast@server 'ls'", "scp bestand gast@server:/tmp",
+                         "rsync -a . gast@server:/tmp"):
+            self.assertNotEqual(route.route(een_stap(commando))["soort"], "lokaal", commando)
+
+    def test_hoofdletters_maken_niets_uit(self):
+        self.assertEqual(route.route(een_stap("SSH gast@server 'ls'"))["soort"], "eigen_vps")
+        self.assertEqual(route.route(een_stap("GIT PUSH origin main"))["soort"], "cloud")
+
+    def test_woordgrens_voorkomt_valse_alarmen(self):
+        """'sync' is geen rsync en 'ncat' is geen nc."""
+        for commando in ("cat sync.json", "python3 -m json.tool ncat.log",
+                         "echo curling is een sport"):
+            self.assertEqual(route.route(een_stap(commando))["soort"], "lokaal", commando)
+
 
 class CloudPoort(unittest.TestCase):
     def setUp(self):

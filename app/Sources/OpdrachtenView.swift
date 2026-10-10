@@ -303,7 +303,7 @@ struct OpdrachtenView: View {
             Button("PANIC handmatig herstellen") { Task { await actie("herstel") } }
         } else {
             HStack {
-                if ["concept", "gepauzeerd", "bezig", "afgekeurd"].contains(status) {
+                if ["concept", "gepauzeerd", "bezig", "afgekeurd", "gefaald"].contains(status) {
                     Button(status == "concept" ? "Plan en grenzen goedkeuren · uitvoeren" : "Hervatten bevestigen") {
                         Task { await actie("uitvoeren", extra: ["bevestig": true, "plan_hash": d["plan_hash"] ?? ""]) }
                     }.disabled(bezig || (cloudNodig(d) && !toestemmingGegeven(d)))
@@ -362,7 +362,7 @@ struct OpdrachtenView: View {
         switch routeSoort(d) {
         case "cloud": return "Cloud — er gaat inhoud naar buiten"
         case "eigen_vps": return "Eigen VPS — jouw server, niets daarbuiten"
-        default: return "Lokaal — er verlaat niets je machine"
+        default: return "Lokaal — geen netwerkcommando's in het plan"
         }
     }
     private func cloudNodig(_ d: [String: Any]) -> Bool { routeSoort(d) == "cloud" }

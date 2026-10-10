@@ -52,7 +52,7 @@ def voer_stap_uit(stap: dict, doel: Path, sjablonen_map: Path | None) -> tuple[b
             resultaat = subprocess.run(poging, shell=True, cwd=doel,
                                        capture_output=True, text=True, timeout=300)
             if is_panic_actief(doel):
-                return False, "PANIC: lopend commando beëindigd; bewijs en vervolg gepauzeerd."
+                return False, "PANIC: tijdens dit commando geactiveerd; het commando liep af, bewijs en vervolg gepauzeerd."
             if resultaat.returncode != 0:
                 ok, bewijstekst = False, f"commando faalde: exitcode {resultaat.returncode}"
             else:

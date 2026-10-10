@@ -43,3 +43,16 @@ class OpdrachtenTests(unittest.TestCase):
 
     def test_bad_id_cannot_escape_storage(self):
         with self.assertRaises(ValueError): op.lees('../outside')
+
+    def test_mislukte_stap_geeft_status_gefaald(self):
+        """Een commando dat na zijn alternatief faalt → 'gefaald', niet 'gepauzeerd'."""
+        self.profile['stappen'] = [{'id': 'a', 'commando': 'false',
+                                    'verwacht': 'Dit kan niet slagen',
+                                    'bewijs': {'type': 'file_exists', 'pad': 'result.txt'}}]
+        d = op.nieuw('Mislukte opdracht', ['Resultaat klopt'], self.profile)
+        d = op.uitvoeren(d['id'], d['plan_hash'], True)
+        self.assertEqual(d['status'], 'gefaald')
+        self.assertEqual(op.lijst()['opdrachten'][0]['status'], 'gefaald')
+        # opnieuw proberen blijft mogelijk: 'gefaald' is geen eindstatus
+        d = op.uitvoeren(d['id'], d['plan_hash'], True)
+        self.assertEqual(d['status'], 'gefaald')
